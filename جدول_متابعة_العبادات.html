@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نعم العبد إنه أواب</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#1a1a2e;--deep:#16213e;--teal:#0f4c5c;--teal-mid:#1a7a8a;
+    --teal-light:#2bb5c8;--gold:#c9a84c;--gold-light:#e8c97a;
+    --cream:#f5f0e8;--muted:#8a8a9a;--success:#2e9e6b;
+    --danger:#c0392b;--warn:#e67e22;--card-bg:rgba(255,255,255,0.04);
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Cairo',sans-serif;background:var(--ink);color:var(--cream);min-height:100vh;overflow-x:hidden;}
+  .bg-pattern{position:fixed;inset:0;pointer-events:none;z-index:0;background:
+    radial-gradient(ellipse 90% 60% at 50% -10%,rgba(15,76,92,.45) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 100%,rgba(201,168,76,.12) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 100%,rgba(26,122,138,.18) 0%,transparent 55%),
+    linear-gradient(160deg,#10131f 0%,#16213e 45%,#0a1c2a 100%);}
+  .bg-ornament{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.07;background-size:220px 220px;background-repeat:repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23c9a84c' stroke-width='1.1'%3E%3Cpath d='M110 10 L170 60 L170 160 L110 210 L50 160 L50 60 Z'/%3E%3Ccircle cx='110' cy='110' r='62'/%3E%3Ccircle cx='110' cy='110' r='38'/%3E%3Cpath d='M110 48 L150 80 L150 140 L110 172 L70 140 L70 80 Z'/%3E%3Cpath d='M110 10 L110 210 M50 60 L170 160 M170 60 L50 160'/%3E%3Cpath d='M10 110 H210 M30 50 L190 170 M30 170 L190 50' opacity='0.4'/%3E%3C/g%3E%3C/svg%3E");}
+  .bg-vignette{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,transparent 40%,rgba(10,15,25,.55) 100%);}
+  .bg-arch{position:fixed;top:-5%;left:50%;transform:translateX(-50%);width:140%;max-width:1400px;height:340px;pointer-events:none;z-index:0;opacity:.06;background-repeat:repeat-x;background-position:top center;background-size:280px 340px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='340' viewBox='0 0 280 340'%3E%3Cpath d='M0 340 L0 140 Q0 40 140 40 Q280 40 280 140 L280 340' fill='none' stroke='%23e8c97a' stroke-width='2'/%3E%3Cpath d='M30 340 L30 150 Q30 70 140 70 Q250 70 250 150 L250 340' fill='none' stroke='%23e8c97a' stroke-width='1'/%3E%3C/svg%3E");}
+  .app{position:relative;z-index:1;}
+  .screen{display:none;min-height:100vh;}
+  .screen.active{display:flex;flex-direction:column;}
+  /* LOGIN */
+  #screen-login{align-items:center;justify-content:center;padding:2rem;}
+  .login-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:24px;padding:3rem 2.5rem;width:100%;max-width:420px;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,.4),inset 0 1px 0 rgba(201,168,76,.15);text-align:center;}
+  .login-icon{width:80px;height:80px;margin:0 auto 1.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 8px 32px rgba(15,76,92,.5);}
+  .login-box h1{font-family:'Amiri',serif;font-size:2rem;font-weight:700;color:var(--gold-light);margin-bottom:.3rem;}
+  .login-box .subtitle{font-size:.85rem;color:var(--muted);margin-bottom:2rem;}
+  .field{margin-bottom:1.2rem;text-align:right;}
+  .field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.4rem;}
+  .field input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:.75rem 1rem;color:var(--cream);font-family:'Cairo',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s;}
+  .field input:focus{border-color:var(--teal-light);box-shadow:0 0 0 3px rgba(43,181,200,.15);}
+  .btn-primary{width:100%;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:white;border:none;border-radius:12px;padding:.85rem 1.5rem;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(15,76,92,.4);margin-top:.5rem;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(15,76,92,.5);}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .login-error{color:#e74c3c;font-size:.82rem;margin-top:.8rem;display:none;}
+  .toggle-link{margin-top:1.2rem;font-size:.82rem;color:var(--muted);}
+  .toggle-link span{color:var(--teal-light);text-decoration:underline;cursor:pointer;}
+  /* LOADING OVERLAY */
+  .loading-overlay{position:fixed;inset:0;background:rgba(22,33,62,.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;backdrop-filter:blur(8px);}
+  .loading-overlay.hidden{display:none;}
+  .spinner{width:44px;height:44px;border:3px solid rgba(43,181,200,.2);border-top-color:var(--teal-light);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:.9rem;color:var(--muted);}
+  /* SETUP */
+  #screen-setup{align-items:center;justify-content:center;padding:2rem;}
+  .setup-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;backdrop-filter:blur(20px);text-align:center;}
+  .setup-box h2{font-family:'Amiri',serif;color:var(--gold-light);font-size:1.6rem;margin-bottom:.5rem;}
+  .setup-box p{color:var(--muted);font-size:.85rem;margin-bottom:1.8rem;}
+  .pages-input{display:flex;align-items:center;gap:1rem;justify-content:center;margin-bottom:2rem;}
+  .pages-input button{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--cream);font-size:1.3rem;cursor:pointer;transition:all .2s;}
+  .pages-input button:hover{background:var(--teal);}
+  .pages-input .num{font-size:2.5rem;font-weight:900;color:var(--gold-light);min-width:60px;}
+  .pages-label{font-size:.85rem;color:var(--muted);}
+  /* HEADER */
+  .main-header{background:rgba(22,33,62,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
+  .header-brand{font-family:'Amiri',serif;font-size:1.25rem;color:var(--gold-light);display:flex;align-items:center;gap:.5rem;}
+  .header-user{display:flex;align-items:center;gap:.75rem;}
+  .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;border:2px solid var(--border);}
+  .btn-logout{background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.78rem;font-family:'Cairo',sans-serif;cursor:pointer;transition:all .2s;}
+  .btn-logout:hover{border-color:var(--danger);color:var(--danger);}
+  /* TABS */
+  .tabs{display:flex;gap:.5rem;padding:1rem 1.5rem 0;border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab-btn{background:none;border:none;color:var(--muted);font-family:'Cairo',sans-serif;font-size:.88rem;padding:.6rem 1rem .8rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
+  .tab-btn:hover{color:var(--cream);}
+  .tab-btn.active{color:var(--teal-light);border-bottom-color:var(--teal-light);}
+  .main-content{flex:1;padding:1.5rem;max-width:900px;margin:0 auto;width:100%;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  /* TODAY */
+  .day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+  .day-title{font-family:'Amiri',serif;font-size:1.5rem;color:var(--gold-light);}
+  .day-date{font-size:.82rem;color:var(--muted);}
+  .progress-ring{position:relative;width:64px;height:64px;}
+  .progress-ring svg{transform:rotate(-90deg);}
+  .progress-ring circle.bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:5;}
+  .progress-ring circle.fill{fill:none;stroke:var(--teal-light);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .5s;}
+  .progress-ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:var(--teal-light);}
+  .section-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--muted);margin:1.5rem 0 .75rem;display:flex;align-items:center;gap:.5rem;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .worship-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:.6rem;display:flex;align-items:center;gap:1rem;transition:all .2s;}
+  .worship-card:hover{border-color:rgba(201,168,76,.35);background:rgba(255,255,255,.06);}
+  .worship-card.done{border-color:rgba(46,158,107,.3);background:rgba(46,158,107,.05);}
+  .worship-card.missed{border-color:rgba(192,57,43,.2);opacity:.75;}
+  .worship-icon{font-size:1.4rem;flex-shrink:0;}
+  .worship-info{flex:1;}
+  .worship-name{font-size:.95rem;font-weight:600;color:var(--cream);}
+  .worship-sub{font-size:.75rem;color:var(--muted);margin-top:.1rem;}
+  .worship-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+  .btn-check{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s;}
+  .btn-check.yes{border-color:var(--success);color:var(--success);}
+  .btn-check.yes:hover,.btn-check.yes.active{background:var(--success);color:white;box-shadow:0 4px 16px rgba(46,158,107,.4);}
+  .btn-check.no{border-color:rgba(192,57,43,.5);color:rgba(192,57,43,.7);}
+  .btn-check.no:hover,.btn-check.no.active{background:var(--danger);color:white;border-color:var(--danger);box-shadow:0 4px 16px rgba(192,57,43,.3);}
+  .prayers-grid{display:flex;gap:.4rem;flex-wrap:wrap;}
+  .prayer-chip{display:flex;flex-direction:column;align-items:center;gap:.2rem;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:.4rem .7rem;cursor:pointer;transition:all .2s;min-width:52px;}
+  .prayer-chip span{font-size:.65rem;color:var(--muted);}
+  .prayer-chip .chip-icon{font-size:1.1rem;}
+  .prayer-chip.done{background:rgba(46,158,107,.15);border-color:rgba(46,158,107,.4);}
+  .prayer-chip.done span{color:var(--success);}
+  .btn-toggle-quran{padding:.4rem 1rem;border-radius:20px;border:1px solid var(--border);background:none;color:var(--cream);font-family:'Cairo',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
+  .btn-toggle-quran.done{background:rgba(46,158,107,.2);border-color:var(--success);color:var(--success);}
+  .btn-toggle-quran.miss{background:rgba(192,57,43,.15);border-color:var(--danger);color:var(--danger);}
+  .btn-save-day{width:100%;margin-top:2rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));border:none;border-radius:14px;padding:1rem;color:white;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(15,76,92,.4);}
+  .btn-save-day:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(15,76,92,.5);}
+  .btn-save-day:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .save-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--success);color:white;padding:.75rem 2rem;border-radius:30px;font-weight:700;font-size:.9rem;transition:transform .4s cubic-bezier(.175,.885,.32,1.275);z-index:999;box-shadow:0 8px 30px rgba(46,158,107,.4);}
+  .save-toast.show{transform:translateX(-50%) translateY(0);}
+  .save-toast.error{background:var(--danger);}
+  /* WEEK */
+  .week-grid{overflow-x:auto;}
+  .week-table{width:100%;min-width:700px;border-collapse:collapse;}
+  .week-table th{padding:.75rem .5rem;font-size:.78rem;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);text-align:center;}
+  .week-table th.worship-col{text-align:right;padding-right:1rem;}
+  .week-table td{padding:.6rem .5rem;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-size:.85rem;}
+  .week-table td.worship-name-cell{text-align:right;padding-right:1rem;font-size:.82rem;color:var(--cream);}
+  .week-table tr:last-child td{border-bottom:none;}
+  .cell-done{color:var(--success);font-size:1.1rem;}
+  .cell-miss{color:var(--danger);font-size:1rem;opacity:.6;}
+  .cell-na{color:var(--muted);font-size:.75rem;}
+  .cell-partial{font-size:.72rem;color:var(--warn);}
+  /* COMPARE */
+  .compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;}
+  .member-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.25rem;text-align:center;transition:all .2s;}
+  .member-card:hover{border-color:var(--teal-light);transform:translateY(-2px);}
+  .member-card .m-avatar{width:52px;height:52px;border-radius:50%;margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;}
+  .member-card .m-name{font-size:.95rem;font-weight:700;color:var(--cream);}
+  .member-card .m-score{font-size:1.8rem;font-weight:900;margin:.4rem 0 .2rem;}
+  .member-card .m-label{font-size:.72rem;color:var(--muted);}
+  .member-card .m-bar{margin-top:.75rem;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+  .member-card .m-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--teal-light));transition:width .5s;}
+  .leaderboard{margin-top:2rem;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .lb-header{padding:1rem 1.25rem;font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-light);border-bottom:1px solid var(--border);}
+  .lb-row{display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s;}
+  .lb-row:hover{background:rgba(255,255,255,.03);}
+  .lb-row:last-child{border-bottom:none;}
+  .lb-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex-shrink:0;}
+  .rank-1{background:linear-gradient(135deg,#c9a84c,#e8c97a);color:#1a1a2e;}
+  .rank-2{background:rgba(180,180,200,.2);color:#c0c0d0;}
+  .rank-3{background:rgba(180,100,50,.2);color:#cd7f32;}
+  .rank-other{background:rgba(255,255,255,.06);color:var(--muted);}
+  .lb-name{flex:1;font-size:.9rem;font-weight:600;}
+  .lb-score{font-size:.9rem;font-weight:700;color:var(--teal-light);}
+  .lb-pct{font-size:.75rem;color:var(--muted);}
+  /* REPORT */
+  .report-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;}
+  .stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;}
+  .stat-card .stat-icon{font-size:1.8rem;margin-bottom:.5rem;}
+  .stat-card .stat-val{font-size:1.6rem;font-weight:900;line-height:1;}
+  .stat-card .stat-lbl{font-size:.72rem;color:var(--muted);margin-top:.3rem;}
+  .stat-gold{color:var(--gold-light);}.stat-green{color:var(--success);}.stat-blue{color:var(--teal-light);}
+  .report-highlight{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1rem;}
+  .report-highlight h3{font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-light);margin-bottom:1rem;}
+  .highlight-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  .highlight-item:last-child{border-bottom:none;}
+  .h-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .h-best{background:rgba(46,158,107,.2);}.h-worst{background:rgba(192,57,43,.15);}
+  .h-info{flex:1;}
+  .h-name{font-size:.88rem;font-weight:700;color:var(--cream);}
+  .h-detail{font-size:.75rem;color:var(--muted);margin-top:.1rem;}
+  .h-pct{font-size:1rem;font-weight:900;}
+  .h-pct.good{color:var(--success);}.h-pct.bad{color:var(--danger);}
+  .bar-chart{margin-top:1rem;}
+  .bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;}
+  .bar-label{font-size:.78rem;color:var(--muted);min-width:130px;text-align:right;}
+  .bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;transition:width .8s;}
+  .bar-val{font-size:.75rem;color:var(--muted);min-width:36px;text-align:left;}
+  /* ADMIN */
+  .admin-section{margin-bottom:2rem;}
+  .admin-section h3{font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-light);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+  .members-list{display:flex;flex-direction:column;gap:.6rem;}
+  .member-row{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:.85rem 1.2rem;display:flex;align-items:center;gap:1rem;}
+  .member-row .m-av2{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;}
+  .member-row .m-n2{flex:1;font-size:.9rem;}
+  .member-row .m-role{font-size:.72rem;color:var(--muted);}
+  .btn-del{background:none;border:1px solid rgba(192,57,43,.3);color:rgba(192,57,43,.7);border-radius:8px;padding:.25rem .7rem;font-size:.75rem;cursor:pointer;transition:all .2s;font-family:'Cairo',sans-serif;}
+  .btn-del:hover{background:rgba(192,57,43,.15);color:var(--danger);}
+  .add-member-form{display:flex;gap:.75rem;margin-top:1rem;}
+  .add-member-form input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:.65rem 1rem;color:var(--cream);font-family:'Cairo',sans-serif;font-size:.88rem;outline:none;}
+  .add-member-form input:focus{border-color:var(--teal-light);}
+  .btn-add{background:var(--teal);border:none;border-radius:10px;color:white;padding:.65rem 1.25rem;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .btn-add:hover{background:var(--teal-mid);}
+  .badge-weekly{display:inline-block;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.65rem;font-weight:700;padding:.1rem .5rem;border-radius:20px;margin-right:.4rem;vertical-align:middle;}
+  @media(max-width:600px){.compare-grid{grid-template-columns:1fr 1fr;}.report-summary{grid-template-columns:1fr 1fr;}.tabs{padding:.75rem 1rem 0;}.main-content{padding:1rem;}}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-arch"></div>
+<div class="bg-ornament"></div>
+<div class="bg-vignette"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay hidden" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">جاري التحميل...</div>
+</div>
+
+<div class="app">
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-icon">🕌</div>
+    <h1>نعم العبد إنه أواب</h1>
+    <p class="subtitle">نتابع مع بعض، نتحسن مع بعض</p>
+    <div id="login-form">
+      <div class="field"><label>الاسم</label><input id="inp-name" type="text" placeholder="اسمك هنا"></div>
+      <div class="field"><label>كلمة المرور</label><input id="inp-pass" type="password" placeholder="••••••••"></div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">دخول</button>
+      <div class="login-error" id="login-err">الاسم أو كلمة المرور غلط</div>
+      <div class="toggle-link">مش عندك حساب؟ <span onclick="showRegister()">سجّل من هنا</span></div>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="field"><label>الاسم</label><input id="inp-rname" type="text" placeholder="اسمك هنا"></div>
+      <div class="field"><label>كلمة المرور</label><input id="inp-rpass" type="password" placeholder="••••••••"></div>
+      <div class="field"><label>تأكيد كلمة المرور</label><input id="inp-rpass2" type="password" placeholder="••••••••"></div>
+      <button class="btn-primary" id="btn-register" onclick="doRegister()">إنشاء الحساب</button>
+      <div class="login-error" id="reg-err"></div>
+      <div class="toggle-link">عندك حساب؟ <span onclick="showLogin()">ادخل من هنا</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <div style="font-size:3rem;margin-bottom:1rem">📖</div>
+    <h2>ورد القرآن اليومي</h2>
+    <p>حدّد كام صفحة هتلتزم بيها كل يوم؟</p>
+    <div class="pages-input">
+      <button onclick="changePages(-1)">−</button>
+      <div class="num" id="pages-num">2</div>
+      <button onclick="changePages(1)">+</button>
+    </div>
+    <p class="pages-label">صفحة يومياً</p>
+    <button class="btn-primary" onclick="saveSetup()" style="margin-top:1.5rem">ابدأ</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <header class="main-header">
+    <div class="header-brand">🕌 نعم العبد إنه أواب</div>
+    <div class="header-user">
+      <div class="user-avatar" id="hdr-avatar">م</div>
+      <span style="font-size:.85rem;color:var(--cream)" id="hdr-name">محسن</span>
+      <button class="btn-logout" onclick="doLogout()">خروج</button>
+    </div>
+  </header>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('today',this)">📅 اليوم</button>
+    <button class="tab-btn" onclick="switchTab('week',this)">📊 أسبوعي</button>
+    <button class="tab-btn" id="compare-tab" style="display:none" onclick="switchTab('compare',this)">👥 مقارنة</button>
+    <button class="tab-btn" onclick="switchTab('report',this)">📋 تقرير</button>
+    <button class="tab-btn" id="admin-tab" style="display:none" onclick="switchTab('admin',this)">⚙️ إدارة</button>
+  </div>
+  <div class="main-content">
+
+    <!-- TODAY -->
+    <div id="panel-today" class="tab-panel active">
+      <div class="day-header">
+        <div>
+          <div class="day-title" id="today-dayname">الأحد</div>
+          <div class="day-date" id="today-date"></div>
+        </div>
+        <div class="progress-ring">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle class="bg" cx="32" cy="32" r="27"/>
+            <circle class="fill" id="progress-circle" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+          </svg>
+          <div class="pct" id="progress-pct">0%</div>
+        </div>
+      </div>
+
+      <div class="section-label">الفروض الخمسة</div>
+      <div class="worship-card" id="card-fard">
+        <div class="worship-icon">🕌</div>
+        <div class="worship-info"><div class="worship-name">الفروض الخمسة</div><div class="worship-sub">اضغط على كل صلاة</div></div>
+        <div class="prayers-grid" id="prayers-grid">
+          <div class="prayer-chip" data-p="فجر" onclick="togglePrayer(this)"><div class="chip-icon">🌅</div><span>فجر</span></div>
+          <div class="prayer-chip" data-p="ظهر" onclick="togglePrayer(this)"><div class="chip-icon">☀️</div><span>ظهر</span></div>
+          <div class="prayer-chip" data-p="عصر" onclick="togglePrayer(this)"><div class="chip-icon">🌤️</div><span>عصر</span></div>
+          <div class="prayer-chip" data-p="مغرب" onclick="togglePrayer(this)"><div class="chip-icon">🌇</div><span>مغرب</span></div>
+          <div class="prayer-chip" data-p="عشاء" onclick="togglePrayer(this)"><div class="chip-icon">🌙</div><span>عشاء</span></div>
+        </div>
+      </div>
+
+      <div class="section-label">أذكار بعد الصلاة</div>
+      <div class="worship-card" id="card-azkar-salah">
+        <div class="worship-icon">📿</div>
+        <div class="worship-info">
+          <div class="worship-name">أذكار بعد الصلاة</div>
+          <div class="worship-sub">اضغط على كل صلاة</div>
+          <div class="prayers-grid" style="margin-top:.5rem" id="azkar-salah-grid">
+            <div class="prayer-chip" data-az="fajr" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌅</div><span>فجر</span></div>
+            <div class="prayer-chip" data-az="zuhr" onclick="toggleAzkarSalah(this)"><div class="chip-icon">☀️</div><span>ظهر</span></div>
+            <div class="prayer-chip" data-az="asr"  onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌤️</div><span>عصر</span></div>
+            <div class="prayer-chip" data-az="mgrb" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌇</div><span>مغرب</span></div>
+            <div class="prayer-chip" data-az="isha" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌙</div><span>عشاء</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">السنن الرواتب</div>
+      <div class="worship-card" id="card-rawatib-fajr">
+        <div class="worship-icon">🌅</div>
+        <div class="worship-info"><div class="worship-name">سنة الفجر</div><div class="worship-sub">ركعتين قبل الفجر</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rawatib-fajr','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rawatib-fajr','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">أذكار الصباح والمساء</div>
+      <div class="worship-card" id="card-azkar-sobh">
+        <div class="worship-icon">🌅</div>
+        <div class="worship-info"><div class="worship-name">أذكار الصباح</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('azkar-sobh','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('azkar-sobh','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">سنة الظهر</div>
+      <div class="worship-card" id="card-rawatib-zuhr-b">
+        <div class="worship-icon">☀️</div>
+        <div class="worship-info"><div class="worship-name">سنة الظهر القبلية</div><div class="worship-sub">٤ ركعات قبل الظهر</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rawatib-zuhr-b','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rawatib-zuhr-b','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-rawatib-zuhr-a">
+        <div class="worship-icon">☀️</div>
+        <div class="worship-info"><div class="worship-name">سنة الظهر البعدية</div><div class="worship-sub">ركعتين بعد الظهر</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rawatib-zuhr-a','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rawatib-zuhr-a','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">ركعتين الضحى وورد القرآن</div>
+      <div class="worship-card" id="card-doha-pray">
+        <div class="worship-icon">🌞</div>
+        <div class="worship-info"><div class="worship-name">ركعتين الضحى</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('doha-pray','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('doha-pray','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-quran">
+        <div class="worship-icon">📖</div>
+        <div class="worship-info"><div class="worship-name">ورد القرآن</div><div class="worship-sub">الهدف: <span id="quran-target-txt">2</span> صفحة/يوم</div></div>
+        <div class="worship-actions" style="flex-direction:column">
+          <button class="btn-toggle-quran" id="btn-quran-done" onclick="toggleQuran('done')">✓ أتممته</button>
+          <button class="btn-toggle-quran" id="btn-quran-miss" onclick="toggleQuran('miss')" style="margin-top:.25rem">✗ لم أتمه</button>
+        </div>
+      </div>
+
+      <div class="section-label">سنة المغرب</div>
+      <div class="worship-card" id="card-rawatib-mgrb">
+        <div class="worship-icon">🌇</div>
+        <div class="worship-info"><div class="worship-name">سنة المغرب</div><div class="worship-sub">ركعتين بعد المغرب</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rawatib-mgrb','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rawatib-mgrb','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-azkar-masa">
+        <div class="worship-icon">🌆</div>
+        <div class="worship-info"><div class="worship-name">أذكار المساء</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('azkar-masa','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('azkar-masa','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">سنة العشاء والوتر</div>
+      <div class="worship-card" id="card-rawatib-isha">
+        <div class="worship-icon">🌙</div>
+        <div class="worship-info"><div class="worship-name">سنة العشاء</div><div class="worship-sub">ركعتين بعد العشاء</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rawatib-isha','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rawatib-isha','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-witr">
+        <div class="worship-icon">🌙</div>
+        <div class="worship-info"><div class="worship-name">ركعة الوتر</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('witr','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('witr','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">أذكار النوم</div>
+      <div class="worship-card" id="card-azkar-nawm">
+        <div class="worship-icon">😴</div>
+        <div class="worship-info"><div class="worship-name">أذكار النوم</div><div class="worship-sub">آية الكرسي</div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('azkar-nawm','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('azkar-nawm','no',this)">✗</button>
+        </div>
+      </div>
+
+      <div class="section-label">الأوراد الأسبوعية</div>
+      <div class="worship-card" id="card-doha-juma" style="display:none">
+        <div class="worship-icon">✨</div>
+        <div class="worship-info"><div class="worship-name">جلسة الضحى <span class="badge-weekly">جمعة</span></div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('doha-juma','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('doha-juma','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-asr-juma" style="display:none">
+        <div class="worship-icon">⏰</div>
+        <div class="worship-info"><div class="worship-name">ساعة عصر الجمعة <span class="badge-weekly">جمعة</span></div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('asr-juma','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('asr-juma','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-rahm">
+        <div class="worship-icon">❤️</div>
+        <div class="worship-info"><div class="worship-name">صلة الرحم <span class="badge-weekly">أسبوعي</span></div><div class="worship-sub" id="rahm-sub"></div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('rahm','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('rahm','no',this)">✗</button>
+        </div>
+      </div>
+      <div class="worship-card" id="card-sadaqa">
+        <div class="worship-icon">💛</div>
+        <div class="worship-info"><div class="worship-name">صدقة <span class="badge-weekly">أسبوعي</span></div><div class="worship-sub" id="sadaqa-sub"></div></div>
+        <div class="worship-actions">
+          <button class="btn-check yes" onclick="toggleCheck('sadaqa','yes',this)">✓</button>
+          <button class="btn-check no" onclick="toggleCheck('sadaqa','no',this)">✗</button>
+        </div>
+      </div>
+      <button class="btn-save-day" id="btn-save" onclick="saveDay()">💾 حفظ اليوم</button>
+    </div>
+
+    <!-- WEEK -->
+    <div id="panel-week" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">المتابعة الأسبوعية</div></div>
+      <div class="week-grid"><table class="week-table" id="week-table"></table></div>
+    </div>
+
+    <!-- COMPARE -->
+    <div id="panel-compare" class="tab-panel">
+      <div class="day-header">
+        <div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">مقارنة الأعضاء</div>
+        <div class="day-date" id="compare-week-label"></div>
+      </div>
+      <div class="compare-grid" id="compare-grid"></div>
+      <div class="leaderboard"><div class="lb-header">🏆 الترتيب الأسبوعي</div><div id="leaderboard-rows"></div></div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="panel-report" class="tab-panel">
+      <div class="day-header">
+        <div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">التقرير الأسبوعي</div>
+        <div class="day-date" id="report-username"></div>
+      </div>
+      <div class="report-summary" id="report-summary"></div>
+      <div class="report-highlight" id="report-highlights"></div>
+      <div class="report-highlight"><h3>📊 معدل الإنجاز لكل عبادة</h3><div class="bar-chart" id="report-bars"></div></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="panel-admin" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">إدارة المجموعة</div></div>
+      <div class="admin-section">
+        <h3>الأعضاء المسجلين</h3>
+        <div class="members-list" id="members-list"></div>
+        <div class="add-member-form">
+          <input id="inp-new-user" placeholder="اسم العضو الجديد">
+          <input id="inp-new-pass" type="password" placeholder="الباسورد">
+          <button class="btn-add" onclick="addMember()">إضافة</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="save-toast" id="save-toast">✅ تم الحفظ بنجاح</div>
+
+<script>
+// ════════════════════════════════════════════
+//  SUPABASE CONFIG
+// ════════════════════════════════════════════
+const SB_URL = 'https://uzzrkqkudyroswvekeoz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6enJrcWt1ZHlyb3N3dmVrZW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NTY0MjAsImV4cCI6MjA5NzEzMjQyMH0.muQqOBZFz02KsnN3dqTnyTdtxYUOgCjVkVEzVQ5Obek';
+
+const SB = {
+  async req(method, path, body=null){
+    const headers = {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer '+SB_KEY,
+      'Content-Type': 'application/json',
+    };
+    if(method==='POST') headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+    else if(method==='GET') headers['Prefer'] = 'return=representation';
+    const opts = { method, headers };
+    if(body) opts.body = JSON.stringify(body);
+    const r = await fetch(SB_URL+'/rest/v1/'+path, opts);
+    if(!r.ok){
+      const txt = await r.text();
+      console.error('Supabase error:', r.status, txt);
+      throw new Error(txt);
+    }
+    const txt = await r.text();
+    return txt ? JSON.parse(txt) : [];
+  },
+  get: (path) => SB.req('GET', path),
+  post: (path, body) => SB.req('POST', path, body),
+  patch: (path, body) => SB.req('PATCH', path, body),
+  delete: (path) => SB.req('DELETE', path),
+};
+
+// ════════════════════════════════════════════
+//  INIT DB TABLES (run once on first load)
+// ════════════════════════════════════════════
+async function initDB(){
+  // Create tables via RPC if they don't exist
+  // We'll use a direct SQL approach via the REST API
+  try {
+    await fetch(SB_URL+'/rest/v1/users?limit=1', {
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+  } catch(e){}
+  try {
+    await fetch(SB_URL+'/rest/v1/daily_records?limit=1', {
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+  } catch(e){}
+}
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let currentUser = null;
+let todayState  = {prayers:{}, checks:{}, quran:null};
+let allUsersCache = [];
+let weekRecordsCache = {}; // {username_date: data}
+
+const PRAYERS      = ['فجر','ظهر','عصر','مغرب','عشاء'];
+const ARABIC_DAYS  = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const AVATAR_COLORS= ['#0f4c5c','#1a7a8a','#c9a84c','#2e9e6b','#7d4aff','#e67e22','#c0392b','#8e44ad','#2980b9','#27ae60'];
+
+const DAILY_WORSHIPS = [
+  {id:'azkar-salah',    name:'أذكار بعد الصلاة'},
+  {id:'rawatib-fajr',   name:'سنة الفجر'},
+  {id:'azkar-sobh',     name:'أذكار الصباح'},
+  {id:'rawatib-zuhr-b', name:'سنة الظهر القبلية'},
+  {id:'rawatib-zuhr-a', name:'سنة الظهر البعدية'},
+  {id:'doha-pray',      name:'ركعتين الضحى'},
+  {id:'quran',          name:'ورد القرآن'},
+  {id:'rawatib-mgrb',   name:'سنة المغرب'},
+  {id:'azkar-masa',     name:'أذكار المساء'},
+  {id:'rawatib-isha',   name:'سنة العشاء'},
+  {id:'witr',           name:'ركعة الوتر'},
+  {id:'azkar-nawm',     name:'أذكار النوم'},
+];
+const WEEKLY_WORSHIPS = [
+  {id:'doha-juma', name:'جلسة الضحى', onDay:5},
+  {id:'asr-juma',  name:'ساعة عصر الجمعة', onDay:5},
+  {id:'rahm',      name:'صلة الرحم', onDay:'any'},
+  {id:'sadaqa',    name:'صدقة', onDay:'any'},
+];
+
+// ════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════
+function pad(n){ return String(n).padStart(2,'0'); }
+function getToday(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function getWeekDates(){
+  const d=new Date(), day=d.getDay(), diff=d.getDate()-day, dates=[];
+  for(let i=0;i<7;i++){ const dd=new Date(d); dd.setDate(diff+i); dates.push(`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`); }
+  return dates;
+}
+function showToast(msg, isErr=false){
+  const t=document.getElementById('save-toast');
+  t.textContent=msg;
+  t.className='save-toast'+(isErr?' error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showLoading(txt='جاري التحميل...'){
+  document.getElementById('loading-text').textContent=txt;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); }
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
+
+// ════════════════════════════════════════════
+//  LOGIN / REGISTER
+// ════════════════════════════════════════════
+function showRegister(){ document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display=''; }
+function showLogin(){ document.getElementById('register-form').style.display='none'; document.getElementById('login-form').style.display=''; }
+
+async function doLogin(){
+  const name=document.getElementById('inp-name').value.trim();
+  const pass=document.getElementById('inp-pass').value;
+  if(!name||!pass) return;
+  const btn=document.getElementById('btn-login');
+  btn.disabled=true; btn.textContent='جاري التحقق...';
+  showLoading('جاري الدخول...');
+  try {
+    const rows = await SB.get(`users?name=eq.${encodeURIComponent(name)}&pass=eq.${encodeURIComponent(pass)}&select=*`);
+    if(!rows.length){
+      document.getElementById('login-err').style.display='block';
+    } else {
+      currentUser = rows[0];
+      document.getElementById('login-err').style.display='none';
+      if(!currentUser.pages_goal){ showScreen('setup'); }
+      else { await enterMain(); }
+    }
+  } catch(e){ showToast('خطأ في الاتصال، حاول تاني',true); }
+  finally { btn.disabled=false; btn.textContent='دخول'; hideLoading(); }
+}
+
+async function doRegister(){
+  const name=document.getElementById('inp-rname').value.trim();
+  const pass=document.getElementById('inp-rpass').value;
+  const pass2=document.getElementById('inp-rpass2').value;
+  const err=document.getElementById('reg-err');
+  if(!name){err.style.display='block';err.textContent='الاسم مطلوب';return;}
+  if(pass.length<4){err.style.display='block';err.textContent='الباسورد 4 حروف على الأقل';return;}
+  if(pass!==pass2){err.style.display='block';err.textContent='كلمة المرور مش متطابقة';return;}
+  const btn=document.getElementById('btn-register');
+  btn.disabled=true; showLoading('جاري إنشاء الحساب...');
+  try {
+    const existing = await SB.get(`users?select=id`);
+    if(existing.length>=30){err.style.display='block';err.textContent='المجموعة وصلت الحد الأقصى (30 أعضاء)';return;}
+    const nameCheck = await SB.get(`users?name=eq.${encodeURIComponent(name)}&select=id`);
+    if(nameCheck.length){err.style.display='block';err.textContent='الاسم ده موجود، اختار اسم تاني';return;}
+    const rows = await SB.post('users', {name, pass, role:'member', pages_goal:0});
+    currentUser = rows[0];
+    err.style.display='none';
+    showScreen('setup');
+  } catch(e){ err.style.display='block'; err.textContent='خطأ في الاتصال، حاول تاني'; }
+  finally { btn.disabled=false; hideLoading(); }
+}
+
+function doLogout(){ currentUser=null; allUsersCache=[]; weekRecordsCache={}; showScreen('login'); }
+
+// ════════════════════════════════════════════
+//  SETUP
+// ════════════════════════════════════════════
+let tempPages=2;
+function changePages(d){ tempPages=Math.max(1,Math.min(20,tempPages+d)); document.getElementById('pages-num').textContent=tempPages; }
+async function saveSetup(){
+  showLoading('جاري الحفظ...');
+  try {
+    const rows = await SB.patch(`users?id=eq.${currentUser.id}`, {pages_goal: tempPages});
+    currentUser.pages_goal = tempPages;
+    await enterMain();
+  } catch(e){ showToast('خطأ في الحفظ',true); }
+  finally { hideLoading(); }
+}
+
+// ════════════════════════════════════════════
+//  MAIN
+// ════════════════════════════════════════════
+async function enterMain(){
+  showScreen('main');
+  document.getElementById('hdr-name').textContent=currentUser.name;
+  document.getElementById('hdr-avatar').textContent=currentUser.name[0];
+  if(currentUser.role==='admin'){
+    document.getElementById('admin-tab').style.display='';
+    document.getElementById('compare-tab').style.display='';
+  }
+  await loadToday();
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='week') renderWeekTable();
+  if(id==='compare') renderCompare();
+  if(id==='report') renderReport();
+  if(id==='admin') renderAdmin();
+}
+
+// ════════════════════════════════════════════
+//  TODAY
+// ════════════════════════════════════════════
+async function loadToday(){
+  const dayNum=new Date().getDay();
+  document.getElementById('today-dayname').textContent=ARABIC_DAYS[dayNum];
+  document.getElementById('today-date').textContent=new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('quran-target-txt').textContent=currentUser.pages_goal||2;
+
+  showLoading('جاري تحميل بيانات اليوم...');
+  try {
+    const today=getToday();
+    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}&select=*`);
+    todayState = rows.length ? (rows[0].data||{prayers:{},checks:{},quran:null}) : {prayers:{},checks:{},quran:null};
+    if(!todayState.prayers) todayState.prayers={};
+    if(!todayState.checks)  todayState.checks={};
+  } catch(e){
+    todayState={prayers:{},checks:{},quran:null};
+    showToast('تعذّر تحميل بيانات اليوم',true);
+  } finally { hideLoading(); }
+
+  // Render prayers
+  PRAYERS.forEach(p=>{
+    const chip=document.querySelector(`.prayer-chip[data-p="${p}"]`);
+    if(chip) chip.classList.toggle('done',!!todayState.prayers[p]);
+  });
+  // Render azkar salah chips
+  if(!todayState.azkarSalah) todayState.azkarSalah={};
+  ['fajr','zuhr','asr','mgrb','isha'].forEach(az=>{
+    const chip=document.querySelector(`#azkar-salah-grid [data-az="${az}"]`);
+    if(chip) chip.classList.toggle('done',!!todayState.azkarSalah[az]);
+  });
+  // Render checks
+  DAILY_WORSHIPS.filter(w=>w.id!=='azkar-salah').forEach(w=>applyCheck(w.id, todayState.checks[w.id]||null));
+  WEEKLY_WORSHIPS.forEach(w=>applyCheck(w.id, todayState.checks[w.id]||null));
+  applyQuranUI(todayState.quran||null);
+
+  const isFriday=(new Date().getDay()===5);
+  document.getElementById('card-doha-juma').style.display=isFriday?'':'none';
+  document.getElementById('card-asr-juma').style.display=isFriday?'':'none';
+
+  // Weekly status labels
+  const weekDates=getWeekDates();
+  let rahmDone=false, sadaqaDone=false;
+  try {
+    const weekRows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&select=data`);
+    weekRows.forEach(r=>{
+      if(r.data?.checks?.rahm==='yes') rahmDone=true;
+      if(r.data?.checks?.sadaqa==='yes') sadaqaDone=true;
+    });
+  } catch(e){}
+  document.getElementById('rahm-sub').textContent=rahmDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
+  document.getElementById('sadaqa-sub').textContent=sadaqaDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
+
+  updateProgress();
+}
+
+function togglePrayer(chip){
+  const p=chip.dataset.p;
+  todayState.prayers[p]=!todayState.prayers[p];
+  chip.classList.toggle('done',!!todayState.prayers[p]);
+  updateProgress();
+}
+
+function toggleAzkarSalah(chip){
+  if(!todayState.azkarSalah) todayState.azkarSalah={};
+  const az=chip.dataset.az;
+  todayState.azkarSalah[az]=!todayState.azkarSalah[az];
+  chip.classList.toggle('done',!!todayState.azkarSalah[az]);
+  updateProgress();
+}
+
+function toggleCheck(id,val){
+  const cur=todayState.checks[id];
+  todayState.checks[id]=(cur===val)?null:val;
+  applyCheck(id, todayState.checks[id]);
+  updateProgress();
+}
+
+function applyCheck(id, val){
+  const yesBtn=document.querySelector(`#card-${id} .btn-check.yes`);
+  const noBtn =document.querySelector(`#card-${id} .btn-check.no`);
+  if(!yesBtn) return;
+  yesBtn.classList.toggle('active', val==='yes');
+  noBtn.classList.toggle('active',  val==='no');
+  const card=document.getElementById('card-'+id);
+  if(card){ card.classList.toggle('done',val==='yes'); card.classList.toggle('missed',val==='no'); }
+}
+
+function toggleQuran(val){
+  todayState.quran=(todayState.quran===val)?null:val;
+  applyQuranUI(todayState.quran);
+  updateProgress();
+}
+
+function applyQuranUI(val){
+  const d=document.getElementById('btn-quran-done');
+  const m=document.getElementById('btn-quran-miss');
+  if(!d||!m) return;
+  d.className='btn-toggle-quran'+(val==='done'?' done':'');
+  m.className='btn-toggle-quran'+(val==='miss'?' miss':'');
+  const card=document.getElementById('card-quran');
+  if(card){ card.classList.toggle('done',val==='done'); card.classList.toggle('missed',val==='miss'); }
+}
+
+function updateProgress(){
+  const dayNum=new Date().getDay(), isFriday=dayNum===5;
+  let tot=5+(DAILY_WORSHIPS.length-1+5)+2+(isFriday?2:0); // azkar-salah counts as 5 instead of 1
+  let done=0;
+  PRAYERS.forEach(p=>{ if(todayState.prayers[p]) done++; });
+  DAILY_WORSHIPS.forEach(w=>{
+    if(w.id==='azkar-salah'){
+      const az=todayState.azkarSalah||{};
+      done+=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
+    } else {
+      const val=w.id==='quran'?todayState.quran:todayState.checks[w.id];
+      if(val==='yes'||val==='done') done++;
+    }
+  });
+  if(isFriday){ if(todayState.checks['doha-juma']==='yes') done++; if(todayState.checks['asr-juma']==='yes') done++; }
+  if(todayState.checks['rahm']==='yes') done++;
+  if(todayState.checks['sadaqa']==='yes') done++;
+  const pct=tot>0?Math.round(done/tot*100):0;
+  const circ=document.getElementById('progress-circle');
+  circ.style.strokeDashoffset=169.6-(169.6*pct/100);
+  document.getElementById('progress-pct').textContent=pct+'%';
+}
+
+async function saveDay(){
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  try {
+    const today=getToday();
+    // Try update first, then insert
+    const existing = await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}&select=id`);
+    if(existing.length){
+      await SB.patch(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}`, {
+        data: todayState,
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      await SB.post('daily_records', {
+        username: currentUser.name,
+        date: today,
+        data: todayState,
+        updated_at: new Date().toISOString()
+      });
+    }
+    showToast('✅ تم الحفظ بنجاح');
+    // Reload weekly labels
+    await loadWeeklyLabels();
+  } catch(e){
+    showToast('❌ فشل الحفظ، تحقق من الاتصال',true);
+  } finally {
+    btn.disabled=false; btn.textContent='💾 حفظ اليوم';
+  }
+}
+
+async function loadWeeklyLabels(){
+  const weekDates=getWeekDates();
+  let rahmDone=false, sadaqaDone=false;
+  try {
+    const weekRows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&select=data`);
+    weekRows.forEach(r=>{ if(r.data?.checks?.rahm==='yes') rahmDone=true; if(r.data?.checks?.sadaqa==='yes') sadaqaDone=true; });
+  } catch(e){}
+  document.getElementById('rahm-sub').textContent=rahmDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
+  document.getElementById('sadaqa-sub').textContent=sadaqaDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
+}
+
+// ════════════════════════════════════════════
+//  WEEK TABLE
+// ════════════════════════════════════════════
+async function renderWeekTable(){
+  const dates=getWeekDates(), today=getToday();
+  showLoading('جاري تحميل بيانات الأسبوع...');
+  let records={};
+  try {
+    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${dates[0]}&date=lte.${dates[6]}&select=date,data`);
+    rows.forEach(r=>records[r.date]=r.data);
+  } catch(e){ showToast('خطأ في تحميل الأسبوع',true); }
+  finally { hideLoading(); }
+
+  const allW=[{id:'fard',name:'الفروض الخمسة'},...DAILY_WORSHIPS,...WEEKLY_WORSHIPS].filter((w,i,a)=>a.findIndex(x=>x.id===w.id)===i);
+  let html=`<thead><tr><th class="worship-col">العبادة</th>`;
+  dates.forEach(date=>{
+    const dd=new Date(date), isT=(date===today);
+    html+=`<th style="${isT?'color:var(--teal-light)':''}">${ARABIC_DAYS[dd.getDay()]}<br><span style="font-size:.65rem;opacity:.6">${dd.getDate()}/${dd.getMonth()+1}</span></th>`;
+  });
+  html+=`</tr></thead><tbody>`;
+  allW.forEach(w=>{
+    html+=`<tr><td class="worship-name-cell">${w.name}</td>`;
+    dates.forEach(date=>{
+      const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
+      const ds=records[date]||null;
+      const isFridayOnly=WEEKLY_WORSHIPS.find(x=>x.id===w.id&&x.onDay===5);
+      if(isFridayOnly&&!isFriday){ html+=`<td class="cell-na">—</td>`; return; }
+      if(w.id==='fard'){
+        if(!ds){ html+=`<td class="cell-na">·</td>`; return; }
+        const done=PRAYERS.filter(p=>ds.prayers?.[p]).length;
+        if(done===5) html+=`<td class="cell-done">✓</td>`;
+        else if(done===0) html+=`<td class="cell-miss">✗</td>`;
+        else html+=`<td class="cell-partial">${done}/5</td>`;
+      } else {
+        if(!ds){ html+=`<td class="cell-na">·</td>`; return; }
+        if(w.id==='azkar-salah'){
+          const az=ds.azkarSalah||{};
+          const cnt=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
+          if(cnt===5) html+=`<td class="cell-done">✓</td>`;
+          else if(cnt===0) html+=`<td class="cell-na">·</td>`;
+          else html+=`<td class="cell-partial">${cnt}/5</td>`;
+        } else {
+          const val=ds.checks?.[w.id]||(w.id==='quran'?ds.quran:null);
+          if(val==='yes'||val==='done') html+=`<td class="cell-done">✓</td>`;
+          else if(val==='no'||val==='miss') html+=`<td class="cell-miss">✗</td>`;
+          else html+=`<td class="cell-na">·</td>`;
+        }
+      }
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody>`;
+  document.getElementById('week-table').innerHTML=html;
+}
+
+// ════════════════════════════════════════════
+//  COMPARE
+// ════════════════════════════════════════════
+async function renderCompare(){
+  const dates=getWeekDates();
+  document.getElementById('compare-week-label').textContent=`أسبوع ${new Date().toLocaleDateString('ar-EG',{month:'long',day:'numeric'})}`;
+  showLoading('جاري تحميل بيانات المجموعة...');
+  let users=[], allRecords=[];
+  try {
+    users=await SB.get('users?select=name,role,pages_goal');
+    allRecords=await SB.get(`daily_records?date=gte.${dates[0]}&date=lte.${dates[6]}&select=username,date,data`);
+  } catch(e){ showToast('خطأ في تحميل بيانات المقارنة',true); }
+  finally { hideLoading(); }
+
+  const scores=users.map((u,i)=>{
+    const uRecs=allRecords.filter(r=>r.username===u.name);
+    const recMap={}; uRecs.forEach(r=>recMap[r.date]=r.data);
+    const {done,total}=calcWeekScore(recMap, dates);
+    const pct=total>0?Math.round(done/total*100):0;
+    return {u, pct, done, total, color:AVATAR_COLORS[i%AVATAR_COLORS.length]};
+  }).sort((a,b)=>b.pct-a.pct);
+
+  let cardsHtml='';
+  scores.forEach(s=>{
+    cardsHtml+=`<div class="member-card">
+      <div class="m-avatar" style="background:linear-gradient(135deg,${s.color},${s.color}99)">${s.u.name[0]}</div>
+      <div class="m-name">${s.u.name}</div>
+      <div class="m-score" style="color:${s.pct>=70?'var(--success)':s.pct>=40?'var(--warn)':'var(--danger)'}">${s.pct}%</div>
+      <div class="m-label">${s.done} من ${s.total} عبادة</div>
+      <div class="m-bar"><div class="m-bar-fill" style="width:${s.pct}%"></div></div>
+    </div>`;
+  });
+  document.getElementById('compare-grid').innerHTML=cardsHtml;
+
+  let lbHtml='';
+  scores.forEach((s,i)=>{
+    const rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    lbHtml+=`<div class="lb-row">
+      <div class="lb-rank ${rc}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${s.u.name}</div>
+      <div class="lb-score">${s.done}</div>
+      <div class="lb-pct">${s.pct}%</div>
+    </div>`;
+  });
+  document.getElementById('leaderboard-rows').innerHTML=lbHtml||'<div style="padding:1rem;color:var(--muted);text-align:center">لا يوجد بيانات بعد</div>';
+}
+
+function calcWeekScore(recMap, dates){
+  let done=0, total=0;
+  dates.forEach(date=>{
+    const ds=recMap[date]; if(!ds) return;
+    const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
+    PRAYERS.forEach(p=>{ total++; if(ds.prayers?.[p]) done++; });
+    DAILY_WORSHIPS.forEach(w=>{
+      if(w.id==='azkar-salah'){
+        total+=5;
+        const az=ds.azkarSalah||{};
+        done+=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
+      } else {
+        total++;
+        const val=w.id==='quran'?ds.quran:ds.checks?.[w.id];
+        if(val==='yes'||val==='done') done++;
+      }
+    });
+    if(isFriday){ total+=2; if(ds.checks?.['doha-juma']==='yes') done++; if(ds.checks?.['asr-juma']==='yes') done++; }
+    total+=2; if(ds.checks?.['rahm']==='yes') done++; if(ds.checks?.['sadaqa']==='yes') done++;
+  });
+  return {done,total};
+}
+
+// ════════════════════════════════════════════
+//  REPORT
+// ════════════════════════════════════════════
+async function renderReport(){
+  document.getElementById('report-username').textContent=currentUser.name;
+  const dates=getWeekDates(), today=getToday();
+  showLoading('جاري إعداد التقرير...');
+  let records={};
+  try {
+    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${dates[0]}&date=lte.${dates[6]}&select=date,data`);
+    rows.forEach(r=>records[r.date]=r.data);
+  } catch(e){ showToast('خطأ في تحميل التقرير',true); }
+  finally { hideLoading(); }
+
+  const allW=[{id:'fard',name:'الفروض الخمسة'},...DAILY_WORSHIPS,{id:'doha-juma',name:'جلسة الضحى (جمعة)'},{id:'asr-juma',name:'ساعة عصر الجمعة'},{id:'rahm',name:'صلة الرحم'},{id:'sadaqa',name:'صدقة'}];
+  const stats={}; allW.forEach(w=>stats[w.id]={done:0,total:0,name:w.name});
+  let totalDone=0, totalItems=0, recordedDays=0;
+
+  dates.forEach(date=>{
+    if(date>today) return;
+    const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
+    const ds=records[date]||null;
+    if(!ds) return; // skip days with no recorded data entirely — don't count them against the user
+    recordedDays++;
+
+    // Fard prayers
+    stats['fard'].total+=5; totalItems+=5;
+    const fardDone=PRAYERS.filter(p=>ds.prayers?.[p]).length;
+    stats['fard'].done+=fardDone; totalDone+=fardDone;
+
+    // Daily worships
+    DAILY_WORSHIPS.forEach(w=>{
+      if(w.id==='azkar-salah'){
+        stats[w.id].total+=5; totalItems+=5;
+        const az=ds.azkarSalah||{};
+        const cnt=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
+        stats[w.id].done+=cnt; totalDone+=cnt;
+      } else {
+        stats[w.id].total++; totalItems++;
+        const val=w.id==='quran'?ds.quran:ds.checks?.[w.id];
+        if(val==='yes'||val==='done'){ stats[w.id].done++; totalDone++; }
+      }
+    });
+
+    // Friday-only worships — only count on Fridays that were actually recorded
+    if(isFriday){
+      ['doha-juma','asr-juma'].forEach(id=>{
+        stats[id].total++; totalItems++;
+        if(ds.checks?.[id]==='yes'){ stats[id].done++; totalDone++; }
+      });
+    }
+
+    // Weekly worships — count every recorded day as an opportunity to mark them done
+    ['rahm','sadaqa'].forEach(id=>{
+      stats[id].total++; totalItems++;
+      if(ds.checks?.[id]==='yes'){ stats[id].done++; totalDone++; }
+    });
+  });
+
+  const pctOverall=totalItems>0?Math.round(totalDone/totalItems*100):0;
+  const arr=Object.values(stats).filter(w=>w.total>0);
+  const best=arr.length?[...arr].sort((a,b)=>(b.done/b.total)-(a.done/a.total))[0]:null;
+  const worst=arr.length?[...arr].sort((a,b)=>(a.done/a.total)-(b.done/b.total))[0]:null;
+  const streak=await calcStreak();
+
+  if(recordedDays===0){
+    document.getElementById('report-summary').innerHTML=`
+      <div class="stat-card" style="grid-column:1/-1"><div class="stat-icon">📭</div><div class="stat-val stat-gold">لا توجد بيانات</div><div class="stat-lbl">لم تسجّل أي يوم هذا الأسبوع بعد</div></div>`;
+    document.getElementById('report-highlights').innerHTML='';
+    document.getElementById('report-bars').innerHTML='';
+    return;
+  }
+
+  document.getElementById('report-summary').innerHTML=`
+    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val stat-gold">${pctOverall}%</div><div class="stat-lbl">معدل الإنجاز</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val stat-green">${totalDone}</div><div class="stat-lbl">عبادة أُنجزت</div></div>
+    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val stat-blue">${streak}</div><div class="stat-lbl">أيام متواصلة</div></div>
+    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val stat-gold">${recordedDays}</div><div class="stat-lbl">أيام سُجّلت</div></div>`;
+
+  const bPct=best?Math.round(best.done/best.total*100):0;
+  const wPct=worst?Math.round(worst.done/worst.total*100):0;
+  document.getElementById('report-highlights').innerHTML=`
+    <h3>🏅 التقييم الأسبوعي</h3>
+    <div class="highlight-item">
+      <div class="h-badge h-best">🏆</div>
+      <div class="h-info"><div class="h-name">أفضل عبادة أنجزتها</div><div class="h-detail">${best?.name||'—'}</div></div>
+      <div class="h-pct good">${bPct}%</div>
+    </div>
+    <div class="highlight-item">
+      <div class="h-badge h-worst">⚠️</div>
+      <div class="h-info"><div class="h-name">أكثر عبادة فيها كسل</div><div class="h-detail">${worst?.name||'—'}</div></div>
+      <div class="h-pct bad">${wPct}%</div>
+    </div>
+    <div class="highlight-item">
+      <div class="h-badge" style="background:rgba(201,168,76,.15)">💡</div>
+      <div class="h-info"><div class="h-name">التوصية الأسبوعية</div><div class="h-detail">${getRec(wPct,worst?.name)}</div></div>
+    </div>`;
+
+  const sorted=[...arr].sort((a,b)=>(b.done/b.total)-(a.done/a.total));
+  document.getElementById('report-bars').innerHTML=sorted.map(w=>{
+    const pct=Math.round(w.done/w.total*100);
+    const col=pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)';
+    return `<div class="bar-row"><div class="bar-label">${w.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><div class="bar-val">${pct}%</div></div>`;
+  }).join('');
+}
+
+async function calcStreak(){
+  let streak=0;
+  try {
+    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&order=date.desc&limit=30&select=date`);
+    const today=getToday();
+    const d=new Date();
+    for(let i=0;i<30;i++){
+      const dd=new Date(d); dd.setDate(d.getDate()-i);
+      const key=`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`;
+      if(key>today) continue;
+      if(rows.find(r=>r.date===key)) streak++;
+      else break;
+    }
+  } catch(e){}
+  return streak;
+}
+
+function getRec(pct,name){
+  if(!name) return 'استمر في المداومة على العبادات';
+  if(pct<30) return `ركّز هذا الأسبوع على "${name}" — ابدأ بيوم واحد!`;
+  if(pct<60) return `حاول تثبّت "${name}" كعادة يومية ثابتة`;
+  return `أنت على المسار الصحيح، استمر في تحسين "${name}"`;
+}
+
+// ════════════════════════════════════════════
+//  ADMIN
+// ════════════════════════════════════════════
+async function renderAdmin(){
+  showLoading('جاري التحميل...');
+  let users=[];
+  try { users=await SB.get('users?select=id,name,role,pages_goal&order=created_at.asc'); }
+  catch(e){ showToast('خطأ في تحميل الأعضاء',true); }
+  finally { hideLoading(); }
+
+  document.getElementById('members-list').innerHTML=users.map((u,i)=>`
+    <div class="member-row">
+      <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.name[0]}</div>
+      <div class="m-n2">${u.name}</div>
+      <div class="m-role">${u.role==='admin'?'مشرف':'عضو'}</div>
+      ${u.role!=='admin'?`<button class="btn-del" onclick="deleteMember('${u.id}','${u.name}')">حذف</button>`:''}
+    </div>`).join('');
+}
+
+async function deleteMember(id,name){
+  if(!confirm(`هتحذف "${name}"؟`)) return;
+  showLoading('جاري الحذف...');
+  try {
+    await SB.delete(`users?id=eq.${id}`);
+    await SB.delete(`daily_records?username=eq.${encodeURIComponent(name)}`);
+    showToast('تم حذف العضو');
+    await renderAdmin();
+  } catch(e){ showToast('خطأ في الحذف',true); }
+  finally { hideLoading(); }
+}
+
+async function addMember(){
+  const name=document.getElementById('inp-new-user').value.trim();
+  const pass=document.getElementById('inp-new-pass').value;
+  if(!name||!pass){ showToast('ادخل الاسم والباسورد',true); return; }
+  showLoading('جاري الإضافة...');
+  try {
+    const existing=await SB.get('users?select=id');
+    if(existing.length>=30){ showToast('الحد الأقصى 30 أعضاء',true); return; }
+    const nameCheck=await SB.get(`users?name=eq.${encodeURIComponent(name)}&select=id`);
+    if(nameCheck.length){ showToast('الاسم ده موجود',true); return; }
+    await SB.post('users',{name,pass,role:'member',pages_goal:2});
+    document.getElementById('inp-new-user').value='';
+    document.getElementById('inp-new-pass').value='';
+    showToast('تم إضافة العضو ✅');
+    await renderAdmin();
+  } catch(e){ showToast('خطأ في الإضافة',true); }
+  finally { hideLoading(); }
+}
+
+// ════════════════════════════════════════════
+//  INIT — seed admin user if DB is empty
+// ════════════════════════════════════════════
+window.addEventListener('load', async ()=>{
+  showLoading('جاري الاتصال...');
+  try {
+    const users=await SB.get('users?select=id');
+    if(users.length===0){
+      await SB.post('users',{name:'محسن',pass:'1234',role:'admin',pages_goal:2});
+    }
+  } catch(e){
+    // Tables might not exist yet — show helpful message
+    document.querySelector('.subtitle').textContent='تأكد من إعداد قاعدة البيانات أولاً';
+  } finally { hideLoading(); }
+});
+</script>
+</body>
+</html>
