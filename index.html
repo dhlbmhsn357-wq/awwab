@@ -798,6 +798,10 @@ async function enterMain(){
 }
 
 function switchTab(id,btn){
+  if((id==='admin'||id==='compare') && currentUser?.role!=='admin'){
+    showToast('هذا القسم للمشرف فقط',true);
+    return;
+  }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -1164,6 +1168,7 @@ function calcDayScore(ds, isFriday){
 //  COMPARE
 // ════════════════════════════════════════════
 async function renderCompare(){
+  if(currentUser?.role!=='admin'){ showToast('هذا القسم للمشرف فقط',true); return; }
   const dates=getWeekDates();
   document.getElementById('compare-week-label').textContent=`أسبوع ${new Date().toLocaleDateString('ar-EG',{month:'long',day:'numeric'})}`;
   showLoading('جاري تحميل بيانات المجموعة...');
@@ -1364,6 +1369,7 @@ function getRec(pct,name){
 //  ADMIN
 // ════════════════════════════════════════════
 async function renderAdmin(){
+  if(currentUser?.role!=='admin'){ showToast('هذا القسم للمشرف فقط',true); return; }
   showLoading('جاري التحميل...');
   let users=[];
   try { users=await SB.get('users?select=id,name,role,pages_goal&order=created_at.asc'); }
@@ -1380,6 +1386,7 @@ async function renderAdmin(){
 }
 
 async function deleteMember(id,name){
+  if(currentUser?.role!=='admin'){ showToast('هذا الإجراء للمشرف فقط',true); return; }
   if(!confirm(`هتحذف "${name}"؟`)) return;
   showLoading('جاري الحذف...');
   try {
@@ -1392,6 +1399,7 @@ async function deleteMember(id,name){
 }
 
 async function addMember(){
+  if(currentUser?.role!=='admin'){ showToast('هذا الإجراء للمشرف فقط',true); return; }
   const name=document.getElementById('inp-new-user').value.trim();
   const pass=document.getElementById('inp-new-pass').value;
   if(!name||!pass){ showToast('ادخل الاسم والباسورد',true); return; }
