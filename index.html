@@ -237,6 +237,125 @@
   .cal-legend-item{display:flex;align-items:center;gap:.4rem;}
   .cal-legend-dot{width:10px;height:10px;border-radius:3px;}
   @media(max-width:600px){.compare-grid{grid-template-columns:1fr 1fr;}.report-summary{grid-template-columns:1fr 1fr;}.tabs{padding:.75rem 1rem 0;}.main-content{padding:1rem;}}
+
+  /* ════════════════════════════════════════════
+     أواب v2 — Worship Builder / Timeline / Onboarding / رفقة أواب
+     ════════════════════════════════════════════ */
+  .main-content{padding-bottom:5.5rem;}
+  /* bottom nav */
+  .bottom-nav{position:fixed;bottom:0;insetInlineStart:0;left:0;right:0;z-index:200;background:rgba(16,19,31,.92);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:.4rem .2rem calc(.4rem + env(safe-area-inset-bottom));}
+  .bn-btn{background:none;border:none;color:var(--muted);font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.35rem .5rem;cursor:pointer;font-size:.62rem;flex:1;border-radius:10px;transition:all .2s;}
+  .bn-btn .bn-ic{font-size:1.25rem;line-height:1;}
+  .bn-btn.active{color:var(--teal-light);}
+  .bn-btn.active .bn-ic{transform:translateY(-1px);}
+  /* date navigator */
+  .date-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:.6rem .75rem;}
+  .date-nav button.dn-arrow{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);width:36px;height:36px;border-radius:10px;font-size:.9rem;cursor:pointer;flex-shrink:0;}
+  .date-nav button.dn-arrow:hover{background:var(--teal);}
+  .date-nav button.dn-arrow:disabled{opacity:.3;cursor:not-allowed;}
+  .dn-mid{flex:1;text-align:center;cursor:pointer;}
+  .dn-mid .dn-day{font-family:'Amiri',serif;font-size:1.05rem;color:var(--gold-light);}
+  .dn-mid .dn-sub{font-size:.7rem;color:var(--muted);}
+  .dn-cal-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);width:36px;height:36px;border-radius:10px;font-size:1rem;cursor:pointer;flex-shrink:0;}
+  .day-pct-ring{margin-inline-start:.25rem;}
+  .catchup-card{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:1rem 1.1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.85rem;}
+  .catchup-card .cc-icon{font-size:1.3rem;flex-shrink:0;}
+  .catchup-card .cc-text{flex:1;font-size:.85rem;color:var(--cream);line-height:1.5;}
+  .catchup-card .cc-actions{display:flex;gap:.5rem;margin-top:.5rem;}
+  .catchup-card .cc-actions button{font-family:'Cairo',sans-serif;font-size:.75rem;border-radius:8px;padding:.4rem .8rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--cream);}
+  .catchup-card .cc-actions button.primary{background:var(--teal);border-color:var(--teal);}
+  /* timeline */
+  .timeline-section{margin-bottom:.4rem;}
+  .timeline-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;color:var(--gold);margin:1.4rem 0 .6rem;display:flex;align-items:center;gap:.5rem;}
+  .timeline-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .empty-day-hint{text-align:center;color:var(--muted);font-size:.85rem;padding:3rem 1rem;line-height:1.8;}
+  /* worship card v2 */
+  .wcard{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;margin-bottom:.55rem;transition:all .2s;}
+  .wcard.completed{border-color:rgba(46,158,107,.3);background:rgba(46,158,107,.05);}
+  .wcard-top{display:flex;align-items:center;gap:.75rem;}
+  .wcard-icon{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center;}
+  .wcard-info{flex:1;min-width:0;}
+  .wcard-name{font-size:.92rem;font-weight:600;color:var(--cream);}
+  .wcard-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+  .wcard-controls{flex-shrink:0;display:flex;align-items:center;gap:.4rem;}
+  .wc-stepper{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:.25rem .4rem;}
+  .wc-stepper button{background:none;border:none;color:var(--teal-light);font-size:1.05rem;width:26px;height:26px;cursor:pointer;}
+  .wc-stepper .wc-val{font-size:.82rem;font-weight:700;min-width:44px;text-align:center;color:var(--cream);}
+  .wc-progress-track{margin-top:.55rem;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+  .wc-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-light));border-radius:3px;transition:width .4s;}
+  .wc-multi-actions{display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap;}
+  .wc-multi-actions button{font-family:'Cairo',sans-serif;font-size:.72rem;border-radius:8px;padding:.4rem .7rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);}
+  .wc-multi-actions button.sel{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .wc-quality-row{display:flex;gap:.35rem;margin-top:.5rem;}
+  .wc-quality-row button{font-family:'Cairo',sans-serif;font-size:.68rem;border-radius:20px;padding:.3rem .65rem;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);}
+  .wc-quality-row button.sel{background:rgba(201,168,76,.18);border-color:var(--gold);color:var(--gold-light);}
+  .wc-drag-handle{cursor:grab;color:var(--muted);font-size:1rem;padding:.2rem .3rem;flex-shrink:0;touch-action:none;}
+  .wc-sortable-ghost{opacity:.35;}
+  .weekly-goal-card{background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.35);border-radius:14px;padding:.85rem 1rem;margin-bottom:.5rem;}
+  /* worship builder (عباداتي) */
+  .builder-add-btn{width:100%;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;padding:.9rem;font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:1.2rem;box-shadow:0 4px 20px rgba(15,76,92,.35);}
+  .builder-group-label{font-size:.72rem;font-weight:700;color:var(--muted);margin:1.2rem 0 .5rem;}
+  .builder-row{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem;}
+  .builder-row.paused,.builder-row.hidden{opacity:.55;}
+  .builder-row .br-info{flex:1;min-width:0;}
+  .builder-row .br-name{font-size:.9rem;font-weight:600;}
+  .builder-row .br-meta{font-size:.68rem;color:var(--muted);margin-top:.1rem;}
+  .br-menu-btn{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem;}
+  /* modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,12,20,.65);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
+  @media(min-width:640px){.modal-overlay{align-items:center;}}
+  .modal-overlay.hidden{display:none;}
+  .modal-sheet{background:#161b2c;border:1px solid var(--border);border-radius:22px 22px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:1.5rem;box-shadow:0 -10px 50px rgba(0,0,0,.5);}
+  @media(min-width:640px){.modal-sheet{border-radius:22px;}}
+  .modal-title{font-family:'Amiri',serif;font-size:1.25rem;color:var(--gold-light);margin-bottom:1rem;}
+  .modal-actions{display:flex;gap:.6rem;margin-top:1.5rem;}
+  .modal-actions button{flex:1;font-family:'Cairo',sans-serif;font-weight:700;border-radius:12px;padding:.75rem;cursor:pointer;border:none;}
+  .m-cancel{background:rgba(255,255,255,.06);color:var(--muted);}
+  .m-save{background:var(--teal);color:#fff;}
+  .m-danger{background:rgba(192,57,43,.15);color:#e07868;border:1px solid rgba(192,57,43,.3) !important;}
+  .field select,.field textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:.7rem 1rem;color:var(--cream);font-family:'Cairo',sans-serif;font-size:.9rem;outline:none;}
+  .field-row{display:flex;gap:.6rem;}
+  .field-row .field{flex:1;}
+  .chip-select{display:flex;flex-wrap:wrap;gap:.4rem;}
+  .chip-select button{font-family:'Cairo',sans-serif;font-size:.78rem;border-radius:10px;padding:.45rem .75rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);}
+  .chip-select button.sel{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .day-chip{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;}
+  .advanced-toggle{font-size:.8rem;color:var(--teal-light);cursor:pointer;text-decoration:underline;margin:1rem 0;display:inline-block;}
+  .advanced-fields{display:none;}
+  .advanced-fields.open{display:block;}
+  .template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin-bottom:1rem;}
+  .template-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:.75rem .5rem;text-align:center;cursor:pointer;transition:all .2s;}
+  .template-card:hover{border-color:var(--teal-light);background:rgba(255,255,255,.07);}
+  .template-card .t-icon{font-size:1.4rem;margin-bottom:.3rem;}
+  .template-card .t-name{font-size:.72rem;color:var(--cream);}
+  /* onboarding */
+  .onboard-choice{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:.85rem;cursor:pointer;transition:all .2s;text-align:right;}
+  .onboard-choice:hover{border-color:var(--teal-light);transform:translateY(-2px);}
+  .onboard-choice .oc-title{font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-light);margin-bottom:.3rem;}
+  .onboard-choice .oc-desc{font-size:.78rem;color:var(--muted);line-height:1.6;}
+  /* رفقة أواب */
+  .rafeqa-header{text-align:center;margin-bottom:1.5rem;}
+  .rafeqa-header .rf-title{font-family:'Amiri',serif;font-size:1.35rem;color:var(--gold-light);}
+  .rafeqa-header .rf-sub{font-size:.8rem;color:var(--muted);margin-top:.3rem;}
+  .group-goal-card{background:linear-gradient(135deg,rgba(15,76,92,.25),rgba(43,181,200,.06));border:1px solid var(--border);border-radius:16px;padding:1.25rem;text-align:center;margin-bottom:1.5rem;}
+  .group-goal-card .gg-label{font-size:.8rem;color:var(--muted);margin-bottom:.4rem;}
+  .group-goal-card .gg-val{font-family:'Amiri',serif;font-size:1.7rem;color:var(--gold-light);}
+  .rafeqa-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.9rem;}
+  .rafeqa-card .rf-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+  .rafeqa-card .rf-info{flex:1;min-width:0;}
+  .rafeqa-card .rf-status{font-size:.82rem;color:var(--cream);}
+  .rafeqa-card .rf-hint{font-size:.7rem;color:var(--muted);margin-top:.15rem;}
+  .btn-encourage{background:rgba(46,158,107,.12);border:1px solid rgba(46,158,107,.35);color:var(--success);border-radius:10px;padding:.5rem .75rem;font-size:.78rem;font-family:'Cairo',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .btn-encourage:hover{background:rgba(46,158,107,.22);}
+  .btn-encourage:disabled{opacity:.5;cursor:default;}
+  /* settings */
+  .settings-group{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:1rem;}
+  .settings-group h3{font-family:'Amiri',serif;font-size:1rem;color:var(--gold-light);margin-bottom:.85rem;}
+  .settings-radio{display:flex;flex-direction:column;gap:.55rem;}
+  .settings-radio label{display:flex;align-items:flex-start;gap:.6rem;font-size:.85rem;color:var(--cream);cursor:pointer;line-height:1.5;}
+  .settings-radio input{margin-top:.2rem;}
+  .settings-radio .sr-desc{display:block;font-size:.7rem;color:var(--muted);}
+  .trend-up{color:var(--success);}.trend-down{color:var(--danger);}
 </style>
 </head>
 <body>
@@ -279,318 +398,136 @@
   </div>
 </div>
 
-<!-- SETUP -->
+<!-- ONBOARDING -->
+<div id="screen-onboarding" class="screen">
+  <div class="setup-box" style="max-width:480px;text-align:right">
+    <h2 style="text-align:center">بنبني جدولك سوا</h2>
+    <p style="text-align:center">اختار نقطة البداية اللي تناسبك، وتقدر تعدّل أي حاجة بعدين</p>
+    <div class="onboard-choice" onclick="pickOnboarding('simple')">
+      <div class="oc-title">🌱 بداية بسيطة</div>
+      <div class="oc-desc">الصلوات، أذكار أساسية، ورد قرآن — عشان تبدأ بهدوء</div>
+    </div>
+    <div class="onboard-choice" onclick="pickOnboarding('balanced')">
+      <div class="oc-title">⚖️ جدول متوازن</div>
+      <div class="oc-desc">الصلوات، السنن، الأذكار، القرآن، الوتر — جدول شامل</div>
+    </div>
+    <div class="onboard-choice" onclick="pickOnboarding('scratch')">
+      <div class="oc-title">✍️ سأبني جدولي بنفسي</div>
+      <div class="oc-desc">تبدأ من صفحة فاضية وتضيف عباداتك واحدة واحدة</div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP (legacy pages goal — kept for quick quran target only) -->
 <div id="screen-setup" class="screen">
   <div class="setup-box">
-    <div style="font-size:3rem;margin-bottom:1rem">📖</div>
-    <h2>ورد القرآن اليومي</h2>
-    <p>حدّد كام صفحة هتلتزم بيها كل يوم؟</p>
+    <h2>هدفك اليومي من القرآن</h2>
+    <p>كام صفحة حابب تخليها ورد يومي؟ تقدر تغيّره وقتما تحب من "عباداتي"</p>
     <div class="pages-input">
       <button onclick="changePages(-1)">−</button>
       <div class="num" id="pages-num">2</div>
       <button onclick="changePages(1)">+</button>
     </div>
-    <p class="pages-label">صفحة يومياً</p>
-    <button class="btn-primary" onclick="saveSetup()" style="margin-top:1.5rem">ابدأ</button>
+    <div class="pages-label">صفحة / اليوم</div>
+    <button class="btn-primary" onclick="saveSetup()">ابدأ →</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div id="screen-main" class="screen">
   <header class="main-header">
-    <div class="header-brand">🕌 نعم العبد إنه أواب</div>
+    <div class="header-brand">🕌 أواب</div>
     <div class="header-user">
-      <div class="user-avatar" id="hdr-avatar">م</div>
-      <span style="font-size:.85rem;color:var(--cream)" id="hdr-name">محسن</span>
+      <div class="user-avatar" id="hdr-avatar"></div>
+      <span id="hdr-name"></span>
       <button class="btn-logout" onclick="doLogout()">خروج</button>
     </div>
   </header>
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('today',this)">📅 اليوم</button>
-    <button class="tab-btn" onclick="switchTab('week',this)">📊 أسبوعي</button>
-    <button class="tab-btn" onclick="switchTab('month',this)">🗓️ شهري</button>
-    <button class="tab-btn" id="compare-tab" style="display:none" onclick="switchTab('compare',this)">👥 مقارنة</button>
-    <button class="tab-btn" onclick="switchTab('report',this)">📋 تقرير</button>
-    <button class="tab-btn" id="admin-tab" style="display:none" onclick="switchTab('admin',this)">⚙️ إدارة</button>
-  </div>
+
   <div class="main-content">
 
     <!-- TODAY -->
     <div id="panel-today" class="tab-panel active">
-      <div class="day-header">
-        <div>
-          <div class="day-title" id="today-dayname">الأحد</div>
-          <div class="day-date" id="today-date"></div>
+      <div class="date-nav">
+        <button class="dn-arrow" onclick="navDate(-1)">‹</button>
+        <div class="dn-mid" onclick="openCalendarPicker()">
+          <div class="dn-day" id="dn-day-label">اليوم</div>
+          <div class="dn-sub" id="dn-date-label"></div>
         </div>
-        <div class="progress-ring">
-          <svg width="64" height="64" viewBox="0 0 64 64">
-            <circle class="bg" cx="32" cy="32" r="27"/>
-            <circle class="fill" id="progress-circle" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
-          </svg>
-          <div class="pct" id="progress-pct">0%</div>
+        <div class="progress-ring day-pct-ring">
+          <svg width="40" height="40"><circle class="bg" cx="20" cy="20" r="16"></circle><circle class="fill" id="day-ring-fill" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"></circle></svg>
+          <div class="pct" id="day-ring-pct" style="font-size:.62rem">0%</div>
         </div>
+        <button class="dn-arrow" id="dn-next-btn" onclick="navDate(1)">›</button>
+        <button class="dn-cal-btn" onclick="openCalendarPicker()">📅</button>
       </div>
 
-      <div class="section-label">الفروض الخمسة</div>
-      <div class="worship-card" id="card-fard" style="flex-direction:column;align-items:stretch">
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
-          <div class="worship-icon">🕌</div>
-          <div class="worship-info"><div class="worship-name">الفروض الخمسة</div><div class="worship-sub">تكبيرة الإحرام (أخضر) · جماعة (أصفر) · فردي (أحمر)</div></div>
-        </div>
-        <div class="prayers-grid-v2" id="prayers-grid">
-          <div class="prayer-row" data-p="فجر">
-            <div class="pr-label"><span class="pr-icon">🌅</span><span>فجر</span></div>
-            <div class="pr-options">
-              <button class="pr-btn pr-takbir" data-val="takbir" onclick="setPrayerStatus(this,'فجر','takbir')" title="تكبيرة الإحرام">ت</button>
-              <button class="pr-btn pr-jamaa" data-val="jamaa" onclick="setPrayerStatus(this,'فجر','jamaa')" title="جماعة">ج</button>
-              <button class="pr-btn pr-fardi" data-val="fardi" onclick="setPrayerStatus(this,'فجر','fardi')" title="فردي">ف</button>
-            </div>
-          </div>
-          <div class="prayer-row" data-p="ظهر">
-            <div class="pr-label"><span class="pr-icon">☀️</span><span>ظهر</span></div>
-            <div class="pr-options">
-              <button class="pr-btn pr-takbir" data-val="takbir" onclick="setPrayerStatus(this,'ظهر','takbir')" title="تكبيرة الإحرام">ت</button>
-              <button class="pr-btn pr-jamaa" data-val="jamaa" onclick="setPrayerStatus(this,'ظهر','jamaa')" title="جماعة">ج</button>
-              <button class="pr-btn pr-fardi" data-val="fardi" onclick="setPrayerStatus(this,'ظهر','fardi')" title="فردي">ف</button>
-            </div>
-          </div>
-          <div class="prayer-row" data-p="عصر">
-            <div class="pr-label"><span class="pr-icon">🌤️</span><span>عصر</span></div>
-            <div class="pr-options">
-              <button class="pr-btn pr-takbir" data-val="takbir" onclick="setPrayerStatus(this,'عصر','takbir')" title="تكبيرة الإحرام">ت</button>
-              <button class="pr-btn pr-jamaa" data-val="jamaa" onclick="setPrayerStatus(this,'عصر','jamaa')" title="جماعة">ج</button>
-              <button class="pr-btn pr-fardi" data-val="fardi" onclick="setPrayerStatus(this,'عصر','fardi')" title="فردي">ف</button>
-            </div>
-          </div>
-          <div class="prayer-row" data-p="مغرب">
-            <div class="pr-label"><span class="pr-icon">🌇</span><span>مغرب</span></div>
-            <div class="pr-options">
-              <button class="pr-btn pr-takbir" data-val="takbir" onclick="setPrayerStatus(this,'مغرب','takbir')" title="تكبيرة الإحرام">ت</button>
-              <button class="pr-btn pr-jamaa" data-val="jamaa" onclick="setPrayerStatus(this,'مغرب','jamaa')" title="جماعة">ج</button>
-              <button class="pr-btn pr-fardi" data-val="fardi" onclick="setPrayerStatus(this,'مغرب','fardi')" title="فردي">ف</button>
-            </div>
-          </div>
-          <div class="prayer-row" data-p="عشاء">
-            <div class="pr-label"><span class="pr-icon">🌙</span><span>عشاء</span></div>
-            <div class="pr-options">
-              <button class="pr-btn pr-takbir" data-val="takbir" onclick="setPrayerStatus(this,'عشاء','takbir')" title="تكبيرة الإحرام">ت</button>
-              <button class="pr-btn pr-jamaa" data-val="jamaa" onclick="setPrayerStatus(this,'عشاء','jamaa')" title="جماعة">ج</button>
-              <button class="pr-btn pr-fardi" data-val="fardi" onclick="setPrayerStatus(this,'عشاء','fardi')" title="فردي">ف</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="catchup-slot"></div>
+      <div id="weekly-goals-slot"></div>
+      <div id="timeline-slot"></div>
 
-      <div class="section-label">أذكار بعد الصلاة</div>
-      <div class="worship-card" id="card-azkar-salah">
-        <div class="worship-icon">📿</div>
-        <div class="worship-info">
-          <div class="worship-name">أذكار بعد الصلاة</div>
-          <div class="worship-sub">اضغط على كل صلاة</div>
-          <div class="prayers-grid" style="margin-top:.5rem" id="azkar-salah-grid">
-            <div class="prayer-chip" data-az="fajr" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌅</div><span>فجر</span></div>
-            <div class="prayer-chip" data-az="zuhr" onclick="toggleAzkarSalah(this)"><div class="chip-icon">☀️</div><span>ظهر</span></div>
-            <div class="prayer-chip" data-az="asr"  onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌤️</div><span>عصر</span></div>
-            <div class="prayer-chip" data-az="mgrb" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌇</div><span>مغرب</span></div>
-            <div class="prayer-chip" data-az="isha" onclick="toggleAzkarSalah(this)"><div class="chip-icon">🌙</div><span>عشاء</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-label">السنن الرواتب</div>
-      <div class="worship-card" id="card-rawatib-fajr">
-        <div class="worship-icon">🌅</div>
-        <div class="worship-info"><div class="worship-name">سنة الفجر</div><div class="worship-sub">ركعتين قبل الفجر</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rawatib-fajr','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rawatib-fajr','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">أذكار الصباح والمساء</div>
-      <div class="worship-card" id="card-azkar-sobh">
-        <div class="worship-icon">🌅</div>
-        <div class="worship-info"><div class="worship-name">أذكار الصباح</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('azkar-sobh','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('azkar-sobh','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">ركعتين الضحى وورد القرآن</div>
-      <div class="worship-card" id="card-doha-pray">
-        <div class="worship-icon">🌞</div>
-        <div class="worship-info"><div class="worship-name">ركعتين الضحى</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('doha-pray','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('doha-pray','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-quran">
-        <div class="worship-icon">📖</div>
-        <div class="worship-info"><div class="worship-name">ورد القرآن</div><div class="worship-sub">الهدف: <span id="quran-target-txt">2</span> صفحة/يوم</div></div>
-        <div class="worship-actions" style="flex-direction:column">
-          <button class="btn-toggle-quran" id="btn-quran-done" onclick="toggleQuran('done')">✓ أتممته</button>
-          <button class="btn-toggle-quran" id="btn-quran-miss" onclick="toggleQuran('miss')" style="margin-top:.25rem">✗ لم أتمه</button>
-        </div>
-      </div>
-
-      <div class="section-label">سنة الظهر</div>
-      <div class="worship-card" id="card-rawatib-zuhr-b">
-        <div class="worship-icon">☀️</div>
-        <div class="worship-info"><div class="worship-name">سنة الظهر القبلية</div><div class="worship-sub">٤ ركعات قبل الظهر</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rawatib-zuhr-b','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rawatib-zuhr-b','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-rawatib-zuhr-a">
-        <div class="worship-icon">☀️</div>
-        <div class="worship-info"><div class="worship-name">سنة الظهر البعدية</div><div class="worship-sub">ركعتين بعد الظهر</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rawatib-zuhr-a','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rawatib-zuhr-a','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">سنة المغرب</div>
-      <div class="worship-card" id="card-rawatib-mgrb">
-        <div class="worship-icon">🌇</div>
-        <div class="worship-info"><div class="worship-name">سنة المغرب</div><div class="worship-sub">ركعتين بعد المغرب</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rawatib-mgrb','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rawatib-mgrb','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-azkar-masa">
-        <div class="worship-icon">🌆</div>
-        <div class="worship-info"><div class="worship-name">أذكار المساء</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('azkar-masa','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('azkar-masa','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">سنة العشاء والوتر</div>
-      <div class="worship-card" id="card-rawatib-isha">
-        <div class="worship-icon">🌙</div>
-        <div class="worship-info"><div class="worship-name">سنة العشاء</div><div class="worship-sub">ركعتين بعد العشاء</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rawatib-isha','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rawatib-isha','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-witr">
-        <div class="worship-icon">🌙</div>
-        <div class="worship-info"><div class="worship-name">ركعة الوتر</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('witr','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('witr','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">أذكار النوم</div>
-      <div class="worship-card" id="card-azkar-nawm">
-        <div class="worship-icon">😴</div>
-        <div class="worship-info"><div class="worship-name">أذكار النوم</div><div class="worship-sub">آية الكرسي</div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('azkar-nawm','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('azkar-nawm','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">الأوراد الأسبوعية</div>
-      <div class="worship-card" id="card-doha-juma" style="display:none">
-        <div class="worship-icon">✨</div>
-        <div class="worship-info"><div class="worship-name">جلسة الضحى <span class="badge-weekly">جمعة</span></div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('doha-juma','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('doha-juma','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-asr-juma" style="display:none">
-        <div class="worship-icon">⏰</div>
-        <div class="worship-info"><div class="worship-name">ساعة عصر الجمعة <span class="badge-weekly">جمعة</span></div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('asr-juma','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('asr-juma','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-rahm">
-        <div class="worship-icon">❤️</div>
-        <div class="worship-info"><div class="worship-name">صلة الرحم <span class="badge-weekly">أسبوعي</span></div><div class="worship-sub" id="rahm-sub"></div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('rahm','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('rahm','no',this)">✗</button>
-        </div>
-      </div>
-      <div class="worship-card" id="card-sadaqa">
-        <div class="worship-icon">💛</div>
-        <div class="worship-info"><div class="worship-name">صدقة <span class="badge-weekly">أسبوعي</span></div><div class="worship-sub" id="sadaqa-sub"></div></div>
-        <div class="worship-actions">
-          <button class="btn-check yes" onclick="toggleCheck('sadaqa','yes',this)">✓</button>
-          <button class="btn-check no" onclick="toggleCheck('sadaqa','no',this)">✗</button>
-        </div>
-      </div>
-
-      <div class="section-label">ملاحظاتي اليوم</div>
+      <div class="section-label">ملاحظاتي</div>
       <div class="worship-card" style="flex-direction:column;align-items:stretch">
         <textarea id="daily-notes" class="notes-textarea" placeholder="اكتب أي ملاحظة أو خاطرة عن يومك..." oninput="onNotesInput()"></textarea>
       </div>
-
-      <button class="btn-save-day" id="btn-save" onclick="saveDay()">💾 حفظ اليوم</button>
     </div>
 
-    <!-- WEEK -->
-    <div id="panel-week" class="tab-panel">
-      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">المتابعة الأسبوعية</div></div>
-      <div class="week-grid"><table class="week-table" id="week-table"></table></div>
-    </div>
-
-    <!-- MONTH -->
-    <div id="panel-month" class="tab-panel">
-      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">الإحصائية الشهرية</div></div>
+    <!-- CALENDAR -->
+    <div id="panel-calendar" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">التقويم</div></div>
       <div class="month-nav">
         <button onclick="changeMonth(-1)">◄ الشهر السابق</button>
         <div class="month-label" id="month-label"></div>
         <button onclick="changeMonth(1)">الشهر التالي ►</button>
       </div>
-      <div class="report-summary" id="month-summary"></div>
       <div class="calendar-grid" id="calendar-grid"></div>
       <div class="cal-legend">
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(46,158,107,.5)"></div>ممتاز (80%+)</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(230,180,30,.4)"></div>متوسط (40-79%)</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(192,57,43,.35)"></div>ضعيف (أقل من 40%)</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,.05)"></div>لا يوجد تسجيل</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(46,158,107,.5)"></div>تسجيل مرتفع (70%+)</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(230,180,30,.4)"></div>متوسط (35-69%)</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(192,57,43,.35)"></div>ضعيف (أقل من 35%)</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,.05)"></div>بدون تسجيل</div>
       </div>
     </div>
 
-    <!-- COMPARE -->
-    <div id="panel-compare" class="tab-panel">
-      <div class="day-header">
-        <div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">مقارنة الأعضاء</div>
-        <div class="day-date" id="compare-week-label"></div>
+    <!-- PROGRESS (تقدمي) -->
+    <div id="panel-progress" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">تقدّمي</div></div>
+      <div class="chip-select" style="margin-bottom:1.25rem">
+        <button class="sel" id="prog-tab-week" onclick="switchProgressRange('week')">أسبوعي</button>
+        <button id="prog-tab-month" onclick="switchProgressRange('month')">شهري</button>
+        <button id="prog-tab-quran" onclick="switchProgressRange('quran')">القرآن</button>
       </div>
-      <div class="compare-grid" id="compare-grid"></div>
-      <div class="leaderboard"><div class="lb-header">🏆 الترتيب الأسبوعي</div><div id="leaderboard-rows"></div></div>
+      <div id="progress-slot"></div>
     </div>
 
-    <!-- REPORT -->
-    <div id="panel-report" class="tab-panel">
-      <div class="day-header">
-        <div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">التقرير الأسبوعي</div>
-        <div class="day-date" id="report-username"></div>
+    <!-- RAFEQA (رفقة أواب) -->
+    <div id="panel-rafeqa" class="tab-panel">
+      <div class="rafeqa-header">
+        <div class="rf-title">🌿 رفقة أواب</div>
+        <div class="rf-sub">نتشجع ولا نتفاخر، ونتواصى على الثبات</div>
       </div>
-      <div class="report-summary" id="report-summary"></div>
-      <div class="report-highlight" id="report-highlights"></div>
-      <div class="report-highlight"><h3>📊 معدل الإنجاز لكل عبادة</h3><div class="bar-chart" id="report-bars"></div></div>
+      <div class="group-goal-card" id="group-goal-card"></div>
+      <div id="rafeqa-list"></div>
     </div>
 
-    <!-- ADMIN -->
-    <div id="panel-admin" class="tab-panel">
-      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">إدارة المجموعة</div></div>
-      <div class="admin-section">
-        <h3>الأعضاء المسجلين</h3>
+    <!-- WORSHIPS BUILDER (عباداتي) -->
+    <div id="panel-worships" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">عباداتي</div></div>
+      <button class="builder-add-btn" onclick="openWorshipModal()">+ إضافة عبادة</button>
+      <div id="builder-list"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="tab-panel">
+      <div class="day-header"><div class="day-title" style="font-family:'Amiri',serif;color:var(--gold-light)">الإعدادات</div></div>
+
+      <div class="settings-group">
+        <h3>خصوصية رفقة أواب</h3>
+        <div class="settings-radio" id="privacy-radio"></div>
+      </div>
+
+      <div class="settings-group" id="admin-settings-group" style="display:none">
+        <h3>إدارة المجموعة</h3>
         <div class="members-list" id="members-list"></div>
         <div class="add-member-form">
           <input id="inp-new-user" placeholder="اسم العضو الجديد">
@@ -598,10 +535,145 @@
           <button class="btn-add" onclick="addMember()">إضافة</button>
         </div>
       </div>
+
+      <div class="settings-group">
+        <h3>حسابي</h3>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem">الاسم: <span id="settings-username" style="color:var(--cream)"></span></div>
+        <button class="btn-logout" style="width:100%;padding:.7rem" onclick="doLogout()">تسجيل الخروج</button>
+      </div>
     </div>
 
   </div>
+
+  <nav class="bottom-nav">
+    <button class="bn-btn active" data-tab="today" onclick="switchTab('today',this)"><span class="bn-ic">🕋</span>اليوم</button>
+    <button class="bn-btn" data-tab="calendar" onclick="switchTab('calendar',this)"><span class="bn-ic">📅</span>التقويم</button>
+    <button class="bn-btn" data-tab="progress" onclick="switchTab('progress',this)"><span class="bn-ic">📈</span>تقدمي</button>
+    <button class="bn-btn" data-tab="rafeqa" onclick="switchTab('rafeqa',this)"><span class="bn-ic">🌿</span>رفقة أواب</button>
+    <button class="bn-btn" data-tab="worships" onclick="switchTab('worships',this)"><span class="bn-ic">🗓️</span>عباداتي</button>
+    <button class="bn-btn" data-tab="settings" onclick="switchTab('settings',this)"><span class="bn-ic">⚙️</span>الإعدادات</button>
+  </nav>
 </div>
+
+</div>
+
+<!-- WORSHIP MODAL -->
+<div class="modal-overlay hidden" id="worship-modal">
+  <div class="modal-sheet">
+    <div class="modal-title" id="wm-title">إضافة عبادة</div>
+
+    <div id="wm-templates">
+      <div class="template-grid" id="template-grid"></div>
+      <div class="advanced-toggle" onclick="document.getElementById('wm-templates').style.display='none';document.getElementById('wm-form').style.display=''">✍️ عبادة مخصصة</div>
+    </div>
+
+    <div id="wm-form" style="display:none">
+      <div class="field"><label>اسم العبادة *</label><input id="wm-name" type="text" placeholder="مثال: ورد الاستغفار"></div>
+      <div class="field"><label>وصف (اختياري)</label><input id="wm-desc" type="text" placeholder="أي تفاصيل إضافية"></div>
+
+      <div class="advanced-toggle" onclick="toggleAdvanced()">⚙️ تفاصيل إضافية (اختياري)</div>
+      <div class="advanced-fields" id="wm-advanced">
+
+        <div class="field"><label>الأيقونة</label>
+          <div class="chip-select" id="wm-icon-select"></div>
+        </div>
+
+        <div class="field"><label>نوع المتابعة</label>
+          <div class="chip-select">
+            <button data-v="boolean" onclick="setTrackingType('boolean')">تم / لم يتم</button>
+            <button data-v="count" onclick="setTrackingType('count')">عدد</button>
+            <button data-v="quantity" onclick="setTrackingType('quantity')">كمية</button>
+            <button data-v="multi" onclick="setTrackingType('multi')">متعددة الأجزاء (حفظ/مراجعة)</button>
+          </div>
+        </div>
+
+        <div class="field-row" id="wm-target-row" style="display:none">
+          <div class="field"><label>الهدف</label><input id="wm-target" type="number" min="0" placeholder="مثال: 100"></div>
+          <div class="field"><label>الوحدة</label><input id="wm-unit" type="text" placeholder="صفحة / دقيقة / مرة"></div>
+        </div>
+
+        <div class="field" id="wm-quran-row" style="display:none">
+          <label>بيانات القرآن (اختياري)</label>
+          <div class="field-row">
+            <div class="field"><input id="wm-surah" type="text" placeholder="السورة"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><input id="wm-start-ayah" type="number" placeholder="من آية"></div>
+            <div class="field"><input id="wm-end-ayah" type="number" placeholder="إلى آية"></div>
+          </div>
+        </div>
+
+        <div class="field"><label>التكرار</label>
+          <div class="chip-select">
+            <button data-v="daily" onclick="setRecurrence('daily')">يوميًا</button>
+            <button data-v="specific_days" onclick="setRecurrence('specific_days')">أيام محددة</button>
+            <button data-v="times_per_week" onclick="setRecurrence('times_per_week')">عدد مرات أسبوعيًا</button>
+            <button data-v="once" onclick="setRecurrence('once')">مرة واحدة</button>
+          </div>
+        </div>
+
+        <div class="field" id="wm-days-row" style="display:none">
+          <label>أيام التنفيذ</label>
+          <div class="chip-select" id="wm-days-select"></div>
+        </div>
+
+        <div class="field" id="wm-weekly-target-row" style="display:none">
+          <label>كام مرة في الأسبوع؟</label>
+          <input id="wm-weekly-target" type="number" min="1" max="7" value="1">
+        </div>
+
+        <div class="field" id="wm-section-row">
+          <label>مكانها في اليوم</label>
+          <select id="wm-section"></select>
+        </div>
+
+        <div class="field"><label>وقت محدد (اختياري)</label><input id="wm-time" type="time"></div>
+
+        <div class="field-row">
+          <div class="field"><label>تاريخ بداية (اختياري)</label><input id="wm-start-date" type="date"></div>
+          <div class="field"><label>تاريخ نهاية (اختياري)</label><input id="wm-end-date" type="date"></div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="m-cancel" onclick="closeWorshipModal()">إلغاء</button>
+        <button class="m-save" onclick="saveWorship()">حفظ</button>
+      </div>
+      <div class="modal-actions" id="wm-delete-row" style="display:none">
+        <button class="m-danger" onclick="deleteWorshipConfirm()" style="flex:none;width:100%">🗑️ حذف العبادة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORSHIP ACTION SHEET (from builder list) -->
+<div class="modal-overlay hidden" id="action-modal">
+  <div class="modal-sheet" style="max-width:380px">
+    <div class="modal-title" id="am-title"></div>
+    <div class="settings-radio" style="gap:.4rem">
+      <button class="chip-select" style="display:block;width:100%;text-align:right" id="am-edit">✏️ تعديل</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem">
+      <button class="m-cancel" style="text-align:right;padding:.75rem 1rem" onclick="worshipAction('edit')">✏️ تعديل</button>
+      <button class="m-cancel" style="text-align:right;padding:.75rem 1rem" onclick="worshipAction('duplicate')">🧬 تكرار (Duplicate)</button>
+      <button class="m-cancel" style="text-align:right;padding:.75rem 1rem" onclick="worshipAction('pause')" id="am-pause-btn">⏸️ إيقاف مؤقت</button>
+      <button class="m-cancel" style="text-align:right;padding:.75rem 1rem" onclick="worshipAction('hide')" id="am-hide-btn">🙈 إخفاء</button>
+      <button class="m-danger" style="text-align:right;padding:.75rem 1rem" onclick="worshipAction('delete')">🗑️ حذف</button>
+    </div>
+    <div class="modal-actions"><button class="m-cancel" onclick="closeActionModal()">إغلاق</button></div>
+  </div>
+</div>
+
+<!-- CALENDAR DATE PICKER (quick jump) -->
+<div class="modal-overlay hidden" id="datepick-modal">
+  <div class="modal-sheet" style="max-width:340px;text-align:center">
+    <div class="modal-title">اذهب إلى تاريخ</div>
+    <input type="date" id="datepick-input" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem;color:var(--cream);font-family:'Cairo',sans-serif;font-size:.9rem;">
+    <div class="modal-actions">
+      <button class="m-cancel" onclick="document.getElementById('datepick-modal').classList.add('hidden')">إلغاء</button>
+      <button class="m-save" onclick="jumpToDatePicked()">اذهب</button>
+    </div>
+  </div>
 </div>
 
 <div class="save-toast" id="save-toast">✅ تم الحفظ بنجاح</div>
@@ -622,6 +694,7 @@ const SB = {
     };
     if(method==='POST') headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
     else if(method==='GET') headers['Prefer'] = 'return=representation';
+    else if(method==='PATCH') headers['Prefer'] = 'return=representation';
     const opts = { method, headers };
     if(body) opts.body = JSON.stringify(body);
     const r = await fetch(SB_URL+'/rest/v1/'+path, opts);
@@ -637,69 +710,90 @@ const SB = {
   post: (path, body) => SB.req('POST', path, body),
   patch: (path, body) => SB.req('PATCH', path, body),
   delete: (path) => SB.req('DELETE', path),
+  upsert: (path, body, conflictCols) => SB.req('POST', path+(path.includes('?')?'&':'?')+'on_conflict='+conflictCols, body),
 };
 
 // ════════════════════════════════════════════
-//  INIT DB TABLES (run once on first load)
-// ════════════════════════════════════════════
-async function initDB(){
-  // Create tables via RPC if they don't exist
-  // We'll use a direct SQL approach via the REST API
-  try {
-    await fetch(SB_URL+'/rest/v1/users?limit=1', {
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
-  } catch(e){}
-  try {
-    await fetch(SB_URL+'/rest/v1/daily_records?limit=1', {
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
-  } catch(e){}
-}
-
-// ════════════════════════════════════════════
-//  STATE
+//  CONFIG / CONSTANTS
 // ════════════════════════════════════════════
 let currentUser = null;
-let todayState  = {prayers:{}, checks:{}, quran:null, notes:''};
+let worships = [];            // كل عبادات المستخدم (كل الحالات)
+let dayLogsMap = {};          // worship_id -> log row لليوم المعروض حاليًا
+let onceCompletedSet = new Set();
+let viewDate = null;          // التاريخ المعروض في تبويب "اليوم"
 let currentMonthOffset = 0;
-let allUsersCache = [];
-let weekRecordsCache = {}; // {username_date: data}
+let progressRange = 'week';
+let editingWorshipId = null;  // null = إضافة جديدة
+let actionWorshipId = null;
 
-const PRAYERS      = ['فجر','ظهر','عصر','مغرب','عشاء'];
 const ARABIC_DAYS  = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AVATAR_COLORS= ['#0f4c5c','#1a7a8a','#c9a84c','#2e9e6b','#7d4aff','#e67e22','#c0392b','#8e44ad','#2980b9','#27ae60'];
 
-const DAILY_WORSHIPS = [
-  {id:'azkar-salah',    name:'أذكار بعد الصلاة'},
-  {id:'rawatib-fajr',   name:'سنة الفجر'},
-  {id:'azkar-sobh',     name:'أذكار الصباح'},
-  {id:'doha-pray',      name:'ركعتين الضحى'},
-  {id:'quran',          name:'ورد القرآن'},
-  {id:'rawatib-zuhr-b', name:'سنة الظهر القبلية'},
-  {id:'rawatib-zuhr-a', name:'سنة الظهر البعدية'},
-  {id:'rawatib-mgrb',   name:'سنة المغرب'},
-  {id:'azkar-masa',     name:'أذكار المساء'},
-  {id:'rawatib-isha',   name:'سنة العشاء'},
-  {id:'witr',           name:'ركعة الوتر'},
-  {id:'azkar-nawm',     name:'أذكار النوم'},
+const DAY_SECTIONS = [
+  {key:'before_fajr',        label:'قبل الفجر'},
+  {key:'fajr',                label:'الفجر'},
+  {key:'after_fajr',          label:'بعد الفجر'},
+  {key:'between_fajr_zuhr',   label:'بين الفجر والظهر'},
+  {key:'before_zuhr',         label:'قبل الظهر'},
+  {key:'zuhr',                label:'الظهر'},
+  {key:'after_zuhr',          label:'بعد الظهر'},
+  {key:'between_zuhr_asr',    label:'بين الظهر والعصر'},
+  {key:'asr',                 label:'العصر'},
+  {key:'after_asr',           label:'بعد العصر'},
+  {key:'between_asr_maghrib', label:'بين العصر والمغرب'},
+  {key:'maghrib',             label:'المغرب'},
+  {key:'after_maghrib',       label:'بعد المغرب'},
+  {key:'isha',                label:'العشاء'},
+  {key:'after_isha',          label:'بعد العشاء'},
+  {key:'before_sleep',        label:'قبل النوم'},
 ];
-const WEEKLY_WORSHIPS = [
-  {id:'doha-juma', name:'جلسة الضحى', onDay:5},
-  {id:'asr-juma',  name:'ساعة عصر الجمعة', onDay:5},
-  {id:'rahm',      name:'صلة الرحم', onDay:'any'},
-  {id:'sadaqa',    name:'صدقة', onDay:'any'},
+const SECTION_LABEL = Object.fromEntries(DAY_SECTIONS.map(s=>[s.key,s.label]));
+SECTION_LABEL.weekly_goal = 'أهداف هذا الأسبوع';
+
+const WORSHIP_ICONS = ['🕌','📖','🌅','🌆','🌙','☀️','❤️','💛','✨','⏰','😴','🤲','📿','🧎','🕋','💚'];
+
+const TEMPLATES = [
+  {key:'rawatib-fajr',   name:'سنة الفجر',            icon:'🕌', category:'prayer', tracking_type:'boolean', day_section:'fajr',              recurrence_type:'daily'},
+  {key:'azkar-sobh',     name:'أذكار الصباح',          icon:'🌅', category:'prayer', tracking_type:'boolean', day_section:'after_fajr',        recurrence_type:'daily'},
+  {key:'doha',           name:'صلاة الضحى',            icon:'☀️', category:'prayer', tracking_type:'boolean', day_section:'between_fajr_zuhr', recurrence_type:'daily'},
+  {key:'rawatib-zuhr-b', name:'سنة الظهر القبلية',      icon:'🕌', category:'prayer', tracking_type:'boolean', day_section:'before_zuhr',       recurrence_type:'daily'},
+  {key:'rawatib-zuhr-a', name:'سنة الظهر البعدية',      icon:'🕌', category:'prayer', tracking_type:'boolean', day_section:'after_zuhr',        recurrence_type:'daily'},
+  {key:'rawatib-mgrb',   name:'سنة المغرب',            icon:'🕌', category:'prayer', tracking_type:'boolean', day_section:'after_maghrib',     recurrence_type:'daily'},
+  {key:'rawatib-isha',   name:'سنة العشاء',            icon:'🕌', category:'prayer', tracking_type:'boolean', day_section:'after_isha',        recurrence_type:'daily'},
+  {key:'azkar-masa',     name:'أذكار المساء',          icon:'🌆', category:'prayer', tracking_type:'boolean', day_section:'after_asr',         recurrence_type:'daily'},
+  {key:'witr',           name:'الوتر',                icon:'🌙', category:'prayer', tracking_type:'boolean', day_section:'before_sleep',      recurrence_type:'daily'},
+  {key:'qiyam',          name:'قيام الليل',            icon:'🕋', category:'prayer', tracking_type:'boolean', day_section:'before_fajr',       recurrence_type:'specific_days', days_of_week:[1,4]},
+  {key:'mulk',           name:'سورة الملك',            icon:'📖', category:'quran',  tracking_type:'boolean', day_section:'before_sleep',      recurrence_type:'daily'},
+  {key:'quran-read',     name:'ورد القرآن (قراءة)',     icon:'📗', category:'quran',  tracking_type:'quantity', target_value:5, target_unit:'صفحات', day_section:'between_fajr_zuhr', recurrence_type:'daily', quran_mode:'read'},
+  {key:'quran-hifz',     name:'ورد الحفظ',             icon:'📘', category:'quran',  tracking_type:'multi',    day_section:'after_fajr',        recurrence_type:'daily', quran_mode:'memorize'},
+  {key:'quran-murajaa',  name:'ورد المراجعة',          icon:'📙', category:'quran',  tracking_type:'multi',    day_section:'after_asr',         recurrence_type:'daily', quran_mode:'review'},
+  {key:'sadaqa',         name:'صدقة',                  icon:'💛', category:'custom', tracking_type:'boolean', day_section:'weekly_goal',       recurrence_type:'times_per_week', weekly_target:2},
+  {key:'rahm',           name:'صلة الرحم',              icon:'❤️', category:'custom', tracking_type:'boolean', day_section:'weekly_goal',       recurrence_type:'times_per_week', weekly_target:1},
+];
+const FARD_PRAYERS = [
+  {name:'صلاة الفجر',  icon:'🕌', day_section:'fajr'},
+  {name:'صلاة الظهر',  icon:'🕌', day_section:'zuhr'},
+  {name:'صلاة العصر',  icon:'🕌', day_section:'asr'},
+  {name:'صلاة المغرب', icon:'🕌', day_section:'maghrib'},
+  {name:'صلاة العشاء', icon:'🕌', day_section:'isha'},
 ];
 
 // ════════════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════════════
 function pad(n){ return String(n).padStart(2,'0'); }
-function getToday(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function getWeekDates(){
-  const d=new Date(), day=d.getDay(), diff=d.getDate()-day, dates=[];
-  for(let i=0;i<7;i++){ const dd=new Date(d); dd.setDate(diff+i); dates.push(`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`); }
+function dstr(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function getToday(){ return dstr(new Date()); }
+function addDays(dateStr, n){ const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return dstr(d); }
+function dowOf(dateStr){ return new Date(dateStr+'T00:00:00').getDay(); }
+function getWeekDates(anchor){
+  anchor = anchor || getToday();
+  const d=new Date(anchor+'T00:00:00'), day=d.getDay(), dates=[];
+  for(let i=0;i<7;i++){ dates.push(addDays(anchor, i-day)); }
   return dates;
+}
+function fmtArabicDate(dateStr){
+  return new Date(dateStr+'T00:00:00').toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
 }
 function showToast(msg, isErr=false){
   const t=document.getElementById('save-toast');
@@ -714,6 +808,7 @@ function showLoading(txt='جاري التحميل...'){
 }
 function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); }
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ════════════════════════════════════════════
 //  LOGIN / REGISTER
@@ -735,8 +830,7 @@ async function doLogin(){
     } else {
       currentUser = rows[0];
       document.getElementById('login-err').style.display='none';
-      if(!currentUser.pages_goal){ showScreen('setup'); }
-      else { await enterMain(); }
+      await afterLogin();
     }
   } catch(e){ showToast('خطأ في الاتصال، حاول تاني',true); }
   finally { btn.disabled=false; btn.textContent='دخول'; hideLoading(); }
@@ -757,682 +851,935 @@ async function doRegister(){
     if(existing.length>=30){err.style.display='block';err.textContent='المجموعة وصلت الحد الأقصى (30 أعضاء)';return;}
     const nameCheck = await SB.get(`users?name=eq.${encodeURIComponent(name)}&select=id`);
     if(nameCheck.length){err.style.display='block';err.textContent='الاسم ده موجود، اختار اسم تاني';return;}
-    const rows = await SB.post('users', {name, pass, role:'member', pages_goal:0});
+    const rows = await SB.post('users', {name, pass, role:'member', pages_goal:0, onboarding_done:false});
     currentUser = rows[0];
     err.style.display='none';
-    showScreen('setup');
+    await afterLogin();
   } catch(e){ err.style.display='block'; err.textContent='خطأ في الاتصال، حاول تاني'; }
   finally { btn.disabled=false; hideLoading(); }
 }
 
-function doLogout(){ currentUser=null; allUsersCache=[]; weekRecordsCache={}; showScreen('login'); }
+function doLogout(){ currentUser=null; worships=[]; dayLogsMap={}; showScreen('login'); }
+
+async function afterLogin(){
+  showLoading('جاري التحضير...');
+  try {
+    const mine = await SB.get(`worships?user_id=eq.${currentUser.id}&select=id&limit=1`);
+    if(!currentUser.onboarding_done){
+      if(mine.length){
+        await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true});
+        currentUser.onboarding_done = true;
+        await enterMain();
+      } else {
+        hideLoading();
+        showScreen('onboarding');
+        return;
+      }
+    } else {
+      await enterMain();
+    }
+  } catch(e){ showToast('خطأ في التحضير',true); }
+  finally { hideLoading(); }
+}
 
 // ════════════════════════════════════════════
-//  SETUP
+//  ONBOARDING
 // ════════════════════════════════════════════
-let tempPages=2;
+let onboardingType = null;
+async function pickOnboarding(type){
+  onboardingType = type;
+  showLoading('جاري بناء جدولك...');
+  try {
+    let sort = 0;
+    for(const p of FARD_PRAYERS){
+      await SB.post('worships', {user_id:currentUser.id, name:p.name, icon:p.icon, category:'prayer',
+        tracking_type:'boolean', day_section:p.day_section, recurrence_type:'daily', sort_order:sort});
+      sort += 10;
+    }
+    let picks = [];
+    if(type==='simple')  picks = ['azkar-sobh','witr','quran-read'];
+    if(type==='balanced') picks = ['rawatib-fajr','azkar-sobh','doha','rawatib-zuhr-b','rawatib-zuhr-a','rawatib-mgrb','rawatib-isha','azkar-masa','witr','quran-read'];
+    for(const key of picks){
+      const t = TEMPLATES.find(x=>x.key===key);
+      if(!t) continue;
+      await SB.post('worships', {user_id:currentUser.id, name:t.name, icon:t.icon, category:t.category,
+        tracking_type:t.tracking_type, target_value:t.target_value||null, target_unit:t.target_unit||null,
+        day_section:t.day_section, recurrence_type:t.recurrence_type, days_of_week:t.days_of_week||null,
+        weekly_target:t.weekly_target||null, quran_mode:t.quran_mode||null, sort_order:sort});
+      sort += 10;
+    }
+    if(picks.includes('quran-read')){
+      hideLoading();
+      showScreen('setup');
+    } else {
+      await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:type});
+      currentUser.onboarding_done = true;
+      await enterMain();
+      hideLoading();
+    }
+  } catch(e){ showToast('حصل خطأ أثناء بناء الجدول',true); hideLoading(); }
+}
+
+let tempPages=5;
 function changePages(d){ tempPages=Math.max(1,Math.min(20,tempPages+d)); document.getElementById('pages-num').textContent=tempPages; }
 async function saveSetup(){
   showLoading('جاري الحفظ...');
   try {
-    const rows = await SB.patch(`users?id=eq.${currentUser.id}`, {pages_goal: tempPages});
-    currentUser.pages_goal = tempPages;
+    const qw = await SB.get(`worships?user_id=eq.${currentUser.id}&quran_mode=eq.read&select=id&order=created_at.desc&limit=1`);
+    if(qw.length) await SB.patch(`worships?id=eq.${qw[0].id}`, {target_value:tempPages});
+    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:onboardingType, pages_goal:tempPages});
+    currentUser.onboarding_done = true;
     await enterMain();
   } catch(e){ showToast('خطأ في الحفظ',true); }
   finally { hideLoading(); }
 }
 
 // ════════════════════════════════════════════
-//  MAIN
+//  MAIN SHELL
 // ════════════════════════════════════════════
 async function enterMain(){
   showScreen('main');
   document.getElementById('hdr-name').textContent=currentUser.name;
   document.getElementById('hdr-avatar').textContent=currentUser.name[0];
-  if(currentUser.role==='admin'){
-    document.getElementById('admin-tab').style.display='';
-    document.getElementById('compare-tab').style.display='';
-  }
-  await loadToday();
-  maybeShowReminder();
+  document.getElementById('settings-username').textContent=currentUser.name;
+  document.getElementById('admin-settings-group').style.display = currentUser.role==='admin' ? '' : 'none';
+  viewDate = getToday();
+  await loadWorships();
+  await loadDay(viewDate);
+  checkNewEncouragements();
 }
 
 function switchTab(id,btn){
-  if((id==='admin'||id==='compare') && currentUser?.role!=='admin'){
-    showToast('هذا القسم للمشرف فقط',true);
-    return;
-  }
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
-  if(id==='week') renderWeekTable();
-  if(id==='month') renderMonthTab();
-  if(id==='compare') renderCompare();
-  if(id==='report') renderReport();
-  if(id==='admin') renderAdmin();
+  if(id==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
+  if(id==='calendar') renderCalendar();
+  if(id==='progress') renderProgress();
+  if(id==='rafeqa') renderRafeqa();
+  if(id==='worships') renderBuilder();
+  if(id==='settings') renderSettings();
 }
 
 // ════════════════════════════════════════════
-//  TODAY
+//  WORSHIPS: LOAD + APPLICABILITY
 // ════════════════════════════════════════════
-async function loadToday(){
-  const dayNum=new Date().getDay();
-  document.getElementById('today-dayname').textContent=ARABIC_DAYS[dayNum];
-  document.getElementById('today-date').textContent=new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('quran-target-txt').textContent=currentUser.pages_goal||2;
-
-  showLoading('جاري تحميل بيانات اليوم...');
-  try {
-    const today=getToday();
-    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}&select=*`);
-    todayState = rows.length ? (rows[0].data||{prayers:{},checks:{},quran:null,notes:''}) : {prayers:{},checks:{},quran:null,notes:''};
-    if(!todayState.prayers) todayState.prayers={};
-    if(!todayState.checks)  todayState.checks={};
-    if(!todayState.notes)   todayState.notes='';
-  } catch(e){
-    todayState={prayers:{},checks:{},quran:null,notes:''};
-    showToast('تعذّر تحميل بيانات اليوم',true);
-  } finally { hideLoading(); }
-
-  const notesEl=document.getElementById('daily-notes');
-  if(notesEl) notesEl.value = todayState.notes||'';
-
-  // Render prayers (3-state: takbir/jamaa/fardi)
-  PRAYERS.forEach(p=>{
-    const val = todayState.prayers[p];
-    document.querySelectorAll(`.prayer-row[data-p="${p}"] .pr-btn`).forEach(btn=>{
-      btn.classList.toggle('active', btn.dataset.val===val);
-    });
-  });
-  // Render azkar salah chips
-  if(!todayState.azkarSalah) todayState.azkarSalah={};
-  ['fajr','zuhr','asr','mgrb','isha'].forEach(az=>{
-    const chip=document.querySelector(`#azkar-salah-grid [data-az="${az}"]`);
-    if(chip) chip.classList.toggle('done',!!todayState.azkarSalah[az]);
-  });
-  // Render checks
-  DAILY_WORSHIPS.filter(w=>w.id!=='azkar-salah').forEach(w=>applyCheck(w.id, todayState.checks[w.id]||null));
-  WEEKLY_WORSHIPS.forEach(w=>applyCheck(w.id, todayState.checks[w.id]||null));
-  applyQuranUI(todayState.quran||null);
-
-  const isFriday=(new Date().getDay()===5);
-  document.getElementById('card-doha-juma').style.display=isFriday?'':'none';
-  document.getElementById('card-asr-juma').style.display=isFriday?'':'none';
-
-  // Weekly status labels
-  const weekDates=getWeekDates();
-  let rahmDone=false, sadaqaDone=false;
-  try {
-    const weekRows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&select=data`);
-    weekRows.forEach(r=>{
-      if(r.data?.checks?.rahm==='yes') rahmDone=true;
-      if(r.data?.checks?.sadaqa==='yes') sadaqaDone=true;
-    });
-  } catch(e){}
-  document.getElementById('rahm-sub').textContent=rahmDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
-  document.getElementById('sadaqa-sub').textContent=sadaqaDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
-
-  updateProgress();
-}
-
-function maybeShowReminder(){
-  const hour = new Date().getHours();
-  const doneCount = calcDoneItems ? 0 : 0; // placeholder unused
-  const anyChecked = Object.values(todayState.checks||{}).some(v=>v==='yes') ||
-                      Object.values(todayState.prayers||{}).some(v=>v) ||
-                      todayState.quran;
-  if(!anyChecked && hour>=20){
-    setTimeout(()=>showToast('🌙 لسه ماسجّلتش عباداتك النهاردة، متأخرش عليها'), 800);
+async function loadWorships(){
+  worships = await SB.get(`worships?user_id=eq.${currentUser.id}&select=*&order=sort_order.asc`);
+  const onceIds = worships.filter(w=>w.recurrence_type==='once').map(w=>w.id);
+  onceCompletedSet = new Set();
+  if(onceIds.length){
+    const rows = await SB.get(`daily_worship_logs?worship_id=in.(${onceIds.join(',')})&status=eq.completed&select=worship_id`);
+    rows.forEach(r=>onceCompletedSet.add(r.worship_id));
   }
+}
+function isApplicable(w, dateStr){
+  if(w.is_paused || w.is_hidden) return false;
+  if(w.recurrence_type==='times_per_week' || w.day_section==='weekly_goal') return false;
+  if(w.start_date && dateStr < w.start_date) return false;
+  if(w.end_date && dateStr > w.end_date) return false;
+  const dow = dowOf(dateStr);
+  if(w.recurrence_type==='daily') return true;
+  if(w.recurrence_type==='specific_days') return (w.days_of_week||[]).includes(dow);
+  if(w.recurrence_type==='once'){
+    if(dayLogsMap[w.id] && dayLogsMap[w.id]._date===dateStr) return true;
+    if(dateStr < getToday()) return false;
+    return !onceCompletedSet.has(w.id);
+  }
+  return false;
+}
+
+// ════════════════════════════════════════════
+//  DAY VIEW (اليوم)
+// ════════════════════════════════════════════
+async function navDate(delta){ await loadDay(addDays(viewDate, delta)); }
+function openCalendarPicker(){
+  document.getElementById('datepick-input').value = viewDate;
+  document.getElementById('datepick-modal').classList.remove('hidden');
+}
+async function jumpToDatePicked(){
+  const v = document.getElementById('datepick-input').value;
+  document.getElementById('datepick-modal').classList.add('hidden');
+  if(v) await loadDay(v);
+}
+
+async function loadDay(dateStr){
+  viewDate = dateStr;
+  const today = getToday();
+  const dow = dowOf(dateStr);
+  document.getElementById('dn-date-label').textContent = fmtArabicDate(dateStr);
+  document.getElementById('dn-day-label').textContent =
+    dateStr===today ? 'اليوم' : dateStr===addDays(today,-1) ? 'أمس' : dateStr===addDays(today,1) ? 'غدًا' : ARABIC_DAYS[dow];
+
+  showLoading('جاري تحميل اليوم...');
+  let noteRow = null;
+  try {
+    const [logs, notes] = await Promise.all([
+      SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=eq.${dateStr}&select=*`),
+      SB.get(`daily_notes?user_id=eq.${currentUser.id}&date=eq.${dateStr}&select=*`),
+    ]);
+    dayLogsMap = {};
+    logs.forEach(l=>{ dayLogsMap[l.worship_id]=l; l._date=dateStr; });
+    noteRow = notes[0] || null;
+  } catch(e){ dayLogsMap={}; showToast('تعذّر تحميل بيانات اليوم',true); }
+  hideLoading();
+
+  document.getElementById('daily-notes').value = noteRow?.notes || '';
+  renderTimeline(dateStr);
+  renderWeeklyGoals();
+  await renderCatchup(dateStr);
+  updateDayRing();
+}
+
+function sortedItemsForSection(sectionKey, dateStr){
+  return worships
+    .filter(w=>w.day_section===sectionKey && isApplicable(w,dateStr))
+    .sort((a,b)=>{
+      const ao = dayLogsMap[a.id]?.order_override, bo = dayLogsMap[b.id]?.order_override;
+      if(ao!=null && bo!=null) return ao-bo;
+      if(ao!=null) return ao-(b.sort_order||0);
+      if(bo!=null) return (a.sort_order||0)-bo;
+      return (a.sort_order||0)-(b.sort_order||0);
+    });
+}
+
+function renderTimeline(dateStr){
+  const slot = document.getElementById('timeline-slot');
+  let html = '';
+  let any = false;
+  DAY_SECTIONS.forEach(sec=>{
+    const items = sortedItemsForSection(sec.key, dateStr);
+    if(!items.length) return;
+    any = true;
+    html += `<div class="timeline-section"><div class="timeline-label">${sec.label}</div>`;
+    items.forEach((w,idx)=>{ html += renderWorshipCard(w, dateStr, items, idx); });
+    html += `</div>`;
+  });
+  if(!any){
+    html = `<div class="empty-day-hint">مفيش عبادات مجدولة النهاردة 🌿<br>تقدر تضيف عباداتك من "عباداتي"</div>`;
+  }
+  slot.innerHTML = html;
+}
+
+function worshipCardShell(w, dateStr, statusClass, inner, items, idx){
+  const canMoveUp = items && idx>0;
+  const canMoveDown = items && idx < items.length-1;
+  const moveButtons = items ? `
+    <div style="display:flex;flex-direction:column;gap:.15rem">
+      <button class="wc-drag-handle" style="opacity:${canMoveUp?1:.25}" ${canMoveUp?'':'disabled'} onclick="reorderInSection('${w.id}',${idx},${idx-1},'${w.day_section}','${dateStr}')">▲</button>
+      <button class="wc-drag-handle" style="opacity:${canMoveDown?1:.25}" ${canMoveDown?'':'disabled'} onclick="reorderInSection('${w.id}',${idx},${idx+1},'${w.day_section}','${dateStr}')">▼</button>
+    </div>` : '';
+  return `<div class="wcard ${statusClass}" data-wid="${w.id}">
+    <div class="wcard-top">
+      ${moveButtons}
+      <div class="wcard-icon">${w.icon||'🕌'}</div>
+      <div class="wcard-info">
+        <div class="wcard-name">${esc(w.name)}</div>
+        ${w.description?`<div class="wcard-sub">${esc(w.description)}</div>`:''}
+      </div>
+    </div>
+    ${inner}
+  </div>`;
+}
+
+function renderWorshipCard(w, dateStr, items, idx){
+  const log = dayLogsMap[w.id];
+  const status = log?.status || 'unrecorded';
+  if(w.tracking_type==='boolean'){
+    const inner = `<div class="wcard-controls" style="margin-top:.6rem;justify-content:flex-end;display:flex">
+        <button class="btn-check yes ${status==='completed'?'active':''}" onclick="setBooleanStatus('${w.id}','completed','${dateStr}')">✓</button>
+        <button class="btn-check no ${status==='missed'?'active':''}" onclick="setBooleanStatus('${w.id}','missed','${dateStr}')">✗</button>
+      </div>`;
+    return worshipCardShell(w, dateStr, status, inner, items, idx);
+  }
+  if(w.tracking_type==='count' || w.tracking_type==='quantity'){
+    const target = w.target_value||0;
+    const val = log?.value ?? 0;
+    const pct = target ? Math.min(100, Math.round(val/target*100)) : 0;
+    const inner = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem">
+        <div class="wcard-sub">${val} / ${target||'—'} ${esc(w.target_unit||'')}</div>
+        <div class="wc-stepper">
+          <button onclick="stepValue('${w.id}',-1,${target},'${dateStr}')">−</button>
+          <div class="wc-val">${val}</div>
+          <button onclick="stepValue('${w.id}',1,${target},'${dateStr}')">+</button>
+        </div>
+      </div>
+      <div class="wc-progress-track"><div class="wc-progress-fill" style="width:${pct}%"></div></div>`;
+    return worshipCardShell(w, dateStr, status, inner, items, idx);
+  }
+  if(w.tracking_type==='multi'){
+    let rangeTxt = '';
+    if(w.quran_mode && w.quran_surah){
+      rangeTxt = `سورة ${esc(w.quran_surah)}` + (w.quran_start_ayah? ` — الآيات ${w.quran_start_ayah}–${w.quran_end_ayah||w.quran_start_ayah}`:'');
+    }
+    const val = log?.value;
+    const inner = `
+      ${rangeTxt?`<div class="wcard-sub" style="margin-top:.5rem">${rangeTxt}</div>`:''}
+      <div class="wc-multi-actions">
+        <button class="${val===1?'sel':''}" onclick="setMultiStatus('${w.id}','completed',1,'${dateStr}')">✅ تم بالكامل</button>
+        <button class="${val===0.5?'sel':''}" onclick="setMultiStatus('${w.id}','completed',0.5,'${dateStr}')">◐ تم جزئيًا</button>
+        <button class="${status==='missed'?'sel':''}" onclick="setMultiStatus('${w.id}','missed',0,'${dateStr}')">✗ لم يتم</button>
+      </div>
+      ${status==='completed'?`
+      <div class="wc-quality-row">
+        <button class="${log?.quality_rating==='mutqin'?'sel':''}" onclick="setQuality('${w.id}','mutqin','${dateStr}')">متقن</button>
+        <button class="${log?.quality_rating==='good'?'sel':''}" onclick="setQuality('${w.id}','good','${dateStr}')">جيد</button>
+        <button class="${log?.quality_rating==='needs_review'?'sel':''}" onclick="setQuality('${w.id}','needs_review','${dateStr}')">يحتاج مراجعة</button>
+      </div>`:''}
+    `;
+    return worshipCardShell(w, dateStr, status, inner, items, idx);
+  }
+  return '';
+}
+
+async function upsertLog(worshipId, dateStr, patch){
+  const existing = dayLogsMap[worshipId];
+  const body = Object.assign({
+    user_id: currentUser.id, worship_id: worshipId, date: dateStr,
+    status: existing?.status||'unrecorded', value: existing?.value ?? null,
+    notes: existing?.notes ?? null, quality_rating: existing?.quality_rating ?? null,
+  }, patch, {updated_at: new Date().toISOString()});
+  if(body.status==='completed' && !body.completed_at) body.completed_at = new Date().toISOString();
+  const rows = await SB.upsert('daily_worship_logs', body, 'user_id,worship_id,date');
+  const row = rows[0] || body;
+  row._date = dateStr;
+  dayLogsMap[worshipId] = row;
+  return row;
+}
+
+async function setBooleanStatus(worshipId, val, dateStr){
+  const cur = dayLogsMap[worshipId]?.status;
+  const next = cur===val ? 'unrecorded' : val;
+  await upsertLog(worshipId, dateStr, {status:next});
+  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ ✅');
+}
+
+async function stepValue(worshipId, delta, target, dateStr){
+  const cur = dayLogsMap[worshipId]?.value || 0;
+  const val = Math.max(0, cur+delta);
+  const status = target && val>=target ? 'completed' : (val>0 ? 'unrecorded' : 'unrecorded');
+  await upsertLog(worshipId, dateStr, {value:val, status});
+  renderTimeline(dateStr); updateDayRing();
+}
+
+async function setMultiStatus(worshipId, status, value, dateStr){
+  await upsertLog(worshipId, dateStr, {status, value});
+  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ ✅');
+}
+async function setQuality(worshipId, q, dateStr){
+  const cur = dayLogsMap[worshipId]?.quality_rating;
+  await upsertLog(worshipId, dateStr, {quality_rating: cur===q?null:q});
+  renderTimeline(dateStr);
+}
+
+async function reorderInSection(worshipId, fromIdx, toIdx, sectionKey, dateStr){
+  const items = sortedItemsForSection(sectionKey, dateStr);
+  if(toIdx<0 || toIdx>=items.length) return;
+  const other = items[toIdx];
+  const mine = items[fromIdx];
+  const permanent = confirm('تحب التغيير يكون دائم؟ (إلغاء = لهذا اليوم فقط)');
+  showLoading('جاري إعادة الترتيب...');
+  try {
+    if(permanent){
+      const a = mine.sort_order||0, b = other.sort_order||0;
+      await SB.patch(`worships?id=eq.${mine.id}`, {sort_order:b});
+      await SB.patch(`worships?id=eq.${other.id}`, {sort_order:a});
+      mine.sort_order=b; other.sort_order=a;
+    } else {
+      await upsertLog(mine.id, dateStr, {order_override: toIdx});
+      await upsertLog(other.id, dateStr, {order_override: fromIdx});
+    }
+    renderTimeline(dateStr);
+  } catch(e){ showToast('تعذّر إعادة الترتيب',true); }
+  finally { hideLoading(); }
 }
 
 function onNotesInput(){
-  todayState.notes = document.getElementById('daily-notes').value;
+  const txt = document.getElementById('daily-notes').value;
+  const forDate = viewDate;
+  clearTimeout(window._notesTimer);
+  window._notesTimer = setTimeout(async ()=>{
+    try { await SB.upsert('daily_notes', {user_id: currentUser.id, date: forDate, notes: txt, updated_at: new Date().toISOString()}, 'user_id,date'); }
+    catch(e){ showToast('تعذّر حفظ الملاحظة',true); }
+  }, 800);
 }
 
-function setPrayerStatus(btn, prayerName, val){
-  const cur = todayState.prayers[prayerName];
-  todayState.prayers[prayerName] = (cur===val) ? null : val;
-  document.querySelectorAll(`.prayer-row[data-p="${prayerName}"] .pr-btn`).forEach(b=>{
-    b.classList.toggle('active', b.dataset.val===todayState.prayers[prayerName]);
+function updateDayRing(){
+  const applicable = worships.filter(w=>isApplicable(w,viewDate));
+  const total = applicable.length;
+  const done = applicable.filter(w=>dayLogsMap[w.id]?.status==='completed').length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const circ = 100.5;
+  document.getElementById('day-ring-fill').style.strokeDashoffset = circ - (circ*pct/100);
+  document.getElementById('day-ring-pct').textContent = pct+'%';
+}
+
+function renderWeeklyGoals(){
+  const goals = worships.filter(w=>w.recurrence_type==='times_per_week' && !w.is_paused && !w.is_hidden);
+  const slot = document.getElementById('weekly-goals-slot');
+  if(!goals.length){ slot.innerHTML=''; return; }
+  const weekDates = getWeekDates(viewDate);
+  slot.innerHTML = '<div class="timeline-label">أهداف هذا الأسبوع</div>' + goals.map(g=>{
+    return `<div class="weekly-goal-card" id="wg-${g.id}"><div class="wcard-name">${g.icon||'🎯'} ${esc(g.name)}</div><div class="wcard-sub" id="wg-sub-${g.id}">جاري الحساب...</div></div>`;
+  }).join('');
+  goals.forEach(async g=>{
+    const rows = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&worship_id=eq.${g.id}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&status=eq.completed&select=id`);
+    const el = document.getElementById(`wg-sub-${g.id}`);
+    if(el) el.textContent = `${rows.length} / ${g.weekly_target||1} هذا الأسبوع`;
   });
-  updateProgress();
 }
 
-function toggleAzkarSalah(chip){
-  if(!todayState.azkarSalah) todayState.azkarSalah={};
-  const az=chip.dataset.az;
-  todayState.azkarSalah[az]=!todayState.azkarSalah[az];
-  chip.classList.toggle('done',!!todayState.azkarSalah[az]);
-  updateProgress();
-}
-
-function toggleCheck(id,val){
-  const cur=todayState.checks[id];
-  todayState.checks[id]=(cur===val)?null:val;
-  applyCheck(id, todayState.checks[id]);
-  updateProgress();
-}
-
-function applyCheck(id, val){
-  const yesBtn=document.querySelector(`#card-${id} .btn-check.yes`);
-  const noBtn =document.querySelector(`#card-${id} .btn-check.no`);
-  if(!yesBtn) return;
-  yesBtn.classList.toggle('active', val==='yes');
-  noBtn.classList.toggle('active',  val==='no');
-  const card=document.getElementById('card-'+id);
-  if(card){ card.classList.toggle('done',val==='yes'); card.classList.toggle('missed',val==='no'); }
-}
-
-function toggleQuran(val){
-  todayState.quran=(todayState.quran===val)?null:val;
-  applyQuranUI(todayState.quran);
-  updateProgress();
-}
-
-function applyQuranUI(val){
-  const d=document.getElementById('btn-quran-done');
-  const m=document.getElementById('btn-quran-miss');
-  if(!d||!m) return;
-  d.className='btn-toggle-quran'+(val==='done'?' done':'');
-  m.className='btn-toggle-quran'+(val==='miss'?' miss':'');
-  const card=document.getElementById('card-quran');
-  if(card){ card.classList.toggle('done',val==='done'); card.classList.toggle('missed',val==='miss'); }
-}
-
-function updateProgress(){
-  const dayNum=new Date().getDay(), isFriday=dayNum===5;
-  let tot=5+(DAILY_WORSHIPS.length-1+5)+2+(isFriday?2:0); // azkar-salah counts as 5 instead of 1
-  let done=0;
-  PRAYERS.forEach(p=>{ if(todayState.prayers[p]) done++; });
-  DAILY_WORSHIPS.forEach(w=>{
-    if(w.id==='azkar-salah'){
-      const az=todayState.azkarSalah||{};
-      done+=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
-    } else {
-      const val=w.id==='quran'?todayState.quran:todayState.checks[w.id];
-      if(val==='yes'||val==='done') done++;
-    }
-  });
-  if(isFriday){ if(todayState.checks['doha-juma']==='yes') done++; if(todayState.checks['asr-juma']==='yes') done++; }
-  if(todayState.checks['rahm']==='yes') done++;
-  if(todayState.checks['sadaqa']==='yes') done++;
-  const pct=tot>0?Math.round(done/tot*100):0;
-  const circ=document.getElementById('progress-circle');
-  circ.style.strokeDashoffset=169.6-(169.6*pct/100);
-  document.getElementById('progress-pct').textContent=pct+'%';
-}
-
-async function saveDay(){
-  const btn=document.getElementById('btn-save');
-  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
-  try {
-    const today=getToday();
-    // Try update first, then insert
-    const existing = await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}&select=id`);
-    if(existing.length){
-      await SB.patch(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=eq.${today}`, {
-        data: todayState,
-        updated_at: new Date().toISOString()
-      });
-    } else {
-      await SB.post('daily_records', {
-        username: currentUser.name,
-        date: today,
-        data: todayState,
-        updated_at: new Date().toISOString()
-      });
-    }
-    showToast('✅ تم الحفظ بنجاح');
-    // Reload weekly labels
-    await loadWeeklyLabels();
-  } catch(e){
-    showToast('❌ فشل الحفظ، تحقق من الاتصال',true);
-  } finally {
-    btn.disabled=false; btn.textContent='💾 حفظ اليوم';
-  }
-}
-
-async function loadWeeklyLabels(){
-  const weekDates=getWeekDates();
-  let rahmDone=false, sadaqaDone=false;
-  try {
-    const weekRows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&select=data`);
-    weekRows.forEach(r=>{ if(r.data?.checks?.rahm==='yes') rahmDone=true; if(r.data?.checks?.sadaqa==='yes') sadaqaDone=true; });
-  } catch(e){}
-  document.getElementById('rahm-sub').textContent=rahmDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
-  document.getElementById('sadaqa-sub').textContent=sadaqaDone?'✅ تم هذا الأسبوع':'لم يتم بعد هذا الأسبوع';
+async function renderCatchup(dateStr){
+  const slot = document.getElementById('catchup-slot');
+  if(dateStr !== getToday()){ slot.innerHTML=''; return; }
+  const yst = addDays(dateStr,-1);
+  const ystApplicable = worships.filter(w=>isApplicable(w,yst));
+  if(!ystApplicable.length){ slot.innerHTML=''; return; }
+  const ystLogs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=eq.${yst}&select=worship_id,status`);
+  const doneSet = new Set(ystLogs.filter(l=>l.status!=='unrecorded').map(l=>l.worship_id));
+  const missingCount = ystApplicable.filter(w=>!doneSet.has(w.id)).length;
+  if(!missingCount || sessionStorage.getItem('catchup-dismissed-'+yst)){ slot.innerHTML=''; return; }
+  slot.innerHTML = `<div class="catchup-card">
+    <div class="cc-icon">🌙</div>
+    <div class="cc-text">
+      لديك ${missingCount} عبادة من أمس لم تسجل حالتها.
+      <div class="cc-actions">
+        <button class="primary" onclick="loadDay('${yst}')">استكمال أمس</button>
+        <button onclick="sessionStorage.setItem('catchup-dismissed-${yst}','1');document.getElementById('catchup-slot').innerHTML=''">تجاهل</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 // ════════════════════════════════════════════
-//  WEEK TABLE
+//  CALENDAR (التقويم)
 // ════════════════════════════════════════════
-async function renderWeekTable(){
-  const dates=getWeekDates(), today=getToday();
-  showLoading('جاري تحميل بيانات الأسبوع...');
-  let records={};
-  try {
-    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${dates[0]}&date=lte.${dates[6]}&select=date,data`);
-    rows.forEach(r=>records[r.date]=r.data);
-  } catch(e){ showToast('خطأ في تحميل الأسبوع',true); }
-  finally { hideLoading(); }
-
-  const allW=[{id:'fard',name:'الفروض الخمسة'},...DAILY_WORSHIPS,...WEEKLY_WORSHIPS].filter((w,i,a)=>a.findIndex(x=>x.id===w.id)===i);
-  let html=`<thead><tr><th class="worship-col">العبادة</th>`;
-  dates.forEach(date=>{
-    const dd=new Date(date), isT=(date===today);
-    html+=`<th style="${isT?'color:var(--teal-light)':''}">${ARABIC_DAYS[dd.getDay()]}<br><span style="font-size:.65rem;opacity:.6">${dd.getDate()}/${dd.getMonth()+1}</span></th>`;
-  });
-  html+=`</tr></thead><tbody>`;
-  allW.forEach(w=>{
-    html+=`<tr><td class="worship-name-cell">${w.name}</td>`;
-    dates.forEach(date=>{
-      const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
-      const ds=records[date]||null;
-      const isFridayOnly=WEEKLY_WORSHIPS.find(x=>x.id===w.id&&x.onDay===5);
-      if(isFridayOnly&&!isFriday){ html+=`<td class="cell-na">—</td>`; return; }
-      if(w.id==='fard'){
-        if(!ds){ html+=`<td class="cell-na">·</td>`; return; }
-        const done=PRAYERS.filter(p=>ds.prayers?.[p]).length;
-        if(done===5) html+=`<td class="cell-done">✓</td>`;
-        else if(done===0) html+=`<td class="cell-miss">✗</td>`;
-        else html+=`<td class="cell-partial">${done}/5</td>`;
-      } else {
-        if(!ds){ html+=`<td class="cell-na">·</td>`; return; }
-        if(w.id==='azkar-salah'){
-          const az=ds.azkarSalah||{};
-          const cnt=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
-          if(cnt===5) html+=`<td class="cell-done">✓</td>`;
-          else if(cnt===0) html+=`<td class="cell-na">·</td>`;
-          else html+=`<td class="cell-partial">${cnt}/5</td>`;
-        } else {
-          const val=ds.checks?.[w.id]||(w.id==='quran'?ds.quran:null);
-          if(val==='yes'||val==='done') html+=`<td class="cell-done">✓</td>`;
-          else if(val==='no'||val==='miss') html+=`<td class="cell-miss">✗</td>`;
-          else html+=`<td class="cell-na">·</td>`;
-        }
-      }
-    });
-    html+=`</tr>`;
-  });
-  html+=`</tbody>`;
-  document.getElementById('week-table').innerHTML=html;
-}
-
-// ════════════════════════════════════════════
-//  MONTH
-// ════════════════════════════════════════════
-function changeMonth(delta){
-  currentMonthOffset += delta;
-  renderMonthTab();
-}
-
 function getMonthDates(offset){
-  const d=new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth()+offset);
+  const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+offset);
   const year=d.getFullYear(), month=d.getMonth();
-  const daysInMonth=new Date(year, month+1, 0).getDate();
-  const firstDayOfWeek=new Date(year, month, 1).getDay(); // 0=Sunday
-  const dates=[];
-  for(let i=1;i<=daysInMonth;i++){
-    dates.push(`${year}-${pad(month+1)}-${pad(i)}`);
-  }
-  return {dates, year, month, firstDayOfWeek};
+  const firstDow=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  return {year,month,firstDow,daysInMonth};
 }
-
-async function renderMonthTab(){
-  const {dates, year, month, firstDayOfWeek} = getMonthDates(currentMonthOffset);
+function changeMonth(delta){ currentMonthOffset+=delta; renderCalendar(); }
+async function renderCalendar(){
+  const {year,month,firstDow,daysInMonth} = getMonthDates(currentMonthOffset);
   const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   document.getElementById('month-label').textContent = `${monthNames[month]} ${year}`;
-
-  showLoading('جاري تحميل بيانات الشهر...');
-  let records={};
-  try {
-    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${dates[0]}&date=lte.${dates[dates.length-1]}&select=date,data`);
-    rows.forEach(r=>records[r.date]=r.data);
-  } catch(e){ showToast('خطأ في تحميل بيانات الشهر',true); }
-  finally { hideLoading(); }
-
+  const first = `${year}-${pad(month+1)}-01`;
+  const last = `${year}-${pad(month+1)}-${pad(daysInMonth)}`;
+  showLoading('جاري تحميل التقويم...');
+  let logs=[];
+  try { logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=date,status,worship_id`); }
+  catch(e){}
+  hideLoading();
+  const byDate={};
+  logs.forEach(l=>{ (byDate[l.date] = byDate[l.date]||[]).push(l); });
   const today=getToday();
-  let totalDone=0, totalItems=0, recordedDays=0, bestStreak=0, curStreak=0;
-
-  // Calendar grid
-  const dayLabels=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
-  let calHtml = dayLabels.map(l=>`<div class="cal-day-label">${l}</div>`).join('');
-  for(let i=0;i<firstDayOfWeek;i++){ calHtml+=`<div class="cal-cell empty"></div>`; }
-
-  dates.forEach(date=>{
-    const ds=records[date]||null;
-    const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
-    const dayOfMonth=parseInt(date.split('-')[2]);
-    const isToday=(date===today);
-
-    let pct=null;
-    if(ds){
-      recordedDays++;
-      const {done,total}=calcDayScore(ds, isFriday);
-      pct = total>0 ? Math.round(done/total*100) : 0;
-      totalDone+=done; totalItems+=total;
-      if(date<=today){ curStreak++; bestStreak=Math.max(bestStreak,curStreak); }
-    } else if(date<=today){
-      curStreak=0;
+  let html = ['ح','ن','ث','ر','خ','ج','س'].map(d=>`<div class="cal-day-label">${d}</div>`).join('');
+  for(let i=0;i<firstDow;i++) html += `<div class="cal-cell empty"></div>`;
+  for(let day=1; day<=daysInMonth; day++){
+    const ds = `${year}-${pad(month+1)}-${pad(day)}`;
+    const applicable = worships.filter(w=>isApplicable(w,ds)).length;
+    const dLogs = byDate[ds]||[];
+    const done = dLogs.filter(l=>l.status==='completed').length;
+    let cls='';
+    if(applicable>0){
+      const pct = done/applicable;
+      cls = pct>=0.7?'streak-high':pct>=0.35?'streak-mid':(dLogs.length?'streak-low':'');
     }
-
-    let cls='cal-cell';
-    if(isToday) cls+=' today';
-    if(pct!==null){
-      cls+=' has-data';
-      if(pct>=80) cls+=' streak-high';
-      else if(pct>=40) cls+=' streak-mid';
-      else cls+=' streak-low';
-    }
-    calHtml += `<div class="${cls}"><span class="cal-num">${dayOfMonth}</span></div>`;
-  });
-  document.getElementById('calendar-grid').innerHTML = calHtml;
-
-  const overallPct = totalItems>0 ? Math.round(totalDone/totalItems*100) : 0;
-  if(recordedDays===0){
-    document.getElementById('month-summary').innerHTML = `
-      <div class="stat-card" style="grid-column:1/-1"><div class="stat-icon">📭</div><div class="stat-val stat-gold">لا توجد بيانات</div><div class="stat-lbl">لم تسجّل أي يوم هذا الشهر</div></div>`;
-    return;
+    if(ds===today) cls+=' today';
+    html += `<div class="cal-cell ${cls}" onclick="calendarJump('${ds}')"><div class="cal-num">${day}</div></div>`;
   }
-  document.getElementById('month-summary').innerHTML = `
-    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val stat-gold">${overallPct}%</div><div class="stat-lbl">معدل الإنجاز الشهري</div></div>
-    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val stat-green">${totalDone}</div><div class="stat-lbl">عبادة أُنجزت</div></div>
-    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val stat-blue">${bestStreak}</div><div class="stat-lbl">أطول سلسلة متواصلة</div></div>
-    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val stat-gold">${recordedDays}</div><div class="stat-lbl">أيام سُجّلت</div></div>`;
+  document.getElementById('calendar-grid').innerHTML = html;
 }
-
-function calcDayScore(ds, isFriday){
-  let done=0, total=0;
-  PRAYERS.forEach(p=>{ total++; if(ds.prayers?.[p]) done++; });
-  DAILY_WORSHIPS.forEach(w=>{
-    if(w.id==='azkar-salah'){
-      total+=5;
-      const az=ds.azkarSalah||{};
-      done+=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
-    } else {
-      total++;
-      const val=w.id==='quran'?ds.quran:ds.checks?.[w.id];
-      if(val==='yes'||val==='done') done++;
-    }
-  });
-  if(isFriday){ total+=2; if(ds.checks?.['doha-juma']==='yes') done++; if(ds.checks?.['asr-juma']==='yes') done++; }
-  total+=2; if(ds.checks?.['rahm']==='yes') done++; if(ds.checks?.['sadaqa']==='yes') done++;
-  return {done,total};
+function calendarJump(ds){
+  loadDay(ds);
+  document.querySelector('.bn-btn[data-tab="today"]').click();
 }
 
 // ════════════════════════════════════════════
-//  COMPARE
+//  PROGRESS (تقدمي) — تقارير حقيقية من daily_worship_logs
 // ════════════════════════════════════════════
-async function renderCompare(){
-  if(currentUser?.role!=='admin'){ showToast('هذا القسم للمشرف فقط',true); return; }
-  const dates=getWeekDates();
-  document.getElementById('compare-week-label').textContent=`أسبوع ${new Date().toLocaleDateString('ar-EG',{month:'long',day:'numeric'})}`;
-  showLoading('جاري تحميل بيانات المجموعة...');
-  let users=[], allRecords=[];
-  try {
-    users=await SB.get('users?select=name,role,pages_goal');
-    allRecords=await SB.get(`daily_records?date=gte.${dates[0]}&date=lte.${dates[6]}&select=username,date,data`);
-  } catch(e){ showToast('خطأ في تحميل بيانات المقارنة',true); }
-  finally { hideLoading(); }
-
-  const scores=users.map((u,i)=>{
-    const uRecs=allRecords.filter(r=>r.username===u.name);
-    const recMap={}; uRecs.forEach(r=>recMap[r.date]=r.data);
-    const {done,total}=calcWeekScore(recMap, dates);
-    const pct=total>0?Math.round(done/total*100):0;
-    return {u, pct, done, total, color:AVATAR_COLORS[i%AVATAR_COLORS.length]};
-  }).sort((a,b)=>b.pct-a.pct);
-
-  let cardsHtml='';
-  scores.forEach(s=>{
-    cardsHtml+=`<div class="member-card">
-      <div class="m-avatar" style="background:linear-gradient(135deg,${s.color},${s.color}99)">${s.u.name[0]}</div>
-      <div class="m-name">${s.u.name}</div>
-      <div class="m-score" style="color:${s.pct>=70?'var(--success)':s.pct>=40?'var(--warn)':'var(--danger)'}">${s.pct}%</div>
-      <div class="m-label">${s.done} من ${s.total} عبادة</div>
-      <div class="m-bar"><div class="m-bar-fill" style="width:${s.pct}%"></div></div>
-    </div>`;
-  });
-  document.getElementById('compare-grid').innerHTML=cardsHtml;
-
-  let lbHtml='';
-  scores.forEach((s,i)=>{
-    const rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
-    lbHtml+=`<div class="lb-row">
-      <div class="lb-rank ${rc}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-      <div class="lb-name">${s.u.name}</div>
-      <div class="lb-score">${s.done}</div>
-      <div class="lb-pct">${s.pct}%</div>
-    </div>`;
-  });
-  document.getElementById('leaderboard-rows').innerHTML=lbHtml||'<div style="padding:1rem;color:var(--muted);text-align:center">لا يوجد بيانات بعد</div>';
+function switchProgressRange(r){
+  progressRange=r;
+  document.querySelectorAll('#panel-progress .chip-select button').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('prog-tab-'+r).classList.add('sel');
+  renderProgress();
 }
+function isApplicableForRange(w, dateStr){ return isApplicable(w, dateStr); }
 
-function calcWeekScore(recMap, dates){
-  let done=0, total=0;
-  dates.forEach(date=>{
-    const ds=recMap[date]; if(!ds) return;
-    const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
-    PRAYERS.forEach(p=>{ total++; if(ds.prayers?.[p]) done++; });
-    DAILY_WORSHIPS.forEach(w=>{
-      if(w.id==='azkar-salah'){
-        total+=5;
-        const az=ds.azkarSalah||{};
-        done+=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
-      } else {
-        total++;
-        const val=w.id==='quran'?ds.quran:ds.checks?.[w.id];
-        if(val==='yes'||val==='done') done++;
-      }
-    });
-    if(isFriday){ total+=2; if(ds.checks?.['doha-juma']==='yes') done++; if(ds.checks?.['asr-juma']==='yes') done++; }
-    total+=2; if(ds.checks?.['rahm']==='yes') done++; if(ds.checks?.['sadaqa']==='yes') done++;
-  });
-  return {done,total};
-}
-
-// ════════════════════════════════════════════
-//  REPORT
-// ════════════════════════════════════════════
-async function renderReport(){
-  document.getElementById('report-username').textContent=currentUser.name;
-  const dates=getWeekDates(), today=getToday();
-  showLoading('جاري إعداد التقرير...');
-  let records={};
-  try {
-    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&date=gte.${dates[0]}&date=lte.${dates[6]}&select=date,data`);
-    rows.forEach(r=>records[r.date]=r.data);
-  } catch(e){ showToast('خطأ في تحميل التقرير',true); }
-  finally { hideLoading(); }
-
-  const allW=[{id:'fard',name:'الفروض الخمسة'},...DAILY_WORSHIPS,{id:'doha-juma',name:'جلسة الضحى (جمعة)'},{id:'asr-juma',name:'ساعة عصر الجمعة'},{id:'rahm',name:'صلة الرحم'},{id:'sadaqa',name:'صدقة'}];
-  const stats={}; allW.forEach(w=>stats[w.id]={done:0,total:0,name:w.name});
-  let totalDone=0, totalItems=0, recordedDays=0;
-
-  dates.forEach(date=>{
-    if(date>today) return;
-    const dayNum=new Date(date).getDay(), isFriday=(dayNum===5);
-    const ds=records[date]||null;
-    if(!ds) return; // skip days with no recorded data entirely — don't count them against the user
-    recordedDays++;
-
-    // Fard prayers
-    stats['fard'].total+=5; totalItems+=5;
-    const fardDone=PRAYERS.filter(p=>ds.prayers?.[p]).length;
-    stats['fard'].done+=fardDone; totalDone+=fardDone;
-
-    // Daily worships
-    DAILY_WORSHIPS.forEach(w=>{
-      if(w.id==='azkar-salah'){
-        stats[w.id].total+=5; totalItems+=5;
-        const az=ds.azkarSalah||{};
-        const cnt=['fajr','zuhr','asr','mgrb','isha'].filter(a=>az[a]).length;
-        stats[w.id].done+=cnt; totalDone+=cnt;
-      } else {
-        stats[w.id].total++; totalItems++;
-        const val=w.id==='quran'?ds.quran:ds.checks?.[w.id];
-        if(val==='yes'||val==='done'){ stats[w.id].done++; totalDone++; }
-      }
-    });
-
-    // Friday-only worships — only count on Fridays that were actually recorded
-    if(isFriday){
-      ['doha-juma','asr-juma'].forEach(id=>{
-        stats[id].total++; totalItems++;
-        if(ds.checks?.[id]==='yes'){ stats[id].done++; totalDone++; }
-      });
-    }
-
-    // Weekly worships — count every recorded day as an opportunity to mark them done
-    ['rahm','sadaqa'].forEach(id=>{
-      stats[id].total++; totalItems++;
-      if(ds.checks?.[id]==='yes'){ stats[id].done++; totalDone++; }
+async function computePeriodReport(dates){
+  const active = worships.filter(w=>!w.is_paused && !w.is_hidden);
+  const first=dates[0], last=dates[dates.length-1];
+  const logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=*`);
+  const perWorship={};
+  active.forEach(w=>{ perWorship[w.id]={name:w.name, unit:w.target_unit, scheduled:0, completed:0, isWeekly:w.recurrence_type==='times_per_week'}; });
+  let scheduled=0, completed=0;
+  dates.forEach(d=>{
+    active.forEach(w=>{
+      if(w.recurrence_type==='times_per_week') return;
+      if(isApplicableForRange(w,d)){ perWorship[w.id].scheduled++; scheduled++; }
     });
   });
+  const weeks = Math.max(1, Math.round(dates.length/7));
+  active.filter(w=>w.recurrence_type==='times_per_week').forEach(w=>{
+    perWorship[w.id].scheduled = (w.weekly_target||1)*weeks;
+    scheduled += perWorship[w.id].scheduled;
+  });
+  logs.forEach(l=>{
+    const pw=perWorship[l.worship_id]; if(!pw) return;
+    if(l.status==='completed'){ pw.completed++; completed++; }
+  });
+  const daysLogged = new Set(logs.filter(l=>l.status!=='unrecorded').map(l=>l.date)).size;
+  const pct = scheduled? Math.round(completed/scheduled*100):0;
+  let best=null, worst=null;
+  Object.values(perWorship).forEach(p=>{
+    if(!p.scheduled) return;
+    const r=p.completed/p.scheduled;
+    if(!best||r>best.r) best={...p,r};
+    if(!worst||r<worst.r) worst={...p,r};
+  });
+  return {scheduled, completed, pct, daysLogged, perWorship, best, worst, totalDays:dates.length};
+}
 
-  const pctOverall=totalItems>0?Math.round(totalDone/totalItems*100):0;
-  const arr=Object.values(stats).filter(w=>w.total>0);
-  const best=arr.length?[...arr].sort((a,b)=>(b.done/b.total)-(a.done/a.total))[0]:null;
-  const worst=arr.length?[...arr].sort((a,b)=>(a.done/a.total)-(b.done/b.total))[0]:null;
-  const streak=await calcStreak();
-
-  if(recordedDays===0){
-    document.getElementById('report-summary').innerHTML=`
-      <div class="stat-card" style="grid-column:1/-1"><div class="stat-icon">📭</div><div class="stat-val stat-gold">لا توجد بيانات</div><div class="stat-lbl">لم تسجّل أي يوم هذا الأسبوع بعد</div></div>`;
-    document.getElementById('report-highlights').innerHTML='';
-    document.getElementById('report-bars').innerHTML='';
-    return;
+async function renderProgress(){
+  const slot = document.getElementById('progress-slot');
+  slot.innerHTML = '<div class="empty-day-hint">جاري الحساب...</div>';
+  if(progressRange==='week'){
+    const dates = getWeekDates(getToday());
+    const prevDates = getWeekDates(addDays(dates[0],-7));
+    const [cur, prev] = await Promise.all([computePeriodReport(dates), computePeriodReport(prevDates)]);
+    slot.innerHTML = renderReportHTML('التقرير الأسبوعي', cur, prev);
+  } else if(progressRange==='month'){
+    const {year,month,daysInMonth} = getMonthDates(0);
+    const today = getToday();
+    const lastDay = Math.min(daysInMonth, parseInt(today.split('-')[2]));
+    const dates=[]; for(let d=1; d<=lastDay; d++) dates.push(`${year}-${pad(month+1)}-${pad(d)}`);
+    const {year:py,month:pm,daysInMonth:pdim} = getMonthDates(-1);
+    const pdates=[]; for(let d=1; d<=pdim; d++) pdates.push(`${py}-${pad(pm+1)}-${pad(d)}`);
+    const [cur, prev] = await Promise.all([computePeriodReport(dates), computePeriodReport(pdates)]);
+    slot.innerHTML = renderReportHTML('التقرير الشهري', cur, prev);
+  } else if(progressRange==='quran'){
+    slot.innerHTML = await renderQuranProgress();
   }
+}
 
-  document.getElementById('report-summary').innerHTML=`
-    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val stat-gold">${pctOverall}%</div><div class="stat-lbl">معدل الإنجاز</div></div>
-    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val stat-green">${totalDone}</div><div class="stat-lbl">عبادة أُنجزت</div></div>
-    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val stat-blue">${streak}</div><div class="stat-lbl">أيام متواصلة</div></div>
-    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val stat-gold">${recordedDays}</div><div class="stat-lbl">أيام سُجّلت</div></div>`;
-
-  const bPct=best?Math.round(best.done/best.total*100):0;
-  const wPct=worst?Math.round(worst.done/worst.total*100):0;
-  document.getElementById('report-highlights').innerHTML=`
-    <h3>🏅 التقييم الأسبوعي</h3>
-    <div class="highlight-item">
-      <div class="h-badge h-best">🏆</div>
-      <div class="h-info"><div class="h-name">أفضل عبادة أنجزتها</div><div class="h-detail">${best?.name||'—'}</div></div>
-      <div class="h-pct good">${bPct}%</div>
-    </div>
-    <div class="highlight-item">
-      <div class="h-badge h-worst">⚠️</div>
-      <div class="h-info"><div class="h-name">أكثر عبادة فيها كسل</div><div class="h-detail">${worst?.name||'—'}</div></div>
-      <div class="h-pct bad">${wPct}%</div>
-    </div>
-    <div class="highlight-item">
-      <div class="h-badge" style="background:rgba(201,168,76,.15)">💡</div>
-      <div class="h-info"><div class="h-name">التوصية الأسبوعية</div><div class="h-detail">${getRec(wPct,worst?.name)}</div></div>
-    </div>`;
-
-  const sorted=[...arr].sort((a,b)=>(b.done/b.total)-(a.done/a.total));
-  document.getElementById('report-bars').innerHTML=sorted.map(w=>{
-    const pct=Math.round(w.done/w.total*100);
-    const col=pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)';
-    return `<div class="bar-row"><div class="bar-label">${w.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><div class="bar-val">${pct}%</div></div>`;
+function renderReportHTML(title, cur, prev){
+  const trend = cur.pct - prev.pct;
+  const trendHtml = prev.scheduled ? `<span class="${trend>=0?'trend-up':'trend-down'}">${trend>=0?'▲':'▼'} ${Math.abs(trend)}% عن الفترة السابقة</span>` : '';
+  let bars = Object.values(cur.perWorship).filter(p=>p.scheduled>0).map(p=>{
+    const pct = Math.round(p.completed/p.scheduled*100);
+    return `<div class="bar-row"><div class="bar-label">${esc(p.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--teal),var(--teal-light))"></div></div><div class="bar-val">${p.completed}/${p.scheduled}</div></div>`;
   }).join('');
+  return `
+    <div class="report-summary">
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val stat-green">${cur.completed}/${cur.scheduled}</div><div class="stat-lbl">عبادات مكتملة</div></div>
+      <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val stat-gold">${cur.pct}%</div><div class="stat-lbl">نسبة الالتزام</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val stat-blue">${cur.daysLogged}/${cur.totalDays}</div><div class="stat-lbl">أيام تم التسجيل فيها</div></div>
+    </div>
+    ${trendHtml?`<div class="report-highlight" style="text-align:center">${trendHtml}</div>`:''}
+    ${cur.best?`<div class="report-highlight"><h3>الأبرز</h3>
+      <div class="highlight-item"><div class="h-badge h-best">🌟</div><div class="h-info"><div class="h-name">الأكثر التزامًا</div><div class="h-detail">${esc(cur.best.name)}</div></div><div class="h-pct good">${Math.round(cur.best.r*100)}%</div></div>
+      ${cur.worst && cur.worst.name!==cur.best.name?`<div class="highlight-item"><div class="h-badge h-worst">💡</div><div class="h-info"><div class="h-name">تحتاج اهتمام أكتر</div><div class="h-detail">${esc(cur.worst.name)}</div></div><div class="h-pct bad">${Math.round(cur.worst.r*100)}%</div></div>`:''}
+    </div>`:''}
+    <div class="report-highlight"><h3>📊 معدل الإنجاز لكل عبادة</h3><div class="bar-chart">${bars||'<div class="empty-day-hint" style="padding:1rem">لا توجد بيانات كافية بعد</div>'}</div></div>
+  `;
 }
 
-async function calcStreak(){
-  let streak=0;
+async function renderQuranProgress(){
+  const {year,month} = getMonthDates(0);
+  const first = `${year}-${pad(month+1)}-01`;
+  const last = getToday();
+  const quranWorships = worships.filter(w=>w.category==='quran');
+  if(!quranWorships.length) return '<div class="empty-day-hint">لسه معندكش وِرد قرآن مضاف. ضيفه من "عباداتي"</div>';
+  const ids = quranWorships.map(w=>w.id);
+  const logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&worship_id=in.(${ids.join(',')})&date=gte.${first}&date=lte.${last}&select=*`);
+  let pagesRead=0, hifzSessions=0, murajaaSessions=0, needsReview=0;
+  logs.forEach(l=>{
+    const w = quranWorships.find(x=>x.id===l.worship_id);
+    if(!w) return;
+    if(w.quran_mode==='read' && l.value) pagesRead += Number(l.value);
+    if(w.quran_mode==='memorize' && (l.status==='completed')) hifzSessions++;
+    if(w.quran_mode==='review' && (l.status==='completed')) murajaaSessions++;
+    if(l.quality_rating==='needs_review') needsReview++;
+  });
+  return `<div class="report-summary">
+    <div class="stat-card"><div class="stat-icon">📗</div><div class="stat-val stat-green">${pagesRead}</div><div class="stat-lbl">صفحات قراءة هذا الشهر</div></div>
+    <div class="stat-card"><div class="stat-icon">📘</div><div class="stat-val stat-gold">${hifzSessions}</div><div class="stat-lbl">جلسات حفظ</div></div>
+    <div class="stat-card"><div class="stat-icon">📙</div><div class="stat-val stat-blue">${murajaaSessions}</div><div class="stat-lbl">جلسات مراجعة</div></div>
+    <div class="stat-card"><div class="stat-icon">🔁</div><div class="stat-val" style="color:var(--warn)">${needsReview}</div><div class="stat-lbl">تحتاج مراجعة</div></div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════
+//  عباداتي — Worship Builder
+// ════════════════════════════════════════════
+function renderBuilder(){
+  const groups = {active:[], paused:[], hidden:[]};
+  worships.forEach(w=>{
+    if(w.is_hidden) groups.hidden.push(w);
+    else if(w.is_paused) groups.paused.push(w);
+    else groups.active.push(w);
+  });
+  const row = (w,extraCls='') => `
+    <div class="builder-row ${extraCls}">
+      <div class="wcard-icon">${w.icon||'🕌'}</div>
+      <div class="br-info">
+        <div class="br-name">${esc(w.name)}</div>
+        <div class="br-meta">${SECTION_LABEL[w.day_section]||''} · ${recurrenceLabel(w)}</div>
+      </div>
+      <button class="br-menu-btn" onclick="openActionModal('${w.id}')">⋮</button>
+    </div>`;
+  let html = '';
+  html += `<div class="builder-group-label">نشطة (${groups.active.length})</div>` + (groups.active.map(w=>row(w)).join('') || '<div class="empty-day-hint" style="padding:1rem">لا يوجد</div>');
+  if(groups.paused.length) html += `<div class="builder-group-label">متوقفة مؤقتًا</div>` + groups.paused.map(w=>row(w,'paused')).join('');
+  if(groups.hidden.length) html += `<div class="builder-group-label">مخفية</div>` + groups.hidden.map(w=>row(w,'hidden')).join('');
+  document.getElementById('builder-list').innerHTML = html;
+}
+function recurrenceLabel(w){
+  if(w.recurrence_type==='daily') return 'يوميًا';
+  if(w.recurrence_type==='specific_days') return 'أيام محددة';
+  if(w.recurrence_type==='times_per_week') return `${w.weekly_target||1}×/أسبوع`;
+  if(w.recurrence_type==='once') return 'مرة واحدة';
+  return '';
+}
+
+function openActionModal(id){
+  actionWorshipId = id;
+  const w = worships.find(x=>x.id===id);
+  document.getElementById('am-title').textContent = w.name;
+  document.getElementById('am-pause-btn').textContent = w.is_paused ? '▶️ إعادة تفعيل' : '⏸️ إيقاف مؤقت';
+  document.getElementById('am-hide-btn').textContent = w.is_hidden ? '👁️ إظهار' : '🙈 إخفاء';
+  document.getElementById('action-modal').classList.remove('hidden');
+}
+function closeActionModal(){ document.getElementById('action-modal').classList.add('hidden'); }
+
+async function worshipAction(action){
+  const w = worships.find(x=>x.id===actionWorshipId);
+  if(!w) return;
+  closeActionModal();
+  if(action==='edit'){ openWorshipModal(w.id); return; }
+  showLoading('جاري التنفيذ...');
   try {
-    const rows=await SB.get(`daily_records?username=eq.${encodeURIComponent(currentUser.name)}&order=date.desc&limit=30&select=date`);
-    const today=getToday();
-    const d=new Date();
-    for(let i=0;i<30;i++){
-      const dd=new Date(d); dd.setDate(d.getDate()-i);
-      const key=`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`;
-      if(key>today) continue;
-      if(rows.find(r=>r.date===key)) streak++;
-      else break;
+    if(action==='duplicate'){
+      const copy = Object.assign({}, w, {name: w.name+' (نسخة)'});
+      delete copy.id; delete copy.created_at; delete copy.updated_at;
+      await SB.post('worships', copy);
+    } else if(action==='pause'){
+      await SB.patch(`worships?id=eq.${w.id}`, {is_paused: !w.is_paused});
+    } else if(action==='hide'){
+      await SB.patch(`worships?id=eq.${w.id}`, {is_hidden: !w.is_hidden});
+    } else if(action==='delete'){
+      if(!confirm(`متأكد من حذف "${w.name}"؟ هيتم حذف كل سجلاتها كمان.`)) { hideLoading(); return; }
+      await SB.delete(`worships?id=eq.${w.id}`);
     }
-  } catch(e){}
-  return streak;
-}
-
-function getRec(pct,name){
-  if(!name) return 'استمر في المداومة على العبادات';
-  if(pct<30) return `ركّز هذا الأسبوع على "${name}" — ابدأ بيوم واحد!`;
-  if(pct<60) return `حاول تثبّت "${name}" كعادة يومية ثابتة`;
-  return `أنت على المسار الصحيح، استمر في تحسين "${name}"`;
-}
-
-// ════════════════════════════════════════════
-//  ADMIN
-// ════════════════════════════════════════════
-async function renderAdmin(){
-  if(currentUser?.role!=='admin'){ showToast('هذا القسم للمشرف فقط',true); return; }
-  showLoading('جاري التحميل...');
-  let users=[];
-  try { users=await SB.get('users?select=id,name,role,pages_goal&order=created_at.asc'); }
-  catch(e){ showToast('خطأ في تحميل الأعضاء',true); }
+    await loadWorships();
+    renderBuilder();
+    showToast('تم ✅');
+  } catch(e){ showToast('حصل خطأ',true); }
   finally { hideLoading(); }
-
-  document.getElementById('members-list').innerHTML=users.map((u,i)=>`
-    <div class="member-row">
-      <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.name[0]}</div>
-      <div class="m-n2">${u.name}</div>
-      <div class="m-role">${u.role==='admin'?'مشرف':'عضو'}</div>
-      ${u.role!=='admin'?`<button class="btn-del" onclick="deleteMember('${u.id}','${u.name}')">حذف</button>`:''}
-    </div>`).join('');
 }
 
-async function deleteMember(id,name){
-  if(currentUser?.role!=='admin'){ showToast('هذا الإجراء للمشرف فقط',true); return; }
-  if(!confirm(`هتحذف "${name}"؟`)) return;
+// ── Worship Modal (add/edit) ──
+let wmTrackingType='boolean', wmRecurrence='daily', wmDays=new Set(), wmIcon='🕌';
+function openWorshipModal(existingId){
+  editingWorshipId = existingId || null;
+  const w = editingWorshipId ? worships.find(x=>x.id===editingWorshipId) : null;
+  document.getElementById('wm-title').textContent = w ? 'تعديل عبادة' : 'إضافة عبادة';
+  document.getElementById('wm-templates').style.display = w ? 'none' : '';
+  document.getElementById('wm-form').style.display = w ? '' : 'none';
+  document.getElementById('wm-delete-row').style.display = w ? '' : 'none';
+  buildTemplateGrid();
+  buildIconSelect();
+  buildDaySectionSelect();
+  buildDaysChips();
+
+  document.getElementById('wm-name').value = w?.name || '';
+  document.getElementById('wm-desc').value = w?.description || '';
+  wmIcon = w?.icon || '🕌';
+  wmTrackingType = w?.tracking_type || 'boolean';
+  wmRecurrence = w?.recurrence_type || 'daily';
+  wmDays = new Set(w?.days_of_week || []);
+  document.getElementById('wm-target').value = w?.target_value ?? '';
+  document.getElementById('wm-unit').value = w?.target_unit || '';
+  document.getElementById('wm-surah').value = w?.quran_surah || '';
+  document.getElementById('wm-start-ayah').value = w?.quran_start_ayah ?? '';
+  document.getElementById('wm-end-ayah').value = w?.quran_end_ayah ?? '';
+  document.getElementById('wm-weekly-target').value = w?.weekly_target || 1;
+  document.getElementById('wm-section').value = w?.day_section || 'after_fajr';
+  document.getElementById('wm-time').value = w?.specific_time || '';
+  document.getElementById('wm-start-date').value = w?.start_date || '';
+  document.getElementById('wm-end-date').value = w?.end_date || '';
+  document.getElementById('wm-advanced').classList.toggle('open', !!w);
+  refreshTrackingUI(); refreshRecurrenceUI(); refreshIconUI(); refreshDaysUI();
+  document.getElementById('worship-modal').classList.remove('hidden');
+}
+function closeWorshipModal(){ document.getElementById('worship-modal').classList.add('hidden'); editingWorshipId=null; }
+function toggleAdvanced(){ document.getElementById('wm-advanced').classList.toggle('open'); }
+
+function buildTemplateGrid(){
+  document.getElementById('template-grid').innerHTML = TEMPLATES.map(t=>
+    `<div class="template-card" onclick="useTemplate('${t.key}')"><div class="t-icon">${t.icon}</div><div class="t-name">${esc(t.name)}</div></div>`
+  ).join('') + `<div class="template-card" onclick="document.getElementById('wm-templates').style.display='none';document.getElementById('wm-form').style.display=''"><div class="t-icon">✍️</div><div class="t-name">عبادة مخصصة</div></div>`;
+}
+function useTemplate(key){
+  const t = TEMPLATES.find(x=>x.key===key);
+  document.getElementById('wm-templates').style.display='none';
+  document.getElementById('wm-form').style.display='';
+  document.getElementById('wm-name').value = t.name;
+  wmIcon = t.icon; wmTrackingType = t.tracking_type; wmRecurrence = t.recurrence_type;
+  wmDays = new Set(t.days_of_week||[]);
+  document.getElementById('wm-target').value = t.target_value||'';
+  document.getElementById('wm-unit').value = t.target_unit||'';
+  document.getElementById('wm-weekly-target').value = t.weekly_target||1;
+  document.getElementById('wm-section').value = t.day_section;
+  document.getElementById('wm-advanced').classList.add('open');
+  window._wmQuranMode = t.quran_mode||null;
+  window._wmCategory = t.category||'custom';
+  refreshTrackingUI(); refreshRecurrenceUI(); refreshIconUI(); refreshDaysUI();
+}
+function buildIconSelect(){
+  document.getElementById('wm-icon-select').innerHTML = WORSHIP_ICONS.map(ic=>`<button type="button" data-ic="${ic}" onclick="setIcon('${ic}')">${ic}</button>`).join('');
+}
+function setIcon(ic){ wmIcon=ic; refreshIconUI(); }
+function refreshIconUI(){ document.querySelectorAll('#wm-icon-select button').forEach(b=>b.classList.toggle('sel', b.dataset.ic===wmIcon)); }
+
+function setTrackingType(v){ wmTrackingType=v; refreshTrackingUI(); }
+function refreshTrackingUI(){
+  document.querySelectorAll('#wm-form .chip-select button[data-v]').forEach(b=>{
+    if(['boolean','count','quantity','multi'].includes(b.dataset.v)) b.classList.toggle('sel', b.dataset.v===wmTrackingType);
+  });
+  document.getElementById('wm-target-row').style.display = (wmTrackingType==='count'||wmTrackingType==='quantity') ? '' : 'none';
+  document.getElementById('wm-quran-row').style.display = wmTrackingType==='multi' ? '' : 'none';
+}
+function setRecurrence(v){ wmRecurrence=v; refreshRecurrenceUI(); }
+function refreshRecurrenceUI(){
+  document.querySelectorAll('#wm-form .chip-select button[data-v]').forEach(b=>{
+    if(['daily','specific_days','times_per_week','once'].includes(b.dataset.v)) b.classList.toggle('sel', b.dataset.v===wmRecurrence);
+  });
+  document.getElementById('wm-days-row').style.display = wmRecurrence==='specific_days' ? '' : 'none';
+  document.getElementById('wm-weekly-target-row').style.display = wmRecurrence==='times_per_week' ? '' : 'none';
+  document.getElementById('wm-section-row').style.display = wmRecurrence==='times_per_week' ? 'none' : '';
+}
+function buildDaysChips(){
+  document.getElementById('wm-days-select').innerHTML = ARABIC_DAYS.map((d,i)=>`<button type="button" class="day-chip" data-d="${i}" onclick="toggleDay(${i})">${d[0]}</button>`).join('');
+}
+function toggleDay(i){ wmDays.has(i) ? wmDays.delete(i) : wmDays.add(i); refreshDaysUI(); }
+function refreshDaysUI(){ document.querySelectorAll('#wm-days-select button').forEach(b=>b.classList.toggle('sel', wmDays.has(Number(b.dataset.d)))); }
+function buildDaySectionSelect(){
+  document.getElementById('wm-section').innerHTML = DAY_SECTIONS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('');
+}
+
+async function saveWorship(){
+  const name = document.getElementById('wm-name').value.trim();
+  if(!name){ showToast('اسم العبادة مطلوب',true); return; }
+  const body = {
+    name,
+    description: document.getElementById('wm-desc').value.trim()||null,
+    icon: wmIcon,
+    tracking_type: wmTrackingType,
+    category: window._wmCategory || (editingWorshipId ? worships.find(w=>w.id===editingWorshipId)?.category : 'custom') || 'custom',
+    target_value: document.getElementById('wm-target').value ? Number(document.getElementById('wm-target').value) : null,
+    target_unit: document.getElementById('wm-unit').value.trim()||null,
+    recurrence_type: wmRecurrence,
+    days_of_week: wmRecurrence==='specific_days' ? Array.from(wmDays) : null,
+    weekly_target: wmRecurrence==='times_per_week' ? Number(document.getElementById('wm-weekly-target').value||1) : null,
+    day_section: wmRecurrence==='times_per_week' ? 'weekly_goal' : document.getElementById('wm-section').value,
+    specific_time: document.getElementById('wm-time').value || null,
+    start_date: document.getElementById('wm-start-date').value || null,
+    end_date: document.getElementById('wm-end-date').value || null,
+    quran_mode: window._wmQuranMode || (editingWorshipId ? worships.find(w=>w.id===editingWorshipId)?.quran_mode : null) || null,
+    quran_surah: document.getElementById('wm-surah').value.trim()||null,
+    quran_start_ayah: document.getElementById('wm-start-ayah').value ? Number(document.getElementById('wm-start-ayah').value) : null,
+    quran_end_ayah: document.getElementById('wm-end-ayah').value ? Number(document.getElementById('wm-end-ayah').value) : null,
+  };
+  showLoading('جاري الحفظ...');
+  try {
+    if(editingWorshipId){
+      await SB.patch(`worships?id=eq.${editingWorshipId}`, body);
+    } else {
+      body.user_id = currentUser.id;
+      body.sort_order = (Math.max(0,...worships.map(w=>w.sort_order||0))+10);
+      await SB.post('worships', body);
+    }
+    await loadWorships();
+    renderBuilder();
+    closeWorshipModal();
+    showToast('تم الحفظ ✅');
+  } catch(e){ showToast('حصل خطأ في الحفظ',true); }
+  finally { hideLoading(); window._wmQuranMode=null; window._wmCategory=null; }
+}
+async function deleteWorshipConfirm(){
+  if(!editingWorshipId) return;
+  const w = worships.find(x=>x.id===editingWorshipId);
+  if(!confirm(`متأكد من حذف "${w.name}"؟`)) return;
   showLoading('جاري الحذف...');
   try {
-    await SB.delete(`users?id=eq.${id}`);
-    await SB.delete(`daily_records?username=eq.${encodeURIComponent(name)}`);
-    showToast('تم حذف العضو');
-    await renderAdmin();
-  } catch(e){ showToast('خطأ في الحذف',true); }
+    await SB.delete(`worships?id=eq.${editingWorshipId}`);
+    await loadWorships();
+    renderBuilder();
+    closeWorshipModal();
+    showToast('تم الحذف');
+  } catch(e){ showToast('حصل خطأ',true); }
   finally { hideLoading(); }
 }
 
+// ════════════════════════════════════════════
+//  رفقة أواب (Fellowship)
+// ════════════════════════════════════════════
+async function computeUserWeekStats(userId){
+  const dates = getWeekDates(getToday());
+  const ws = await SB.get(`worships?user_id=eq.${userId}&is_paused=eq.false&is_hidden=eq.false&select=*`);
+  let scheduled=0, completed=0;
+  dates.forEach(d=>{ ws.forEach(w=>{
+    if(w.recurrence_type==='times_per_week') return;
+    if(isApplicable(Object.assign({},w),d)) scheduled++;
+  });});
+  const weeklyOnes = ws.filter(w=>w.recurrence_type==='times_per_week');
+  weeklyOnes.forEach(w=>scheduled+=(w.weekly_target||1));
+  if(ws.length){
+    const ids = ws.map(w=>w.id);
+    const logs = await SB.get(`daily_worship_logs?user_id=eq.${userId}&worship_id=in.(${ids.join(',')})&date=gte.${dates[0]}&date=lte.${dates[6]}&status=eq.completed&select=id`);
+    completed = logs.length;
+  }
+  return {scheduled, completed, pct: scheduled?Math.round(completed/scheduled*100):0};
+}
+async function computeReturnStatus(userId){
+  const from = addDays(getToday(),-13);
+  const logs = await SB.get(`daily_worship_logs?user_id=eq.${userId}&date=gte.${from}&status=eq.completed&select=date`);
+  const daysWithActivity = new Set(logs.map(l=>l.date));
+  const last7 = []; for(let i=0;i<7;i++) last7.push(addDays(getToday(),-i));
+  const prev7 = []; for(let i=7;i<14;i++) prev7.push(addDays(getToday(),-i));
+  const activeLast7 = last7.filter(d=>daysWithActivity.has(d)).length;
+  const activePrev7 = prev7.filter(d=>daysWithActivity.has(d)).length;
+  if(activeLast7>=6) return 'ثابت هذا الأسبوع 🌿';
+  if(activePrev7<=1 && activeLast7>=2) return 'عاد بعد انقطاع 💚';
+  if(activeLast7>activePrev7) return 'تحسّن عن الأسبوع الماضي 📈';
+  if(activeLast7>=3) return `استمر ${activeLast7} أيام هذا الأسبوع`;
+  return 'يحتاج تشجيع 🌱';
+}
+
+async function renderRafeqa(){
+  const list = document.getElementById('rafeqa-list');
+  const goalCard = document.getElementById('group-goal-card');
+  list.innerHTML = '<div class="empty-day-hint">جاري التحميل...</div>';
+  goalCard.innerHTML = '';
+  try {
+    const users = await SB.get(`users?select=id,name`);
+    const settings = await SB.get(`fellowship_settings?select=*`);
+    const setMap={}; settings.forEach(s=>setMap[s.user_id]=s);
+
+    let groupScheduled=0, groupCompleted=0;
+    const cards=[];
+    for(const u of users){
+      const stats = await computeUserWeekStats(u.id);
+      groupScheduled += stats.scheduled; groupCompleted += stats.completed;
+      if(u.id===currentUser.id) continue;
+      const s = setMap[u.id] || {share_level:'none'};
+      let text = 'يفضّل الخصوصية 🌙';
+      if(s.share_level==='percentage') text = `الالتزام هذا الأسبوع: ${stats.pct}%`;
+      else if(s.share_level==='streak') text = await computeReturnStatus(u.id);
+      else if(s.share_level==='selected') text = s.selected_text || 'شارك إنجازًا معك 🌱';
+      cards.push({u, text, showName: s.show_name});
+    }
+    goalCard.innerHTML = `<div class="gg-label">هدف رفقة أواب هذا الأسبوع</div><div class="gg-val">${groupCompleted} / ${groupScheduled||'—'}</div><div class="gg-label" style="margin-top:.3rem">عبادة مكتملة معًا 🌿</div>`;
+
+    if(!cards.length){ list.innerHTML = '<div class="empty-day-hint">لسه معدش رفقاء في المجموعة</div>'; return; }
+    list.innerHTML = cards.map((c,i)=>{
+      const av = AVATAR_COLORS[i%AVATAR_COLORS.length];
+      return `<div class="rafeqa-card">
+        <div class="rf-avatar" style="background:${av}">${c.u.name[0]}</div>
+        <div class="rf-info"><div class="rf-status">${esc(c.text)}</div><div class="rf-hint">${esc(c.u.name)}</div></div>
+        <button class="btn-encourage" onclick="sendEncouragement('${c.u.id}',this)">💚 شجّعه</button>
+      </div>`;
+    }).join('');
+  } catch(e){ list.innerHTML = '<div class="empty-day-hint">تعذّر تحميل رفقة أواب</div>'; }
+}
+async function sendEncouragement(toUserId, btn){
+  btn.disabled=true; btn.textContent='تم الإرسال 🌱';
+  try { await SB.post('encouragements', {to_user_id: toUserId, from_user_id: currentUser.id}); }
+  catch(e){ showToast('تعذّر الإرسال',true); }
+}
+async function checkNewEncouragements(){
+  try {
+    const lastSeen = localStorage.getItem('awwab-enc-seen-'+currentUser.id) || '1970-01-01';
+    const rows = await SB.get(`encouragements?to_user_id=eq.${currentUser.id}&created_at=gt.${lastSeen}&select=id,created_at&order=created_at.desc&limit=1`);
+    if(rows.length){
+      setTimeout(()=>showToast('أحد رفقائك يشجعك على الاستمرار 🌱'), 1200);
+      localStorage.setItem('awwab-enc-seen-'+currentUser.id, rows[0].created_at);
+    }
+  } catch(e){}
+}
+
+// ════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════
+function renderSettings(){
+  const options = [
+    {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
+    {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},
+    {v:'streak', label:'أشارك حالة الاستمرارية فقط', desc:'مثال: "ثابت هذا الأسبوع" أو "عاد بعد انقطاع"'},
+    {v:'selected', label:'أشارك إنجازًا معينًا باختياري', desc:'تكتب أنت نص الإنجاز اللي حابب تشاركه'},
+  ];
+  loadMyFellowshipSettings().then(s=>{
+    document.getElementById('privacy-radio').innerHTML = options.map(o=>`
+      <label>
+        <input type="radio" name="privacy" value="${o.v}" ${s.share_level===o.v?'checked':''} onchange="savePrivacy('${o.v}')">
+        <span>${o.label}<span class="sr-desc">${o.desc}</span></span>
+      </label>`).join('') + (s.share_level==='selected' ? `
+      <div class="field" style="margin-top:.5rem"><input type="text" id="selected-text-input" placeholder="مثال: ختمت جزء عم هذا الأسبوع" value="${esc(s.selected_text||'')}" onchange="saveSelectedText(this.value)"></div>` : '');
+  });
+  if(currentUser.role==='admin') renderAdmin();
+}
+async function loadMyFellowshipSettings(){
+  const rows = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
+  return rows[0] || {share_level:'none'};
+}
+async function savePrivacy(level){
+  await SB.upsert('fellowship_settings', {user_id: currentUser.id, share_level: level}, 'user_id');
+  showToast('تم حفظ إعدادات الخصوصية ✅');
+  renderSettings();
+}
+async function saveSelectedText(text){
+  await SB.upsert('fellowship_settings', {user_id: currentUser.id, share_level:'selected', selected_text: text}, 'user_id');
+  showToast('تم الحفظ ✅');
+}
+
+async function renderAdmin(){
+  document.getElementById('admin-settings-group').style.display='';
+  const users = await SB.get('users?select=*&order=name.asc');
+  document.getElementById('members-list').innerHTML = users.map((u,i)=>`
+    <div class="member-row">
+      <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.name[0]}</div>
+      <div class="m-n2">${esc(u.name)} <span class="m-role">${u.role==='admin'?'(مشرف)':''}</span></div>
+      ${u.id!==currentUser.id?`<button class="btn-del" onclick="deleteMember('${u.id}','${esc(u.name)}')">حذف</button>`:''}
+    </div>`).join('');
+}
 async function addMember(){
-  if(currentUser?.role!=='admin'){ showToast('هذا الإجراء للمشرف فقط',true); return; }
-  const name=document.getElementById('inp-new-user').value.trim();
-  const pass=document.getElementById('inp-new-pass').value;
-  if(!name||!pass){ showToast('ادخل الاسم والباسورد',true); return; }
+  const name = document.getElementById('inp-new-user').value.trim();
+  const pass = document.getElementById('inp-new-pass').value;
+  if(!name||pass.length<4){ showToast('البيانات ناقصة',true); return; }
   showLoading('جاري الإضافة...');
   try {
-    const existing=await SB.get('users?select=id');
-    if(existing.length>=30){ showToast('الحد الأقصى 30 أعضاء',true); return; }
-    const nameCheck=await SB.get(`users?name=eq.${encodeURIComponent(name)}&select=id`);
-    if(nameCheck.length){ showToast('الاسم ده موجود',true); return; }
-    await SB.post('users',{name,pass,role:'member',pages_goal:2});
+    await SB.post('users', {name, pass, role:'member', pages_goal:0, onboarding_done:false});
     document.getElementById('inp-new-user').value='';
     document.getElementById('inp-new-pass').value='';
-    showToast('تم إضافة العضو ✅');
     await renderAdmin();
-  } catch(e){ showToast('خطأ في الإضافة',true); }
+    showToast('تم إضافة العضو ✅');
+  } catch(e){ showToast('حصل خطأ',true); }
+  finally { hideLoading(); }
+}
+async function deleteMember(id,name){
+  if(!confirm(`متأكد من حذف "${name}"؟ هيتم حذف كل بياناته.`)) return;
+  showLoading('جاري الحذف...');
+  try { await SB.delete(`users?id=eq.${id}`); await renderAdmin(); showToast('تم الحذف'); }
+  catch(e){ showToast('حصل خطأ',true); }
   finally { hideLoading(); }
 }
 
-// ════════════════════════════════════════════
-//  INIT — seed admin user if DB is empty
-// ════════════════════════════════════════════
-window.addEventListener('load', async ()=>{
-  showLoading('جاري الاتصال...');
-  try {
-    const users=await SB.get('users?select=id');
-    if(users.length===0){
-      await SB.post('users',{name:'محسن',pass:'1234',role:'admin',pages_goal:2});
-    }
-  } catch(e){
-    // Tables might not exist yet — show helpful message
-    document.querySelector('.subtitle').textContent='تأكد من إعداد قاعدة البيانات أولاً';
-  } finally { hideLoading(); }
-});
 </script>
 </body>
 </html>
