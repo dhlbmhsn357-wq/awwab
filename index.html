@@ -1094,7 +1094,10 @@ function mountIcons(root){
 function openSettingsPanel(){
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-settings').classList.add('active');
+  const panel = document.getElementById('panel-settings');
+  panel.classList.add('active');
+  void panel.offsetHeight;
+  window.scrollTo(0,0);
   renderSettings();
 }
 mountIcons();
@@ -1243,7 +1246,12 @@ function switchTab(id,btn){
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
+  const panel = document.getElementById('panel-'+id);
+  panel.classList.add('active');
+  // force a reflow/repaint on tab switch — some mobile browsers can leave a stale
+  // paint behind after a display:none/block toggle until the next paint trigger
+  void panel.offsetHeight;
+  window.scrollTo(0,0);
   if(id==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
   if(id==='calendar') renderCalendar();
   if(id==='progress') renderProgress();
