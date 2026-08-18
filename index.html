@@ -201,7 +201,7 @@ button{ -webkit-tap-highlight-color:transparent; }
 .header-brand{font-size:1.05rem;font-weight:800;color:var(--text-1);letter-spacing:-.01em;display:flex;align-items:center;gap:.4rem;}
 .header-brand .brand-mark{width:8px;height:8px;border-radius:2px;background:var(--primary);transform:rotate(45deg);}
 .header-user{display:flex;align-items:center;gap:var(--sp-3);}
-.user-avatar{width:34px;height:34px;border-radius:var(--r-full);background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+.user-avatar{width:36px;height:36px;flex-shrink:0;border-radius:var(--r-full);background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
 .btn-logout{background:none;border:1px solid var(--border);color:var(--text-3);border-radius:var(--r-sm);padding:.4rem .65rem;font-size:var(--fs-caption);cursor:pointer;transition:all var(--dur-fast);display:flex;align-items:center;}
 .btn-logout:hover{border-color:var(--danger);color:var(--danger);}
 
@@ -221,12 +221,12 @@ button{ -webkit-tap-highlight-color:transparent; }
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* ---------- Day: Hero / Daily Overview ---------- */
-.day-hero{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5);margin:var(--sp-4) 0 var(--sp-3);box-shadow:var(--shadow-card);}
+.day-hero{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-4);margin:var(--sp-3) 0;box-shadow:var(--shadow-card);}
 .day-hero-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);}
 .dh-label{font-size:var(--fs-heading);font-weight:700;color:var(--text-1);}
 .dh-date{font-size:var(--fs-caption);color:var(--text-3);margin-top:.15rem;}
 .dh-kpi{display:flex;align-items:baseline;gap:.3rem;margin-top:.15rem;}
-.dh-kpi .kpi-num{font-size:var(--fs-kpi);font-weight:800;color:var(--text-1);line-height:1;}
+.dh-kpi .kpi-num{font-size:1.35rem;font-weight:800;color:var(--text-1);line-height:1;}
 .dh-kpi .kpi-lbl{font-size:var(--fs-caption);color:var(--text-3);}
 .progress-ring{position:relative;width:56px;height:56px;flex-shrink:0;}
 .progress-ring svg{transform:rotate(-90deg);width:56px;height:56px;}
@@ -364,7 +364,25 @@ button{ -webkit-tap-highlight-color:transparent; }
 /* forms */
 .field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem var(--sp-4);color:var(--text-1);font-size:var(--fs-body);outline:none;min-height:46px;}
 .field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint);}
-.field-row{display:flex;gap:.6rem;}
+.field-row{display:flex;gap:.6rem;min-width:0;}
+.field-row .field{min-width:0;}
+.field-row .field input{width:100%;min-width:0;}
+input[type="date"],input[type="time"]{width:100%;min-width:0;box-sizing:border-box;}
+@media(max-width:340px){.field-row{flex-direction:column;}}
+/* unified icon-only button (44x44 touch target, perfectly centered) */
+.icon-btn{width:40px;height:40px;min-width:40px;padding:0;background:none;border:none;color:var(--text-2);border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--dur-fast);}
+.icon-btn:hover{background:var(--surface-2);color:var(--text-1);}
+.icon-btn.subtle{border:1px solid var(--border);}
+span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
+/* reorder mode */
+.reorder-toggle-row{display:flex;justify-content:flex-end;margin:.4rem 0 .2rem;}
+.reorder-toggle-btn{background:none;border:none;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:.4rem .2rem;}
+.reorder-toggle-btn.active{color:var(--danger);}
+.wc-grip{background:none;border:none;color:var(--text-3);width:32px;height:44px;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wc-grip:active{cursor:grabbing;color:var(--primary);}
+.wcard.dragging{box-shadow:var(--shadow-elevated);opacity:.92;}
+.drag-placeholder{border:2px dashed var(--primary);background:var(--primary-tint);border-radius:var(--r-md);margin-bottom:.4rem;}
+.wcard.reorder-item .wcard-top{cursor:default;}
 .field-row .field{flex:1;}
 .chip-select{display:flex;flex-wrap:wrap;gap:.4rem;}
 .chip-select button{font-size:var(--fs-caption);font-weight:600;border-radius:var(--r-full);padding:.45rem .8rem;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);transition:all var(--dur-fast);}
@@ -587,7 +605,7 @@ button{ -webkit-tap-highlight-color:transparent; }
   <header class="main-header">
     <div class="header-brand"><span class="brand-mark"></span>أوّاب</div>
     <div class="header-user">
-      <button class="btn-logout" onclick="openSettingsPanel()" aria-label="الإعدادات" title="الإعدادات"><span data-icon="settings" data-size="17"></span></button>
+      <button class="icon-btn subtle" onclick="openSettingsPanel()" aria-label="الإعدادات" title="الإعدادات"><span data-icon="settings" data-size="18"></span></button>
       <div class="user-avatar" id="hdr-avatar"></div>
       <span id="hdr-name" style="display:none"></span>
     </div>
@@ -619,8 +637,13 @@ button{ -webkit-tap-highlight-color:transparent; }
       </div>
 
       <div id="catchup-slot"></div>
-      <div id="weekly-goals-slot"></div>
+      <div class="reorder-toggle-row">
+        <button class="reorder-toggle-btn" id="reorder-toggle-btn" onclick="toggleReorderMode()">
+          <span data-icon="gripVertical" data-size="14"></span><span id="reorder-toggle-label">ترتيب اليوم</span>
+        </button>
+      </div>
       <div id="timeline-slot"></div>
+      <div id="weekly-goals-slot"></div>
 
       <div class="section-label">ملاحظاتي</div>
       <textarea id="daily-notes" class="notes-textarea" placeholder="اكتب أي ملاحظة أو خاطرة عن يومك..." oninput="onNotesInput()"></textarea>
@@ -1318,18 +1341,22 @@ function sortedItemsForSection(sectionKey, dateStr){
     });
 }
 
+let reorderMode = false;
+
 function renderTimeline(dateStr){
   const slot = document.getElementById('timeline-slot');
   let html = '';
   let any = false;
   DAY_SECTIONS.forEach(sec=>{
     const items = sortedItemsForSection(sec.key, dateStr);
-    if(!items.length) return;
+    if(!items.length && !reorderMode) return;
+    if(!items.length) return; // still hide empty sections in reorder mode — nothing to drag there yet
     any = true;
     html += `<div class="timeline-section">
-      <div class="time-section-header"><span class="ts-icon">${ICON(SECTION_ICON[sec.key]||'sparkle',15)}</span><span class="ts-label">${sec.label}</span></div>`;
+      <div class="time-section-header"><span class="ts-icon">${ICON(SECTION_ICON[sec.key]||'sparkle',15)}</span><span class="ts-label">${sec.label}</span></div>
+      <div class="section-body" data-section="${sec.key}">`;
     items.forEach((w,idx)=>{ html += renderWorshipCard(w, dateStr, items, idx); });
-    html += `</div>`;
+    html += `</div></div>`;
   });
   if(!any){
     html = `<div class="empty-day-hint"><div class="eh-icon">${ICON('moon',22)}</div>مفيش عبادات مجدولة النهاردة<br>تقدر تضيف عباداتك من "عباداتي"</div>`;
@@ -1337,17 +1364,16 @@ function renderTimeline(dateStr){
   slot.innerHTML = html;
 }
 
-function worshipCardShell(w, dateStr, statusClass, inner, items, idx, extraCls){
-  const canMoveUp = items && idx>0;
-  const canMoveDown = items && idx < items.length-1;
-  const moveButtons = items ? `
-    <div class="wcard-drag">
-      <button class="wc-move" style="${canMoveUp?'':'opacity:.25'}" ${canMoveUp?'':'disabled'} aria-label="نقل لأعلى" onclick="reorderInSection('${w.id}',${idx},${idx-1},'${w.day_section}','${dateStr}')">${ICON('chevronDown',12).replace('<svg','<svg style="transform:rotate(180deg)"')}</button>
-      <button class="wc-move" style="${canMoveDown?'':'opacity:.25'}" ${canMoveDown?'':'disabled'} aria-label="نقل لأسفل" onclick="reorderInSection('${w.id}',${idx},${idx+1},'${w.day_section}','${dateStr}')">${ICON('chevronDown',12)}</button>
-    </div>` : '';
-  return `<div class="wcard ${statusClass} ${extraCls||''}" data-wid="${w.id}">
+function toggleReorderMode(){
+  reorderMode = !reorderMode;
+  document.getElementById('reorder-toggle-btn').classList.toggle('active', reorderMode);
+  document.getElementById('reorder-toggle-label').textContent = reorderMode ? 'تم' : 'ترتيب اليوم';
+  renderTimeline(viewDate);
+}
+
+function worshipCardShell(w, dateStr, statusClass, inner, extraCls){
+  return `<div class="wcard ${statusClass} ${extraCls||''}" data-wid="${w.id}" data-section="${w.day_section}">
     <div class="wcard-top">
-      ${moveButtons}
       <div class="wcard-icon">${ICON(worshipIconName(w),16)}</div>
       <div class="wcard-info">
         <div class="wcard-name">${esc(w.name)}</div>
@@ -1359,6 +1385,15 @@ function worshipCardShell(w, dateStr, statusClass, inner, items, idx, extraCls){
 }
 
 function renderWorshipCard(w, dateStr, items, idx){
+  if(reorderMode){
+    return `<div class="wcard reorder-item" data-wid="${w.id}" data-section="${w.day_section}">
+      <div class="wcard-top">
+        <button class="wc-grip" data-drag-handle aria-label="سحب لإعادة الترتيب">${ICON('gripVertical',18)}</button>
+        <div class="wcard-icon">${ICON(worshipIconName(w),16)}</div>
+        <div class="wcard-info"><div class="wcard-name">${esc(w.name)}</div></div>
+      </div>
+    </div>`;
+  }
   const log = dayLogsMap[w.id];
   const status = log?.status || 'unrecorded';
   if(w.tracking_type==='boolean'){
@@ -1368,7 +1403,7 @@ function renderWorshipCard(w, dateStr, items, idx){
           <button class="no ${status==='missed'?'active':''}" aria-label="لم يتم" onclick="setBooleanStatus('${w.id}','missed','${dateStr}')">${ICON('x',15)}</button>
         </div>
       </div>`;
-    return worshipCardShell(w, dateStr, status, inner, items, idx);
+    return worshipCardShell(w, dateStr, status, inner);
   }
   if(w.tracking_type==='count' || w.tracking_type==='quantity'){
     const target = w.target_value||0;
@@ -1384,7 +1419,7 @@ function renderWorshipCard(w, dateStr, items, idx){
         </div>
       </div>
       <div class="wc-progress-track"><div class="wc-progress-fill" style="width:${pct}%"></div></div>`;
-    return worshipCardShell(w, dateStr, status, inner, items, idx);
+    return worshipCardShell(w, dateStr, status, inner);
   }
   if(w.tracking_type==='multi'){
     let rangeTxt = '';
@@ -1408,7 +1443,7 @@ function renderWorshipCard(w, dateStr, items, idx){
         <button class="${log?.quality_rating==='needs_review'?'sel':''}" onclick="setQuality('${w.id}','needs_review','${dateStr}')">يحتاج مراجعة</button>
       </div>`:''}
     `;
-    return worshipCardShell(w, dateStr, status, inner, items, idx, 'wcard-multi');
+    return worshipCardShell(w, dateStr, status, inner, 'wcard-multi');
   }
   return '';
 }
@@ -1453,25 +1488,106 @@ async function setQuality(worshipId, q, dateStr){
   renderTimeline(dateStr);
 }
 
-async function reorderInSection(worshipId, fromIdx, toIdx, sectionKey, dateStr){
-  const items = sortedItemsForSection(sectionKey, dateStr);
-  if(toIdx<0 || toIdx>=items.length) return;
-  const other = items[toIdx];
-  const mine = items[fromIdx];
-  const permanent = confirm('تحب التغيير يكون دائم؟ (إلغاء = لهذا اليوم فقط)');
-  showLoading('جاري إعادة الترتيب...');
-  try {
-    if(permanent){
-      const a = mine.sort_order||0, b = other.sort_order||0;
-      await SB.patch(`worships?id=eq.${mine.id}`, {sort_order:b});
-      await SB.patch(`worships?id=eq.${other.id}`, {sort_order:a});
-      mine.sort_order=b; other.sort_order=a;
-    } else {
-      await upsertLog(mine.id, dateStr, {order_override: toIdx});
-      await upsertLog(other.id, dateStr, {order_override: fromIdx});
+// ════════════════════════════════════════════
+//  DRAG & DROP REORDER (touch + mouse via Pointer Events)
+// ════════════════════════════════════════════
+(function initDragEngine(){
+  let dragCard=null, placeholder=null, offsetY=0, startSection=null;
+  document.addEventListener('pointerdown', (e)=>{
+    if(!reorderMode) return;
+    const handle = e.target.closest('[data-drag-handle]');
+    if(!handle) return;
+    const card = handle.closest('.wcard');
+    if(!card) return;
+    e.preventDefault();
+    dragCard = card;
+    startSection = card.dataset.section;
+    const rect = card.getBoundingClientRect();
+    offsetY = e.clientY - rect.top;
+    placeholder = document.createElement('div');
+    placeholder.className = 'wcard drag-placeholder';
+    placeholder.style.height = rect.height+'px';
+    card.after(placeholder);
+    card.style.position='fixed';
+    card.style.top=rect.top+'px';
+    card.style.left=rect.left+'px';
+    card.style.width=rect.width+'px';
+    card.style.zIndex=999;
+    card.style.pointerEvents='none';
+    card.classList.add('dragging');
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp, {once:true});
+  });
+  function onMove(e){
+    if(!dragCard) return;
+    dragCard.style.top = (e.clientY - offsetY) + 'px';
+    dragCard.style.display='none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    dragCard.style.display='';
+    const targetSection = under?.closest('.section-body');
+    if(!targetSection) return;
+    const targetCard = under?.closest('.wcard');
+    if(targetCard && targetCard!==placeholder && targetSection.contains(targetCard)){
+      const r = targetCard.getBoundingClientRect();
+      const before = e.clientY < r.top + r.height/2;
+      targetSection.insertBefore(placeholder, before ? targetCard : targetCard.nextSibling);
+    } else if(!targetCard){
+      targetSection.appendChild(placeholder);
     }
-    renderTimeline(dateStr);
-  } catch(e){ showToast('تعذّر إعادة الترتيب',true); }
+  }
+  async function onUp(){
+    document.removeEventListener('pointermove', onMove);
+    if(!dragCard) return;
+    const card = dragCard, ph = placeholder;
+    dragCard = null; placeholder = null;
+    ph.replaceWith(card);
+    card.style.position=''; card.style.top=''; card.style.left=''; card.style.width=''; card.style.zIndex=''; card.style.pointerEvents='';
+    card.classList.remove('dragging');
+    await finalizeDrag(card, startSection);
+  }
+})();
+
+async function finalizeDrag(card, oldSection){
+  const worshipId = card.dataset.wid;
+  const w = worships.find(x=>x.id===worshipId);
+  const sectionBody = card.closest('.section-body');
+  const newSection = sectionBody ? sectionBody.dataset.section : oldSection;
+  const siblings = sectionBody ? [...sectionBody.querySelectorAll('.wcard')] : [];
+  const newIndex = siblings.indexOf(card);
+  const sameSection = newSection===oldSection;
+  const oldIndex = sortedItemsForSection(oldSection, viewDate).findIndex(x=>x.id===worshipId);
+
+  if(sameSection && newIndex===oldIndex){ return; } // no-op drag
+
+  let permanent = true;
+  if(sameSection){
+    permanent = confirm('تطبيق الترتيب الجديد دائمًا؟\nإلغاء = لهذا اليوم فقط');
+  } else if(!confirm('هيتم نقل العبادة إلى فترة تانية بشكل دائم. تكمل؟')){
+    renderTimeline(viewDate);
+    return;
+  }
+  showLoading('جاري حفظ الترتيب...');
+  try {
+    if(!sameSection){
+      // move to a new section permanently: resequence the destination section's full
+      // final DOM order (avoids colliding with existing sort_order values there)
+      w.day_section = newSection;
+      const ids = siblings.map(el=>el.dataset.wid);
+      await Promise.all(ids.map((id,i)=>SB.patch(`worships?id=eq.${id}`, {
+        sort_order:(i+1)*10, ...(id===worshipId?{day_section:newSection}:{})
+      })));
+    } else if(permanent){
+      // resequence every item in this section per its new DOM order — a partial
+      // renumber (just the dragged item) can collide with untouched siblings
+      const ids = siblings.map(el=>el.dataset.wid);
+      await Promise.all(ids.map((id,i)=>SB.patch(`worships?id=eq.${id}`, {sort_order:(i+1)*10})));
+    } else {
+      await upsertLog(w.id, viewDate, {order_override:newIndex});
+    }
+    await loadWorships();
+    renderTimeline(viewDate);
+    showToast('تم تحديث الترتيب');
+  } catch(e){ showToast('تعذّر حفظ الترتيب',true); renderTimeline(viewDate); }
   finally { hideLoading(); }
 }
 
