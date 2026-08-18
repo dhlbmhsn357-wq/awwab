@@ -196,7 +196,13 @@ button{ -webkit-tap-highlight-color:transparent; }
 .onboard-choice .oc-desc{font-size:var(--fs-caption);color:var(--text-3);line-height:1.5;}
 
 /* ---------- APP SHELL ---------- */
-.main-content{padding:0 var(--sp-4) calc(88px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto;width:100%;}
+.main-content{padding:0 var(--sp-4) calc(88px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto;width:100%;min-width:0;box-sizing:border-box;}
+/* CRITICAL: only the active tab-panel renders — without this every page
+   (اليوم/التقويم/تقدمي/رفقة أواب/عباداتي/الإعدادات) stacks on top of each
+   other permanently, which was the real cause behind the reported layout
+   collapse (this rule was accidentally dropped during the visual redesign). */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
 .main-header{position:sticky;top:0;z-index:var(--z-header);background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--sp-3) + env(safe-area-inset-top)) var(--sp-4) var(--sp-3);display:flex;align-items:center;justify-content:space-between;}
 .header-brand{font-size:1.05rem;font-weight:800;color:var(--text-1);letter-spacing:-.01em;display:flex;align-items:center;gap:.4rem;}
 .header-brand .brand-mark{width:8px;height:8px;border-radius:2px;background:var(--primary);transform:rotate(45deg);}
