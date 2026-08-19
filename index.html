@@ -521,6 +521,21 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 .save-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .save-toast.error{border-color:var(--danger);color:var(--danger);}
 
+/* install PWA banner */
+.install-banner{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:590;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-elevated);padding:.9rem 1rem;display:flex;align-items:flex-start;gap:.7rem;transform:translateY(120%);opacity:0;transition:transform .32s var(--ease), opacity .32s var(--ease);max-width:440px;margin:0 auto;}
+.install-banner.show{transform:translateY(0);opacity:1;}
+.install-banner.above-nav{bottom:calc(76px + env(safe-area-inset-bottom));}
+.install-banner-icon{width:44px;height:44px;border-radius:var(--r-md);overflow:hidden;flex-shrink:0;box-shadow:var(--shadow-card);}
+.install-banner-icon img{width:100%;height:100%;object-fit:cover;display:block;}
+.install-banner-body{flex:1;min-width:0;}
+.install-banner-title{font-size:var(--fs-card-title);font-weight:700;color:var(--text-1);}
+.install-banner-desc{font-size:12px;color:var(--text-3);margin-top:.2rem;line-height:1.6;}
+.install-banner-actions{display:flex;gap:.5rem;margin-top:.65rem;}
+.install-banner-btn{background:var(--primary);color:#06251F;border:none;border-radius:var(--r-sm);padding:.5rem 1rem;font-size:12.5px;font-weight:700;cursor:pointer;}
+.install-banner-later{background:none;border:none;color:var(--text-3);font-size:12.5px;font-weight:600;cursor:pointer;padding:.5rem .3rem;}
+.install-banner-close{background:none;border:none;color:var(--text-3);cursor:pointer;padding:.35rem;flex-shrink:0;border-radius:var(--r-sm);}
+.install-banner-close:hover{background:var(--surface-2);}
+
 /* ---------- Empty state ---------- */
 .eh-icon{margin-bottom:var(--sp-3);}
 
@@ -1155,6 +1170,119 @@ async function restoreSession(){
   finally { hideLoading(); }
 }
 restoreSession();
+
+// ════════════════════════════════════════════
+//  PWA INSTALL PROMPT — banner ذكي، يظهر بحد أقصى 3 مرات فتح،
+//  مش أكتر من مرة في نفس الجلسة، ويختفي نهائيًا لو اتثبّت
+// ════════════════════════════════════════════
+let deferredInstallPrompt = null;
+let installBannerWanted = false;
+let installBannerEligible = false;
+
+function isStandaloneMode(){
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+function isIOSSafari(){
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  return isIOS && isSafari;
+}
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  installBannerEligible = true;
+  tryShowInstallBanner();
+});
+window.addEventListener('appinstalled', ()=>{
+  localStorage.setItem('awwab_install_prompt_installed','true');
+  dismissInstallBanner();
+});
+
+function initInstallTracking(){
+  if(isStandaloneMode()){
+    localStorage.setItem('awwab_install_prompt_installed','true');
+    return; // شغّال بالفعل كـ App مثبّت — متعرضش حاجة
+  }
+  if(localStorage.getItem('awwab_install_prompt_installed')==='true') return;
+  if(localStorage.getItem('awwab_install_prompt_completed')==='true') return;
+
+  // فتح جديد = Session جديدة فعليًا، مش Refresh/تنقل داخل نفس التاب
+  if(!sessionStorage.getItem('awwab_session_active')){
+    sessionStorage.setItem('awwab_session_active','1');
+    const count = (parseInt(localStorage.getItem('awwab_open_count')||'0',10) || 0) + 1;
+    localStorage.setItem('awwab_open_count', String(count));
+    localStorage.setItem('awwab_last_open_at', String(Date.now()));
+    if(count>=3) localStorage.setItem('awwab_install_prompt_completed','true');
+  }
+
+  const count = parseInt(localStorage.getItem('awwab_open_count')||'0',10) || 0;
+  if(count>3) return;
+  if(sessionStorage.getItem('awwab_install_prompt_shown_session')==='1') return;
+
+  installBannerWanted = true;
+  if(isIOSSafari()) installBannerEligible = true;
+  setTimeout(tryShowInstallBanner, 1600);
+}
+
+function tryShowInstallBanner(){
+  if(!installBannerWanted || !installBannerEligible) return;
+  if(sessionStorage.getItem('awwab_install_prompt_shown_session')==='1') return;
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay && !overlay.classList.contains('hidden')){ setTimeout(tryShowInstallBanner, 800); return; }
+  sessionStorage.setItem('awwab_install_prompt_shown_session','1');
+  renderInstallBanner();
+}
+
+function renderInstallBanner(){
+  if(document.getElementById('install-banner')) return;
+  const ios = isIOSSafari();
+  const aboveNav = document.getElementById('screen-main')?.classList.contains('active');
+  const el = document.createElement('div');
+  el.className = 'install-banner' + (aboveNav ? ' above-nav' : '');
+  el.id = 'install-banner';
+  el.innerHTML = ios ? `
+    <div class="install-banner-icon"><img src="/icon-192.png" alt="أواب"></div>
+    <div class="install-banner-body">
+      <div class="install-banner-title">ثبّت أوّاب على هاتفك</div>
+      <div class="install-banner-desc">اضغط زر <b>المشاركة</b> ثم اختر <b>"إضافة إلى الشاشة الرئيسية"</b></div>
+    </div>
+    <button class="install-banner-close" onclick="dismissInstallBanner()" aria-label="إغلاق">${ICON('x',15)}</button>
+  ` : `
+    <div class="install-banner-icon"><img src="/icon-192.png" alt="أواب"></div>
+    <div class="install-banner-body">
+      <div class="install-banner-title">ثبّت أوّاب على هاتفك</div>
+      <div class="install-banner-desc">للوصول إليه بسرعة واستخدامه كتطبيق مستقل</div>
+      <div class="install-banner-actions">
+        <button class="install-banner-btn" onclick="doInstallApp()">تثبيت التطبيق</button>
+        <button class="install-banner-later" onclick="dismissInstallBanner()">لاحقًا</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+}
+
+function dismissInstallBanner(){
+  const el = document.getElementById('install-banner');
+  if(!el) return;
+  el.classList.remove('show');
+  setTimeout(()=>el.remove(), 320);
+}
+
+async function doInstallApp(){
+  if(!deferredInstallPrompt){ dismissInstallBanner(); return; }
+  dismissInstallBanner();
+  deferredInstallPrompt.prompt();
+  try {
+    const choice = await deferredInstallPrompt.userChoice;
+    if(choice.outcome==='accepted') localStorage.setItem('awwab_install_prompt_installed','true');
+  } catch(e){}
+  deferredInstallPrompt = null;
+}
+
+initInstallTracking();
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ════════════════════════════════════════════
