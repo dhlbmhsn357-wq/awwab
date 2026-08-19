@@ -2545,14 +2545,17 @@ function renderWeeklyGoals(){
       <div class="wg-track"><div class="wg-fill" id="wg-fill-${g.id}" style="width:0%"></div></div>
     </div>`;
   }).join('') + `</div>`;
-  goals.forEach(async g=>{
-    const weekLogs = await localLogsInRange(weekDates[0], weekDates[6]);
-    const rows = weekLogs.filter(l=>l.worship_id===g.id && l.status==='completed');
-    const target = g.weekly_target||1;
-    const countEl = document.getElementById(`wg-count-${g.id}`);
-    const fillEl = document.getElementById(`wg-fill-${g.id}`);
-    if(countEl) countEl.textContent = `${rows.length}/${target}`;
-    if(fillEl) fillEl.style.width = Math.min(100, Math.round(rows.length/target*100))+'%';
+  // قراءة واحدة لكل الأسبوع بدل ما كل هدف يعيد قراءة نفس النطاق من
+  // IndexedDB لوحده (كان بيتكرر بعدد الأهداف)
+  localLogsInRange(weekDates[0], weekDates[6]).then(weekLogs=>{
+    goals.forEach(g=>{
+      const rows = weekLogs.filter(l=>l.worship_id===g.id && l.status==='completed');
+      const target = g.weekly_target||1;
+      const countEl = document.getElementById(`wg-count-${g.id}`);
+      const fillEl = document.getElementById(`wg-fill-${g.id}`);
+      if(countEl) countEl.textContent = `${rows.length}/${target}`;
+      if(fillEl) fillEl.style.width = Math.min(100, Math.round(rows.length/target*100))+'%';
+    });
   });
 }
 
@@ -3146,24 +3149,41 @@ async function saveSelectedText(text){
   showToast('تم الحفظ');
 }
 
+// Pagination بدل تحميل كل الأعضاء دفعة واحدة — 30 مستخدم دلوقتي مش
+// محسوسة، بس أي عدد أكبر (آلاف) كان هيبقى تحميل كامل غير ضروري
+const ADMIN_PAGE_SIZE = 50;
+let adminMembers = [];
+let adminHasMore = false;
 async function renderAdmin(){
   document.getElementById('admin-settings-group').style.display='';
+  adminMembers = [];
+  await loadAdminPage();
+}
+async function loadAdminPage(){
+  const list = document.getElementById('members-list');
   if(!isOnline){
-    document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">إدارة الأعضاء تحتاج اتصال بالإنترنت</div>`;
+    list.innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">إدارة الأعضاء تحتاج اتصال بالإنترنت</div>`;
     return;
   }
-  document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">جاري تحميل الأعضاء...</div>`;
-  let users;
+  if(!adminMembers.length) list.innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">جاري تحميل الأعضاء...</div>`;
+  let page;
   // is_admin() في سياسة RLS هي اللي بتسمح فعليًا برؤية باقي البروفايلات —
-  // مش شرط في الكود ده، ده بس للعرض
-  try { users = await SB.get('profiles?select=id,display_name,role&order=display_name.asc'); }
-  catch(e){ document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">تعذّر تحميل الأعضاء</div>`; return; }
-  document.getElementById('members-list').innerHTML = users.map((u,i)=>`
+  // مش شرط في الكود ده، ده بس للعرض. limit/offset بدل تحميل الكل مرة واحدة
+  try { page = await SB.get(`profiles?select=id,display_name,role&order=display_name.asc&limit=${ADMIN_PAGE_SIZE+1}&offset=${adminMembers.length}`); }
+  catch(e){ list.innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">تعذّر تحميل الأعضاء</div>`; return; }
+  adminHasMore = page.length > ADMIN_PAGE_SIZE;
+  adminMembers = adminMembers.concat(page.slice(0, ADMIN_PAGE_SIZE));
+  renderAdminList();
+}
+function renderAdminList(){
+  const list = document.getElementById('members-list');
+  list.innerHTML = adminMembers.map((u,i)=>`
     <div class="member-row">
       <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.display_name[0]}</div>
       <div class="m-n2">${esc(u.display_name)} <span class="m-role">${u.role==='admin'?'(مشرف)':''}</span></div>
       ${u.id!==currentUser.id?`<button class="btn-del" onclick="deleteMember('${u.id}','${esc(u.display_name)}')">حذف</button>`:''}
-    </div>`).join('');
+    </div>`).join('')
+    + (adminHasMore ? `<button class="btn-add" style="width:100%;margin-top:.5rem" onclick="loadAdminPage()">تحميل المزيد</button>` : '');
 }
 async function deleteMember(id,name){
   if(!confirm(`متأكد من حذف "${name}"؟ هيلغي وصوله للتطبيق فورًا (حذف حساب الدخول الكامل من مهام لاحقة تحتاج صلاحيات إضافية).`)) return;
