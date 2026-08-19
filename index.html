@@ -803,11 +803,7 @@ body.has-offline-banner .main-header{top:34px;}
       <div class="settings-group" id="admin-settings-group" style="display:none">
         <h3>إدارة المجموعة</h3>
         <div class="members-list" id="members-list"></div>
-        <div class="add-member-form">
-          <input id="inp-new-user" placeholder="اسم العضو الجديد">
-          <input id="inp-new-pass" type="password" placeholder="الباسورد">
-          <button class="btn-add" onclick="addMember()">إضافة</button>
-        </div>
+        <div class="sr-desc" style="margin-top:.5rem">التسجيل بقى مفتوحًا للكل — الأعضاء الجدد يسجّلوا حسابهم بنفسهم من شاشة الدخول.</div>
       </div>
 
       <div class="settings-group">
@@ -963,6 +959,7 @@ body.has-offline-banner .main-header{top:34px;}
 <div class="save-toast" id="save-toast"><span data-icon="circleCheck" data-size="15"></span><span id="toast-text">تم الحفظ بنجاح</span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ════════════════════════════════════════════
 //  SUPABASE CONFIG
@@ -970,11 +967,26 @@ body.has-offline-banner .main-header{top:34px;}
 const SB_URL = 'https://uzzrkqkudyroswvekeoz.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6enJrcWt1ZHlyb3N3dmVrZW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NTY0MjAsImV4cCI6MjA5NzEzMjQyMH0.muQqOBZFz02KsnN3dqTnyTdtxYUOgCjVkVEzVQ5Obek';
 
+// عميل Supabase Auth الرسمي — بيدير الجلسة وتجديد الـtoken تلقائيًا.
+// بيستخدم الـanon key نفسه (عام وآمن طالما RLS مفعّل، مش سر).
+const sbAuth = window.supabase.createClient(SB_URL, SB_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+});
+
 const SB = {
   async req(method, path, body=null){
+    // Authorization لازم يكون access_token بتاع جلسة المستخدم الحالية
+    // (عشان auth.uid() يتحل صح جوه سياسات RLS)، مش الـanon key الثابت.
+    // قبل تسجيل الدخول (مفيش جلسة بعد) بيرجع للـanon key كـfallback —
+    // كافي لاستدعاءات RPC العامة زي get_login_email/is_name_taken.
+    let token = SB_KEY;
+    try {
+      const { data } = await sbAuth.auth.getSession();
+      if(data?.session?.access_token) token = data.session.access_token;
+    } catch(e){}
     const headers = {
       'apikey': SB_KEY,
-      'Authorization': 'Bearer '+SB_KEY,
+      'Authorization': 'Bearer '+token,
       'Content-Type': 'application/json',
     };
     if(method==='POST') headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
@@ -1493,32 +1505,28 @@ function fetchWithTimeout(promise, ms){
   ]);
 }
 async function restoreSession(){
-  const savedId = localStorage.getItem('awwab-session');
-  if(!savedId) return;
   showLoading('جاري الدخول...');
   try {
-    // Offline (Auth) — Session محلية صالحة تكفي لفتح التطبيق بدون نت،
-    // بدل ما نرجّع المستخدم لشاشة الدخول لمجرد إن السيرفر مش متاح
-    if(!navigator.onLine){
-      const cached = JSON.parse(localStorage.getItem('awwab-user-cache')||'null');
-      if(cached && cached.id===savedId){ currentUser = cached; await afterLogin(); return; }
+    // supabase-js بيخزن الجلسة في localStorage ويقراها محليًا من غير
+    // نداء شبكة — شغالة حتى لو أوفلاين
+    const { data } = await sbAuth.auth.getSession();
+    const session = data?.session;
+    if(!session){ return; }
+    let profile = null;
+    if(navigator.onLine){
+      try {
+        const rows = await fetchWithTimeout(SB.get(`profiles?id=eq.${session.user.id}&select=*`), 6000);
+        if(rows.length){
+          profile = rows[0];
+          localStorage.setItem('awwab-user-cache', JSON.stringify(profile));
+        }
+      } catch(netErr){ /* هنرجع للنسخة المحفوظة تحت */ }
     }
-    try {
-      const rows = await fetchWithTimeout(SB.get(`users?id=eq.${savedId}&select=*`), 6000);
-      if(rows.length){
-        currentUser = rows[0];
-        localStorage.setItem('awwab-user-cache', JSON.stringify(currentUser));
-        await afterLogin();
-      } else {
-        localStorage.removeItem('awwab-session');
-        localStorage.removeItem('awwab-last-tab');
-        localStorage.removeItem('awwab-user-cache');
-      }
-    } catch(netErr){
-      // فشل الاتصال (مش رفض صريح من السيرفر) — استخدم النسخة المحفوظة لو موجودة
+    if(!profile){
       const cached = JSON.parse(localStorage.getItem('awwab-user-cache')||'null');
-      if(cached && cached.id===savedId){ currentUser = cached; await afterLogin(); }
+      if(cached && cached.id===session.user.id) profile = cached;
     }
+    if(profile){ currentUser = profile; await afterLogin(); }
   } catch(e){ /* تعذّر تمامًا — سيب المستخدم على شاشة الدخول */ }
   finally { hideLoading(); }
 }
@@ -1714,7 +1722,7 @@ async function tourGoToStep(index){
   if(prevStep && prevStep.onExit && tourIndex!==index) prevStep.onExit();
   tourIndex = index;
   if(!tourManualReplay && currentUser){
-    SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_step:index}).catch(()=>{});
+    SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_step:index}).catch(()=>{});
   }
   tourGoRoute(step.route);
   if(step.onEnter) await step.onEnter();
@@ -1791,7 +1799,7 @@ async function tourSkipAll(){
   if(tourKeyHandler){ document.removeEventListener('keydown', tourKeyHandler); tourKeyHandler=null; }
   tourActive=false;
   if(!tourManualReplay && currentUser){
-    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+    await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
     currentUser.onboarding_tour_status='skipped';
   }
   tourManualReplay=false;
@@ -1822,7 +1830,7 @@ function showTourEndSheet(){
 async function tourEndSheetClose(){
   document.getElementById('tour-end-overlay')?.remove();
   if(!tourManualReplay && currentUser){
-    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'completed', onboarding_tour_completed_at:new Date().toISOString()}).catch(()=>{});
+    await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'completed', onboarding_tour_completed_at:new Date().toISOString()}).catch(()=>{});
     currentUser.onboarding_tour_status='completed';
   }
   tourManualReplay=false;
@@ -1833,7 +1841,7 @@ async function tourEndSheetClose(){
 async function startTour(){
   document.getElementById('tour-welcome-overlay')?.remove();
   if(!tourManualReplay && currentUser){
-    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'in_progress', onboarding_tour_step:0}).catch(()=>{});
+    await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'in_progress', onboarding_tour_step:0}).catch(()=>{});
     currentUser.onboarding_tour_status='in_progress';
   }
   tourActive=true;
@@ -1842,7 +1850,7 @@ async function startTour(){
 async function skipWelcome(){
   document.getElementById('tour-welcome-overlay')?.remove();
   if(currentUser){
-    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+    await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
     currentUser.onboarding_tour_status='skipped';
   }
 }
@@ -1870,7 +1878,7 @@ async function resumeTourContinue(){
 }
 async function resumeTourEnd(){
   document.getElementById('tour-resume-overlay')?.remove();
-  await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+  await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
   currentUser.onboarding_tour_status='skipped';
 }
 function showResumePrompt(){
@@ -1919,14 +1927,27 @@ async function doLogin(){
   btn.disabled=true; btn.textContent='جاري التحقق...';
   showLoading('جاري الدخول...');
   try {
-    const rows = await SB.get(`users?name=eq.${encodeURIComponent(name)}&pass=eq.${encodeURIComponent(pass)}&select=*`);
+    // الاسم مش إيميل — نحوّله لإيميل الدخول المصطنع عبر RPC آمن
+    // (بيرجع الإيميل بس، من غير أي بيانة حساسة تانية)
+    const { data: email, error: rpcErr } = await sbAuth.rpc('get_login_email', {p_name: name});
+    if(rpcErr || !email){
+      document.getElementById('login-err').style.display='block';
+      return;
+    }
+    const { data, error } = await sbAuth.auth.signInWithPassword({ email, password: pass });
+    if(error || !data.user){
+      document.getElementById('login-err').style.display='block';
+      return;
+    }
+    const rows = await SB.get(`profiles?id=eq.${data.user.id}&select=*`);
     if(!rows.length){
       document.getElementById('login-err').style.display='block';
-    } else {
-      currentUser = rows[0];
-      document.getElementById('login-err').style.display='none';
-      await afterLogin();
+      await sbAuth.auth.signOut();
+      return;
     }
+    currentUser = rows[0];
+    document.getElementById('login-err').style.display='none';
+    await afterLogin();
   } catch(e){ showToast('خطأ في الاتصال، حاول تاني',true); }
   finally { btn.disabled=false; btn.textContent='دخول'; hideLoading(); }
 }
@@ -1942,11 +1963,29 @@ async function doRegister(){
   const btn=document.getElementById('btn-register');
   btn.disabled=true; showLoading('جاري إنشاء الحساب...');
   try {
-    const existing = await SB.get(`users?select=id`);
-    if(existing.length>=30){err.style.display='block';err.textContent='المجموعة وصلت الحد الأقصى (30 أعضاء)';return;}
-    const nameCheck = await SB.get(`users?name=eq.${encodeURIComponent(name)}&select=id`);
-    if(nameCheck.length){err.style.display='block';err.textContent='الاسم ده موجود، اختار اسم تاني';return;}
-    const rows = await SB.post('users', {name, pass, role:'member', pages_goal:0, onboarding_done:false});
+    // التسجيل مفتوح من غير أي حد أقصى — فقط تأكيد إن الاسم مش مكرر
+    // عبر RPC (من غير جلب كل المستخدمين)
+    const { data: taken, error: takenErr } = await sbAuth.rpc('is_name_taken', {p_name: name});
+    if(takenErr){ err.style.display='block'; err.textContent='خطأ في الاتصال، حاول تاني'; return; }
+    if(taken){ err.style.display='block'; err.textContent='الاسم ده موجود، اختار اسم تاني'; return; }
+
+    // إيميل مصطنع فريد — المستخدم أبدًا ما هيشوفه أو يحتاجه، بيسجل
+    // دخول بالاسم بس عبر get_login_email
+    const syntheticEmail = uuid()+'@awwab.local';
+    const { data, error } = await sbAuth.auth.signUp({ email: syntheticEmail, password: pass });
+    if(error || !data.user){
+      err.style.display='block';
+      err.textContent = (error?.message||'').includes('Password') ? 'كلمة المرور ضعيفة، جرب كلمة أطول' : 'خطأ في الاتصال، حاول تاني';
+      return;
+    }
+    if(!data.session){
+      // "Confirm email" لسه مفعّل في إعدادات Supabase Auth — لازم يتقفل
+      // عشان الإيميلات المصطنعة (المستخدم مش هيقدر يوصلها أصلًا)
+      err.style.display='block';
+      err.textContent = 'التسجيل محتاج إعداد إضافي من المطوّر حاليًا';
+      return;
+    }
+    const rows = await SB.post('profiles', {id:data.user.id, display_name:name, role:'member', pages_goal:0, onboarding_done:false});
     currentUser = rows[0];
     err.style.display='none';
     await afterLogin();
@@ -1954,15 +1993,17 @@ async function doRegister(){
   finally { btn.disabled=false; hideLoading(); }
 }
 
-function doLogout(){
+async function doLogout(){
+  try { await sbAuth.auth.signOut(); } catch(e){}
   currentUser=null; worships=[]; dayLogsMap={};
-  localStorage.removeItem('awwab-session');
   localStorage.removeItem('awwab-last-tab');
+  localStorage.removeItem('awwab-user-cache');
   showScreen('login');
 }
 
 async function afterLogin(){
-  localStorage.setItem('awwab-session', currentUser.id);
+  // الجلسة نفسها بيديرها supabase-js تلقائيًا — إحنا بس بنكاش
+  // بيانات البروفايل عشان الاستمرار أوفلاين بدون نداء شبكة
   localStorage.setItem('awwab-user-cache', JSON.stringify(currentUser));
   showLoading('جاري التحضير...');
   try {
@@ -1976,7 +2017,7 @@ async function afterLogin(){
     const mine = await SB.get(`worships?user_id=eq.${currentUser.id}&select=id&limit=1`);
     if(!currentUser.onboarding_done){
       if(mine.length){
-        await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true});
+        await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_done:true});
         currentUser.onboarding_done = true;
         await enterMain();
       } else {
@@ -2025,7 +2066,7 @@ async function pickOnboarding(type){
       hideLoading();
       showScreen('setup');
     } else {
-      await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:type});
+      await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:type});
       currentUser.onboarding_done = true;
       await enterMain();
       hideLoading();
@@ -2040,7 +2081,7 @@ async function saveSetup(){
   try {
     const qw = await SB.get(`worships?user_id=eq.${currentUser.id}&quran_mode=eq.read&select=id&order=created_at.desc&limit=1`);
     if(qw.length) await SB.patch(`worships?id=eq.${qw[0].id}`, {target_value:tempPages});
-    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:onboardingType, pages_goal:tempPages});
+    await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_done:true, onboarding_type:onboardingType, pages_goal:tempPages});
     currentUser.onboarding_done = true;
     await enterMain();
   } catch(e){ showToast('خطأ في الحفظ',true); }
@@ -2052,9 +2093,9 @@ async function saveSetup(){
 // ════════════════════════════════════════════
 async function enterMain(){
   showScreen('main');
-  document.getElementById('hdr-name').textContent=currentUser.name;
-  document.getElementById('hdr-avatar').textContent=currentUser.name[0];
-  document.getElementById('settings-username').textContent=currentUser.name;
+  document.getElementById('hdr-name').textContent=currentUser.display_name;
+  document.getElementById('hdr-avatar').textContent=currentUser.display_name[0];
+  document.getElementById('settings-username').textContent=currentUser.display_name;
   document.getElementById('admin-settings-group').style.display = currentUser.role==='admin' ? '' : 'none';
   viewDate = getToday();
   isOnline = navigator.onLine;
@@ -2145,7 +2186,7 @@ async function jumpToDatePicked(){
 
 function greetingText(){
   const h = new Date().getHours();
-  const name = currentUser?.name || '';
+  const name = currentUser?.display_name || '';
   const g = h<12 ? 'صباح الخير' : h<17 ? 'مساء الخير' : 'مساء الخير';
   return name ? `${g}، ${name}` : g;
 }
@@ -2986,31 +3027,9 @@ async function deleteWorshipConfirm(){
 // ════════════════════════════════════════════
 //  رفقة أواب (Fellowship)
 // ════════════════════════════════════════════
-async function computeUserWeekStats(userId){
-  const dates = getWeekDates(getToday());
-  const ws = await SB.get(`worships?user_id=eq.${userId}&is_paused=eq.false&is_hidden=eq.false&select=*`);
-  let scheduled=0, completed=0;
-  dates.forEach(d=>{ ws.forEach(w=>{
-    if(w.recurrence_type==='times_per_week') return;
-    if(isApplicable(Object.assign({},w),d)) scheduled++;
-  });});
-  const weeklyOnes = ws.filter(w=>w.recurrence_type==='times_per_week');
-  weeklyOnes.forEach(w=>scheduled+=(w.weekly_target||1));
-  if(ws.length){
-    const ids = ws.map(w=>w.id);
-    const logs = await SB.get(`daily_worship_logs?user_id=eq.${userId}&worship_id=in.(${ids.join(',')})&date=gte.${dates[0]}&date=lte.${dates[6]}&status=eq.completed&select=id`);
-    completed = logs.length;
-  }
-  return {scheduled, completed, pct: scheduled?Math.round(completed/scheduled*100):0};
-}
-async function computeReturnStatus(userId){
-  const from = addDays(getToday(),-13);
-  const logs = await SB.get(`daily_worship_logs?user_id=eq.${userId}&date=gte.${from}&status=eq.completed&select=date`);
-  const daysWithActivity = new Set(logs.map(l=>l.date));
-  const last7 = []; for(let i=0;i<7;i++) last7.push(addDays(getToday(),-i));
-  const prev7 = []; for(let i=7;i<14;i++) prev7.push(addDays(getToday(),-i));
-  const activeLast7 = last7.filter(d=>daysWithActivity.has(d)).length;
-  const activePrev7 = prev7.filter(d=>daysWithActivity.has(d)).length;
+// نص "حالة الاستمرارية" من عدّادين جاهزين (active_last7/active_prev7)
+// راجعين من get_fellowship_feed() — بديل الاستعلام القديم لكل مستخدم
+function fellowshipStreakText(activeLast7, activePrev7){
   if(activeLast7>=6) return 'ثابت هذا الأسبوع';
   if(activePrev7<=1 && activeLast7>=2) return 'عاد بعد انقطاع';
   if(activeLast7>activePrev7) return 'تحسّن عن الأسبوع الماضي';
@@ -3028,32 +3047,34 @@ async function renderRafeqa(){
   }
   list.innerHTML = `<div class="empty-day-hint">جاري التحميل...</div>`;
   try {
-    const users = await SB.get(`users?select=id,name`);
-    const settings = await SB.get(`fellowship_settings?select=*`);
-    const setMap={}; settings.forEach(s=>setMap[s.user_id]=s);
+    // استدعاء واحد مجمّع من قاعدة البيانات — بديل حلقة "لكل مستخدم:
+    // هات سجلاته واحسب" القديمة (N+1)
+    const { data: rows, error } = await sbAuth.rpc('get_fellowship_feed');
+    if(error) throw error;
 
-    let groupScheduled=0, groupCompleted=0;
-    const cards=[];
-    for(const u of users){
-      const stats = await computeUserWeekStats(u.id);
-      groupScheduled += stats.scheduled; groupCompleted += stats.completed;
-      if(u.id===currentUser.id) continue;
-      const s = setMap[u.id] || {share_level:'none'};
-      let text = 'يُفضّل الخصوصية الآن';
-      if(s.share_level==='percentage') text = `الالتزام هذا الأسبوع: ${stats.pct}%`;
-      else if(s.share_level==='streak') text = await computeReturnStatus(u.id);
-      else if(s.share_level==='selected') text = s.selected_text || 'شارك إنجازًا معك';
-      cards.push({u, text, showName: s.show_name});
-    }
+    // group_scheduled/group_completed محسوبة جوه القاعدة نفسها —
+    // مش summing للصفوف هنا، لأن أرقام الأفراد الرافضين المشاركة
+    // بترجع null عمدًا (الخصوصية بتتطبق من السيرفر، مش بس بالإخفاء
+    // في الواجهة)
+    const groupScheduled = rows[0]?.group_scheduled || 0;
+    const groupCompleted = rows[0]?.group_completed || 0;
     goalCard.innerHTML = `<div class="gg-label">هدف رفقة أواب هذا الأسبوع</div><div class="gg-val">${groupCompleted} / ${groupScheduled||'—'}</div><div class="gg-label" style="margin-top:.3rem">عبادة مكتملة معًا</div>`;
+
+    const cards = rows.filter(r=>r.user_id!==currentUser.id).map(r=>{
+      let text = 'يُفضّل الخصوصية الآن';
+      if(r.share_level==='percentage') text = `الالتزام هذا الأسبوع: ${r.pct}%`;
+      else if(r.share_level==='streak') text = fellowshipStreakText(r.active_last7, r.active_prev7);
+      else if(r.share_level==='selected') text = r.selected_text || 'شارك إنجازًا معك';
+      return { id:r.user_id, name:r.display_name, text };
+    });
 
     if(!cards.length){ list.innerHTML = `<div class="empty-day-hint"><div class="eh-icon">${ICON('heartHandshake',22)}</div>لسه معدش رفقاء في المجموعة</div>`; return; }
     list.innerHTML = cards.map((c,i)=>{
       const av = AVATAR_COLORS[i%AVATAR_COLORS.length];
       return `<div class="rafeqa-card">
-        <div class="rf-avatar" style="background:${av}">${c.u.name[0]}</div>
-        <div class="rf-info"><div class="rf-status">${esc(c.text)}</div><div class="rf-hint">${esc(c.u.name)}</div></div>
-        <button class="btn-encourage" onclick="sendEncouragement('${c.u.id}',this)">${ICON('heart',13)}شجّعه</button>
+        <div class="rf-avatar" style="background:${av}">${c.name[0]}</div>
+        <div class="rf-info"><div class="rf-status">${esc(c.text)}</div><div class="rf-hint">${esc(c.name)}</div></div>
+        <button class="btn-encourage" onclick="sendEncouragement('${c.id}',this)">${ICON('heart',13)}شجّعه</button>
       </div>`;
     }).join('');
   } catch(e){ list.innerHTML = '<div class="empty-day-hint">تعذّر تحميل رفقة أواب</div>'; }
@@ -3133,35 +3154,22 @@ async function renderAdmin(){
   }
   document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">جاري تحميل الأعضاء...</div>`;
   let users;
-  try { users = await SB.get('users?select=*&order=name.asc'); }
+  // is_admin() في سياسة RLS هي اللي بتسمح فعليًا برؤية باقي البروفايلات —
+  // مش شرط في الكود ده، ده بس للعرض
+  try { users = await SB.get('profiles?select=id,display_name,role&order=display_name.asc'); }
   catch(e){ document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">تعذّر تحميل الأعضاء</div>`; return; }
   document.getElementById('members-list').innerHTML = users.map((u,i)=>`
     <div class="member-row">
-      <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.name[0]}</div>
-      <div class="m-n2">${esc(u.name)} <span class="m-role">${u.role==='admin'?'(مشرف)':''}</span></div>
-      ${u.id!==currentUser.id?`<button class="btn-del" onclick="deleteMember('${u.id}','${esc(u.name)}')">حذف</button>`:''}
+      <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.display_name[0]}</div>
+      <div class="m-n2">${esc(u.display_name)} <span class="m-role">${u.role==='admin'?'(مشرف)':''}</span></div>
+      ${u.id!==currentUser.id?`<button class="btn-del" onclick="deleteMember('${u.id}','${esc(u.display_name)}')">حذف</button>`:''}
     </div>`).join('');
 }
-async function addMember(){
-  const name = document.getElementById('inp-new-user').value.trim();
-  const pass = document.getElementById('inp-new-pass').value;
-  if(!name||pass.length<4){ showToast('البيانات ناقصة',true); return; }
-  if(!isOnline){ showToast('إضافة الأعضاء تحتاج اتصال بالإنترنت',true); return; }
-  showLoading('جاري الإضافة...');
-  try {
-    await SB.post('users', {name, pass, role:'member', pages_goal:0, onboarding_done:false});
-    document.getElementById('inp-new-user').value='';
-    document.getElementById('inp-new-pass').value='';
-    await renderAdmin();
-    showToast('تم إضافة العضو');
-  } catch(e){ showToast('حصل خطأ',true); }
-  finally { hideLoading(); }
-}
 async function deleteMember(id,name){
-  if(!confirm(`متأكد من حذف "${name}"؟ هيتم حذف كل بياناته.`)) return;
+  if(!confirm(`متأكد من حذف "${name}"؟ هيلغي وصوله للتطبيق فورًا (حذف حساب الدخول الكامل من مهام لاحقة تحتاج صلاحيات إضافية).`)) return;
   if(!isOnline){ showToast('حذف الأعضاء يحتاج اتصال بالإنترنت',true); return; }
   showLoading('جاري الحذف...');
-  try { await SB.delete(`users?id=eq.${id}`); await renderAdmin(); showToast('تم الحذف'); }
+  try { await SB.delete(`profiles?id=eq.${id}`); await renderAdmin(); showToast('تم الحذف'); }
   catch(e){ showToast('حصل خطأ',true); }
   finally { hideLoading(); }
 }
