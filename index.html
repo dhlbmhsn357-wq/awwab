@@ -1958,7 +1958,7 @@ async function doRegister(){
   const pass2=document.getElementById('inp-rpass2').value;
   const err=document.getElementById('reg-err');
   if(!name){err.style.display='block';err.textContent='الاسم مطلوب';return;}
-  if(pass.length<4){err.style.display='block';err.textContent='الباسورد 4 حروف على الأقل';return;}
+  if(pass.length<8){err.style.display='block';err.textContent='كلمة المرور 8 حروف على الأقل';return;}
   if(pass!==pass2){err.style.display='block';err.textContent='كلمة المرور مش متطابقة';return;}
   const btn=document.getElementById('btn-register');
   btn.disabled=true; showLoading('جاري إنشاء الحساب...');
