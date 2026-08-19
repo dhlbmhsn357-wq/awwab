@@ -536,6 +536,24 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 .install-banner-close{background:none;border:none;color:var(--text-3);cursor:pointer;padding:.35rem;flex-shrink:0;border-radius:var(--r-sm);}
 .install-banner-close:hover{background:var(--surface-2);}
 
+/* Guided Onboarding Tour */
+.tour-highlight{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(4,7,14,.6);pointer-events:none;z-index:850;transition:all .35s var(--ease);}
+:root[data-theme="light"] .tour-highlight,
+@media(prefers-color-scheme:light){.tour-highlight{box-shadow:0 0 0 9999px rgba(15,23,42,.45);}}
+.tour-tooltip{position:fixed;z-index:852;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-elevated);padding:1rem 1.1rem;width:min(320px, calc(100vw - 24px));transition:top .35s var(--ease), left .35s var(--ease);}
+.tour-tooltip-progress{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:.4rem;}
+.tour-tooltip-title{font-size:var(--fs-card-title);font-weight:800;color:var(--text-1);margin-bottom:.3rem;}
+.tour-tooltip-body{font-size:12.5px;color:var(--text-2);line-height:1.6;}
+.tour-tooltip-actions{display:flex;align-items:center;gap:.5rem;margin-top:.85rem;}
+.tour-btn{border:none;border-radius:var(--r-sm);padding:.5rem .9rem;font-size:12.5px;font-weight:700;cursor:pointer;}
+.tour-btn-next{background:var(--primary);color:#06251F;}
+.tour-btn-prev{background:var(--surface-2);color:var(--text-2);}
+.tour-btn-skip{background:none;color:var(--text-3);margin-inline-start:auto;font-weight:600;}
+@media(prefers-reduced-motion:reduce){.tour-highlight,.tour-tooltip{transition:none;}}
+/* welcome / resume / end sheets reuse .modal-overlay/.modal-sheet */
+.tour-welcome-icon{width:64px;height:64px;border-radius:var(--r-lg);overflow:hidden;margin:0 auto 1rem;box-shadow:var(--shadow-card);}
+.tour-welcome-icon img{width:100%;height:100%;object-fit:cover;display:block;}
+
 /* ---------- Empty state ---------- */
 .eh-icon{margin-bottom:var(--sp-3);}
 
@@ -762,6 +780,17 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
           <input id="inp-new-user" placeholder="اسم العضو الجديد">
           <input id="inp-new-pass" type="password" placeholder="الباسورد">
           <button class="btn-add" onclick="addMember()">إضافة</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>المساعدة</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
+          <div>
+            <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">الجولة التعريفية</div>
+            <div class="sr-desc">تعرّف مرة أخرى على أهم أجزاء أوّاب</div>
+          </div>
+          <button class="btn-add" style="flex-shrink:0" onclick="replayTour()">إعادة الجولة</button>
         </div>
       </div>
 
@@ -1283,6 +1312,269 @@ async function doInstallApp(){
 }
 
 initInstallTracking();
+
+// ════════════════════════════════════════════
+//  GUIDED ONBOARDING TOUR
+// ════════════════════════════════════════════
+let tourActive=false, tourIndex=0, tourManualReplay=false, tourPreviewGuard=false;
+let tourKeyHandler=null;
+
+function prefersReducedMotion(){
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+function getCurrentRoute(){
+  return document.querySelector('.bn-btn.active')?.dataset.tab || 'today';
+}
+function tourGoRoute(route){
+  if(!route || getCurrentRoute()===route) return;
+  const btn = document.querySelector(`.bn-btn[data-tab="${route}"]`);
+  if(btn) switchTab(route, btn);
+}
+function waitForTarget(getTarget, timeoutMs){
+  return new Promise(resolve=>{
+    const start = Date.now();
+    (function poll(){
+      let el = null;
+      try { el = getTarget(); } catch(e){ el=null; }
+      if(el) return resolve(el);
+      if(Date.now()-start > timeoutMs) return resolve(null);
+      requestAnimationFrame(()=>setTimeout(poll, 80));
+    })();
+  });
+}
+
+const TOUR_STEPS = [
+  { route:'today', title:'هذا يومك', body:'تابع من هنا عبادات اليوم وما أنجزته منها.',
+    getTarget:()=>document.querySelector('.day-hero') },
+  { route:'today', title:'سجّل صلاتك بدقة', body:'يمكنك تحديد: تكبيرة، جماعة، منفرد، أو فاتت.',
+    getTarget:()=>document.querySelector('.wcard .prayer-seg')?.closest('.wcard'),
+    skipIf:()=>!document.querySelector('.wcard .prayer-seg') },
+  { route:'today', title:'سجّل عباداتك بسهولة', body:'اضغط على حالة العبادة لتسجيل إنجازها أو تعديل تسجيلها.',
+    getTarget:()=>{
+      const cards=[...document.querySelectorAll('#timeline-slot .wcard')];
+      return cards.find(c=>!c.querySelector('.prayer-seg')) || null;
+    },
+    skipIf:()=>{
+      const cards=[...document.querySelectorAll('#timeline-slot .wcard')];
+      return !cards.some(c=>!c.querySelector('.prayer-seg'));
+    } },
+  { route:'today', title:'لم تُكمل تسجيل أمس؟', body:'يمكنك الرجوع واستكماله دون أن يُغلق يومك السابق.',
+    getTarget:()=>document.querySelector('#catchup-slot .catchup-card'),
+    skipIf:()=>!document.querySelector('#catchup-slot .catchup-card') },
+  { route:'today', title:'رتّب يومك كما يناسبك', body:'غيّر ترتيب العبادات، أو انقل عبادة من فترة لفترة تانية.',
+    getTarget:()=>document.getElementById('reorder-toggle-btn') },
+  { route:'worships', title:'أضف عبادتك', body:'أنشئ أي عبادة جديدة وحدد أيامها وموضعها في يومك.',
+    getTarget:()=>document.querySelector('.builder-add-btn') },
+  { route:'worships', title:'تحكم كامل في عبادتك', body:'يمكنك تحديد الأيام، الوقت، مكانها داخل اليوم، وطريقة متابعتها.',
+    onEnter:()=>{ tourPreviewGuard=true; openWorshipModal(); },
+    onExit:()=>{ closeWorshipModal(); tourPreviewGuard=false; },
+    getTarget:()=>document.querySelector('#worship-modal .modal-sheet') },
+  { route:'calendar', title:'راجع أيامك', body:'اضغط على أي يوم لفتح سجله ومراجعة أو استكمال تسجيلاته.',
+    getTarget:()=>document.getElementById('calendar-grid') },
+  { route:'progress', title:'تابع تقدمك الحقيقي', body:'راجع أداءك الأسبوعي والشهري والعبادات التي تحتاج اهتمامًا.',
+    getTarget:()=>document.querySelector('#progress-slot .report-summary') },
+  { route:'rafeqa', title:'رفقة للتشجيع', body:'هذه المساحة للتشجيع على الثبات، وليست للمقارنة أو التفاخر.',
+    getTarget:()=>document.querySelector('.rafeqa-header') },
+];
+
+async function tourGoToStep(index){
+  if(index<0) index=0;
+  if(index>=TOUR_STEPS.length) return tourFinish();
+  const step = TOUR_STEPS[index];
+  if(step.skipIf && step.skipIf()) return tourGoToStep(index+1);
+  const prevStep = TOUR_STEPS[tourIndex];
+  if(prevStep && prevStep.onExit && tourIndex!==index) prevStep.onExit();
+  tourIndex = index;
+  if(!tourManualReplay && currentUser){
+    SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_step:index}).catch(()=>{});
+  }
+  tourGoRoute(step.route);
+  if(step.onEnter) await step.onEnter();
+  const target = await waitForTarget(step.getTarget, 2200);
+  if(!target) return tourGoToStep(index+1);
+  target.scrollIntoView({behavior: prefersReducedMotion()?'auto':'smooth', block:'center'});
+  await new Promise(r=>setTimeout(r, prefersReducedMotion()?0:380));
+  renderTourStepUI(step, target, index);
+}
+
+function positionTourUI(target){
+  const hl = document.getElementById('tour-highlight');
+  const tip = document.getElementById('tour-tooltip');
+  if(!hl || !tip) return;
+  const r = target.getBoundingClientRect();
+  const pad = 8;
+  hl.style.top = Math.max(0,(r.top-pad))+'px';
+  hl.style.left = Math.max(0,(r.left-pad))+'px';
+  hl.style.width = (r.width+pad*2)+'px';
+  hl.style.height = (r.height+pad*2)+'px';
+  const tipH = tip.offsetHeight || 160;
+  const spaceBelow = window.innerHeight - r.bottom;
+  const showBelow = spaceBelow > tipH+24 || spaceBelow > r.top;
+  let top = showBelow ? r.bottom+16 : r.top-tipH-16;
+  top = Math.max(12, Math.min(top, window.innerHeight-tipH-12));
+  const tipW = tip.offsetWidth || 300;
+  let left = r.left + r.width/2 - tipW/2;
+  left = Math.max(12, Math.min(left, window.innerWidth-tipW-12));
+  tip.style.top = top+'px';
+  tip.style.left = left+'px';
+}
+
+function renderTourStepUI(step, target, index){
+  closeTourOverlayEls();
+  const hl = document.createElement('div');
+  hl.className='tour-highlight'; hl.id='tour-highlight';
+  const tip = document.createElement('div');
+  tip.className='tour-tooltip'; tip.id='tour-tooltip';
+  tip.setAttribute('role','dialog');
+  tip.setAttribute('aria-modal','true');
+  tip.innerHTML = `
+    <div class="tour-tooltip-progress">${index+1} / ${TOUR_STEPS.length}</div>
+    <div class="tour-tooltip-title">${esc(step.title)}</div>
+    <div class="tour-tooltip-body">${esc(step.body)}</div>
+    <div class="tour-tooltip-actions">
+      <button class="tour-btn tour-btn-skip" onclick="tourSkipAll()">تخطي</button>
+      ${index>0?`<button class="tour-btn tour-btn-prev" onclick="tourPrev()">السابق</button>`:''}
+      <button class="tour-btn tour-btn-next" id="tour-next-btn" onclick="tourNext()">${index===TOUR_STEPS.length-1?'إنهاء':'التالي'}</button>
+    </div>`;
+  document.body.appendChild(hl);
+  document.body.appendChild(tip);
+  positionTourUI(target);
+  document.getElementById('tour-next-btn')?.focus();
+  window._tourReposition = ()=>positionTourUI(target);
+  window.addEventListener('resize', window._tourReposition);
+  if(tourKeyHandler) document.removeEventListener('keydown', tourKeyHandler);
+  tourKeyHandler = (e)=>{ if(e.key==='Escape') tourSkipAll(); };
+  document.addEventListener('keydown', tourKeyHandler);
+}
+
+function closeTourOverlayEls(){
+  document.getElementById('tour-highlight')?.remove();
+  document.getElementById('tour-tooltip')?.remove();
+  if(window._tourReposition) window.removeEventListener('resize', window._tourReposition);
+}
+
+function tourNext(){ tourGoToStep(tourIndex+1); }
+function tourPrev(){ tourGoToStep(tourIndex-1); }
+
+async function tourSkipAll(){
+  const step = TOUR_STEPS[tourIndex];
+  if(step && step.onExit) step.onExit();
+  closeTourOverlayEls();
+  if(tourKeyHandler){ document.removeEventListener('keydown', tourKeyHandler); tourKeyHandler=null; }
+  tourActive=false;
+  if(!tourManualReplay && currentUser){
+    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+    currentUser.onboarding_tour_status='skipped';
+  }
+  tourManualReplay=false;
+}
+
+async function tourFinish(){
+  const step = TOUR_STEPS[tourIndex];
+  if(step && step.onExit) step.onExit();
+  closeTourOverlayEls();
+  if(tourKeyHandler){ document.removeEventListener('keydown', tourKeyHandler); tourKeyHandler=null; }
+  tourActive=false;
+  showTourEndSheet();
+}
+
+function showTourEndSheet(){
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='tour-end-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px;text-align:center">
+      <div class="tour-welcome-icon"><img src="/icon-192.png" alt="أواب"></div>
+      <div class="modal-title">أصبحت جاهزًا لاستخدام أوّاب</div>
+      <p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-bottom:.5rem">يمكنك إعادة هذه الجولة في أي وقت من الإعدادات.</p>
+      <div class="modal-actions"><button class="m-save" style="width:100%" onclick="tourEndSheetClose()">ابدأ يومي</button></div>
+    </div>`;
+  document.body.appendChild(el);
+}
+async function tourEndSheetClose(){
+  document.getElementById('tour-end-overlay')?.remove();
+  if(!tourManualReplay && currentUser){
+    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'completed', onboarding_tour_completed_at:new Date().toISOString()}).catch(()=>{});
+    currentUser.onboarding_tour_status='completed';
+  }
+  tourManualReplay=false;
+  const btn = document.querySelector('.bn-btn[data-tab="today"]');
+  if(btn) switchTab('today', btn);
+}
+
+async function startTour(){
+  document.getElementById('tour-welcome-overlay')?.remove();
+  if(!tourManualReplay && currentUser){
+    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'in_progress', onboarding_tour_step:0}).catch(()=>{});
+    currentUser.onboarding_tour_status='in_progress';
+  }
+  tourActive=true;
+  tourGoToStep(0);
+}
+async function skipWelcome(){
+  document.getElementById('tour-welcome-overlay')?.remove();
+  if(currentUser){
+    await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+    currentUser.onboarding_tour_status='skipped';
+  }
+}
+function showWelcomeSheet(){
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='tour-welcome-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px;text-align:center">
+      <div class="tour-welcome-icon"><img src="/icon-192.png" alt="أواب"></div>
+      <div class="modal-title">أهلًا بك في أوّاب</div>
+      <p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-bottom:.3rem">جولة قصيرة ستعرّفك على أهم ما تحتاجه لتنظيم عباداتك ومتابعتها بسهولة.</p>
+      <p style="font-size:11.5px;color:var(--text-3);margin-bottom:.5rem">لن تستغرق سوى دقائق قليلة</p>
+      <div class="modal-actions">
+        <button class="m-cancel" onclick="skipWelcome()">تخطي الآن</button>
+        <button class="m-save" onclick="startTour()">ابدأ الجولة</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+}
+async function resumeTourContinue(){
+  document.getElementById('tour-resume-overlay')?.remove();
+  tourActive=true;
+  tourGoToStep(currentUser.onboarding_tour_step||0);
+}
+async function resumeTourEnd(){
+  document.getElementById('tour-resume-overlay')?.remove();
+  await SB.patch(`users?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
+  currentUser.onboarding_tour_status='skipped';
+}
+function showResumePrompt(){
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='tour-resume-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px;text-align:center">
+      <div class="modal-title">لديك جولة تعريفية لم تكتمل</div>
+      <div class="modal-actions">
+        <button class="m-cancel" onclick="resumeTourEnd()">إنهاء الجولة</button>
+        <button class="m-save" onclick="resumeTourContinue()">متابعة الجولة</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+}
+
+function replayTour(){
+  tourManualReplay = true;
+  tourActive = true;
+  tourGoToStep(0);
+}
+
+function initTourCheck(){
+  if(!currentUser) return;
+  const status = currentUser.onboarding_tour_status; // NULL/undefined عند المستخدمين القدامى = not_started
+  setTimeout(()=>{
+    if(document.getElementById('install-banner') || document.getElementById('tour-welcome-overlay') || document.getElementById('tour-resume-overlay')) return;
+    if(!status || status==='not_started') showWelcomeSheet();
+    else if(status==='in_progress') showResumePrompt();
+  }, 2300);
+}
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ════════════════════════════════════════════
@@ -1437,6 +1729,7 @@ async function enterMain(){
       if(btn) switchTab(lastTab, btn);
     }
   }
+  initTourCheck();
 }
 
 function switchTab(id,btn){
@@ -2249,6 +2542,7 @@ function buildDaySectionSelect(){
 }
 
 async function saveWorship(){
+  if(tourPreviewGuard){ closeWorshipModal(); tourPreviewGuard=false; tourNext(); return; }
   const name = document.getElementById('wm-name').value.trim();
   if(!name){ showToast('اسم العبادة مطلوب',true); return; }
   const body = {
