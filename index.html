@@ -1025,6 +1025,20 @@ const SB = {
   upsert: (path, body, conflictCols) => SB.req('POST', path+(path.includes('?')?'&':'?')+'on_conflict='+conflictCols, body),
 };
 
+// get_login_email/is_name_taken بقوا مقصورين على service_role —
+// معدّيين دلوقتي عبر Edge Function auth-helper اللي بتفرض حد أقصى
+// للمحاولات لكل IP قبل ما تلمس قاعدة البيانات (رفقة Migration 016)
+async function callAuthHelper(action, name){
+  const r = await fetch(SB_URL+'/functions/v1/auth-helper', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization':'Bearer '+SB_KEY },
+    body: JSON.stringify({ action, name }),
+  });
+  const body = await r.json();
+  if(!r.ok) throw new Error(body.error || 'خطأ في الاتصال');
+  return body;
+}
+
 function uuid(){
   if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
@@ -1927,10 +1941,12 @@ async function doLogin(){
   btn.disabled=true; btn.textContent='جاري التحقق...';
   showLoading('جاري الدخول...');
   try {
-    // الاسم مش إيميل — نحوّله لإيميل الدخول المصطنع عبر RPC آمن
-    // (بيرجع الإيميل بس، من غير أي بيانة حساسة تانية)
-    const { data: email, error: rpcErr } = await sbAuth.rpc('get_login_email', {p_name: name});
-    if(rpcErr || !email){
+    // الاسم مش إيميل — نحوّله لإيميل الدخول المصطنع عبر Edge Function
+    // محدودة المحاولات (بترجع الإيميل بس، من غير أي بيانة حساسة تانية)
+    let email;
+    try { ({ email } = await callAuthHelper('login_email', name)); }
+    catch(e){ showToast(e.message||'خطأ في الاتصال',true); return; }
+    if(!email){
       document.getElementById('login-err').style.display='block';
       return;
     }
@@ -1964,9 +1980,10 @@ async function doRegister(){
   btn.disabled=true; showLoading('جاري إنشاء الحساب...');
   try {
     // التسجيل مفتوح من غير أي حد أقصى — فقط تأكيد إن الاسم مش مكرر
-    // عبر RPC (من غير جلب كل المستخدمين)
-    const { data: taken, error: takenErr } = await sbAuth.rpc('is_name_taken', {p_name: name});
-    if(takenErr){ err.style.display='block'; err.textContent='خطأ في الاتصال، حاول تاني'; return; }
+    // عبر Edge Function محدودة المحاولات (من غير جلب كل المستخدمين)
+    let taken;
+    try { ({ taken } = await callAuthHelper('name_taken', name)); }
+    catch(e){ err.style.display='block'; err.textContent = e.message||'خطأ في الاتصال، حاول تاني'; return; }
     if(taken){ err.style.display='block'; err.textContent='الاسم ده موجود، اختار اسم تاني'; return; }
 
     // إيميل مصطنع فريد — المستخدم أبدًا ما هيشوفه أو يحتاجه، بيسجل
@@ -3186,11 +3203,24 @@ function renderAdminList(){
     + (adminHasMore ? `<button class="btn-add" style="width:100%;margin-top:.5rem" onclick="loadAdminPage()">تحميل المزيد</button>` : '');
 }
 async function deleteMember(id,name){
-  if(!confirm(`متأكد من حذف "${name}"؟ هيلغي وصوله للتطبيق فورًا (حذف حساب الدخول الكامل من مهام لاحقة تحتاج صلاحيات إضافية).`)) return;
+  if(!confirm(`متأكد من حذف "${name}"؟ هيتم حذف حسابه بالكامل مع كل بياناته.`)) return;
   if(!isOnline){ showToast('حذف الأعضاء يحتاج اتصال بالإنترنت',true); return; }
   showLoading('جاري الحذف...');
-  try { await SB.delete(`profiles?id=eq.${id}`); await renderAdmin(); showToast('تم الحذف'); }
-  catch(e){ showToast('حصل خطأ',true); }
+  try {
+    // حذف كامل حقيقي (حساب Auth + كل بياناته Cascade) عبر Edge
+    // Function موثوقة — بتتحقق هي نفسها إنك admin قبل ما تنفّذ، مش
+    // معتمدين على الكود ده بس
+    const { data: { session } } = await sbAuth.auth.getSession();
+    const r = await fetch(SB_URL+'/functions/v1/admin-delete-member', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization':'Bearer '+session.access_token },
+      body: JSON.stringify({ target_id: id }),
+    });
+    const body = await r.json();
+    if(!r.ok) throw new Error(body.error||'حصل خطأ');
+    await renderAdmin();
+    showToast('تم الحذف');
+  } catch(e){ showToast(e.message||'حصل خطأ',true); }
   finally { hideLoading(); }
 }
 
