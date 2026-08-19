@@ -129,7 +129,12 @@ body{
   font-size:var(--fs-body); line-height:1.6;
   transition:background var(--dur-normal) var(--ease), color var(--dur-normal) var(--ease);
 }
-button, input, select, textarea{ font-family:inherit; }
+button, input, select, textarea{ font-family:inherit; min-width:0; box-sizing:border-box; }
+/* systemic guard: native inputs (esp. date/password, which carry large
+   intrinsic minimum widths / OS-injected icons) must never be allowed to
+   force a flex row wider than its container — this exact bug has bitten
+   two different components (date-range fields, add-member form) already */
+.field-row, .add-member-form, .chip-select, .day-hero-top, .date-nav, .wcard-top, .builder-row{ min-width:0; }
 button{ -webkit-tap-highlight-color:transparent; }
 :focus-visible{ outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
 @media (prefers-reduced-motion: reduce){
@@ -491,8 +496,8 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 .member-row .m-n2{flex:1;font-size:var(--fs-card-title);color:var(--text-1);min-width:0;}
 .member-row .m-role{font-size:10.5px;color:var(--text-3);}
 .btn-del{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--r-sm);padding:.3rem .6rem;font-size:11px;cursor:pointer;font-weight:600;}
-.add-member-form{display:flex;gap:.5rem;margin-top:var(--sp-3);}
-.add-member-form input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .8rem;color:var(--text-1);font-size:var(--fs-caption);outline:none;height:42px;}
+.add-member-form{display:flex;gap:.5rem;margin-top:var(--sp-3);min-width:0;}
+.add-member-form input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .8rem;color:var(--text-1);font-size:var(--fs-caption);outline:none;height:42px;box-sizing:border-box;}
 .btn-add{background:var(--primary);border:none;border-radius:var(--r-sm);color:#06251F;padding:0 var(--sp-4);font-size:var(--fs-caption);font-weight:700;cursor:pointer;white-space:nowrap;height:42px;}
 
 .notes-textarea{width:100%;min-height:80px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.75rem .9rem;color:var(--text-1);font-size:var(--fs-caption);resize:vertical;outline:none;line-height:1.6;box-shadow:var(--shadow-card);}
