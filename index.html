@@ -1001,6 +1001,8 @@ let editingWorshipId = null;  // null = إضافة جديدة
 let actionWorshipId = null;
 
 const ARABIC_DAYS  = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+// اختصار حرف واحد مميّز لكل يوم — أسماء الأيام كلها بتبدأ بـ"ال" فمينفعش نعتمد على أول حرف منها
+const ARABIC_DAYS_SHORT = ['ح','ن','ث','ر','خ','ج','س'];
 const AVATAR_COLORS= ['#0f4c5c','#1a7a8a','#c9a84c','#2e9e6b','#7d4aff','#e67e22','#c0392b','#8e44ad','#2980b9','#27ae60'];
 
 const DAY_SECTIONS = [
@@ -2110,7 +2112,7 @@ function refreshRecurrenceUI(){
   document.getElementById('wm-section-row').style.display = wmRecurrence==='times_per_week' ? 'none' : '';
 }
 function buildDaysChips(){
-  document.getElementById('wm-days-select').innerHTML = ARABIC_DAYS.map((d,i)=>`<button type="button" class="day-chip" data-d="${i}" onclick="toggleDay(${i})">${d[0]}</button>`).join('');
+  document.getElementById('wm-days-select').innerHTML = ARABIC_DAYS.map((d,i)=>`<button type="button" class="day-chip" data-d="${i}" onclick="toggleDay(${i})" title="${d}">${ARABIC_DAYS_SHORT[i]}</button>`).join('');
 }
 function toggleDay(i){ wmDays.has(i) ? wmDays.delete(i) : wmDays.add(i); refreshDaysUI(); }
 function refreshDaysUI(){ document.querySelectorAll('#wm-days-select button').forEach(b=>b.classList.toggle('sel', wmDays.has(Number(b.dataset.d)))); }
