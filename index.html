@@ -554,6 +554,20 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 .tour-welcome-icon{width:64px;height:64px;border-radius:var(--r-lg);overflow:hidden;margin:0 auto 1rem;box-shadow:var(--shadow-card);}
 .tour-welcome-icon img{width:100%;height:100%;object-fit:cover;display:block;}
 
+/* offline / sync banner */
+.offline-banner{position:fixed;top:calc(env(safe-area-inset-top));left:0;right:0;z-index:870;display:flex;align-items:center;gap:.5rem;justify-content:center;padding:.45rem 1rem;font-size:12px;font-weight:600;color:var(--text-1);background:var(--surface-2);border-bottom:1px solid var(--border);}
+.offline-banner[data-mode="offline"]{background:var(--warning-tint);color:var(--warning);}
+.offline-banner[data-mode="pending"]{background:var(--surface-2);color:var(--text-2);}
+.offline-banner[data-mode="syncing"]{background:var(--primary-tint);color:var(--primary);}
+.offline-banner[data-mode="success"]{background:var(--success-tint);color:var(--success);}
+.offline-banner[data-mode="error"]{background:var(--danger-tint);color:var(--danger);}
+.offline-banner-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+body.has-offline-banner .app{padding-top:34px;}
+body.has-offline-banner .main-header{top:34px;}
+.offline-banner-retry{background:none;border:1px solid currentColor;color:inherit;border-radius:var(--r-full);padding:.2rem .6rem;font-size:11px;font-weight:700;cursor:pointer;margin-inline-start:.4rem;}
+.sw-update-banner{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:420px;margin:0 auto;z-index:591;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-elevated);padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-size:12.5px;color:var(--text-1);}
+.sw-update-banner button{background:var(--primary);color:#06251F;border:none;border-radius:var(--r-sm);padding:.45rem .8rem;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;}
+
 /* ---------- Empty state ---------- */
 .eh-icon{margin-bottom:var(--sp-3);}
 
@@ -584,6 +598,19 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 <div class="loading-overlay hidden" id="loading-overlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loading-text">جاري التحميل...</div>
+</div>
+
+<!-- Offline / Sync status banner -->
+<div class="offline-banner" id="offline-banner" style="display:none" role="status">
+  <span class="offline-banner-dot"></span>
+  <span class="offline-banner-text">أنت غير متصل بالإنترنت</span>
+  <button class="offline-banner-retry" onclick="retrySyncNow()" id="offline-banner-retry" style="display:none">إعادة المحاولة</button>
+</div>
+
+<!-- SW update available -->
+<div class="sw-update-banner" id="sw-update-banner" style="display:none">
+  <span>يتوفر تحديث جديد لأوّاب</span>
+  <button onclick="applySwUpdate()">تحديث الآن</button>
 </div>
 
 <div class="app">
@@ -935,6 +962,7 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 
 <div class="save-toast" id="save-toast"><span data-icon="circleCheck" data-size="15"></span><span id="toast-text">تم الحفظ بنجاح</span></div>
 
+<script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
 <script>
 // ════════════════════════════════════════════
 //  SUPABASE CONFIG
@@ -969,6 +997,267 @@ const SB = {
   delete: (path) => SB.req('DELETE', path),
   upsert: (path, body, conflictCols) => SB.req('POST', path+(path.includes('?')?'&':'?')+'on_conflict='+conflictCols, body),
 };
+
+function uuid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8); return v.toString(16);
+  });
+}
+
+// ════════════════════════════════════════════
+//  LOCAL-FIRST DATA LAYER (IndexedDB via Dexie) + SYNC ENGINE
+//  الواجهة بتقرأ/تكتب محليًا الأول، والـSync Engine بيزامن مع
+//  Supabase في الخلفية. راجع migrations/006 للعمود المطلوب.
+// ════════════════════════════════════════════
+let localDB = null;
+let isSyncing = false;
+let isOnline = navigator.onLine;
+let syncDebounceTimer = null;
+let syncStatusEl = null;
+
+async function openLocalDB(userId){
+  const db = new Dexie('awwab_v1_'+userId);
+  db.version(1).stores({
+    worships: 'id, day_section, updated_at, syncStatus, deleted_at',
+    dailyLogs: 'id, worshipId, date, [worshipId+date], updated_at, syncStatus',
+    dailyNotes: 'date, syncStatus',
+    fellowshipSettings: 'entityId, syncStatus',
+    syncQueue: '++qid, entityType, entityId, createdAt, syncStatus',
+    meta: 'key',
+  });
+  await db.open();
+  return db;
+}
+
+// حقول موجودة بس في السجل المحلي (IndexedDB) ومش أعمدة حقيقية في
+// Supabase — لازم تتشال قبل أي إرسال للسيرفر، وإلا PostgREST بيرفض
+// الطلب كله بخطأ "column not found in schema cache" (PGRST204)
+function stripLocalFields(row){
+  if(!row) return row;
+  const {syncStatus, worshipId, _date, entityId, ...clean} = row;
+  return clean;
+}
+
+async function enqueueSync(entityType, entityId, operation, payload){
+  await localDB.syncQueue.add({
+    entityType, entityId, operation, payload,
+    clientMutationId: uuid(),
+    createdAt: Date.now(), retryCount:0, lastAttemptAt:null, syncStatus:'pending',
+  });
+  updateSyncBadge();
+  triggerSync();
+}
+
+function triggerSync(){
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(()=>{ syncPendingChanges(); }, 500);
+}
+
+// backoff بسيط: 1s, 5s, 30s, 2m, 5m — وبعدين يفضل عند 5 دقايق
+const BACKOFF_STEPS = [1000, 5000, 30000, 120000, 300000];
+function backoffDelay(retryCount){ return BACKOFF_STEPS[Math.min(retryCount, BACKOFF_STEPS.length-1)]; }
+
+async function processQueueItem(item){
+  // ملحوظة: حذف العبادة مش DELETE فعلي — بيتبعت كـUpdate بـdeleted_at
+  // (Soft Delete/Tombstone) عشان أي جهاز تاني يعرف إنها اتحذفت وقت
+  // الـSync بدل ما يفضل عنده نسخة قديمة فاضلة للأبد (راجع migrations/006)
+  if(item.entityType==='worship') await SB.upsert('worships', item.payload, 'id');
+  else if(item.entityType==='daily_log') await SB.upsert('daily_worship_logs', item.payload, 'user_id,worship_id,date');
+  else if(item.entityType==='daily_note') await SB.upsert('daily_notes', item.payload, 'user_id,date');
+  else if(item.entityType==='fellowship_settings') await SB.upsert('fellowship_settings', item.payload, 'user_id');
+  else return true; // نوع غير معروف — تجاهله بدل ما يعلّق الطابور
+  await markLocalSynced(item.entityType, item.entityId);
+  return true;
+}
+
+async function markLocalSynced(entityType, entityId){
+  try {
+    if(entityType==='worship') await localDB.worships.update(entityId, {syncStatus:'synced'});
+    else if(entityType==='daily_log') await localDB.dailyLogs.update(entityId, {syncStatus:'synced'});
+    else if(entityType==='daily_note') await localDB.dailyNotes.update(entityId, {syncStatus:'synced'});
+    else if(entityType==='fellowship_settings') await localDB.fellowshipSettings.update(entityId, {syncStatus:'synced'});
+  } catch(e){}
+}
+
+async function syncPendingChanges(){
+  if(isSyncing || !isOnline || !currentUser || !localDB) return;
+  isSyncing = true;
+  updateSyncStatusUI('syncing');
+  let pushedAny = false, hadFailure = false;
+  try {
+    const queue = await localDB.syncQueue.orderBy('createdAt').toArray();
+    for(const item of queue){
+      if(item.lastAttemptAt && (Date.now()-item.lastAttemptAt) < backoffDelay(item.retryCount||0)) continue;
+      try {
+        await processQueueItem(item);
+        await localDB.syncQueue.delete(item.qid);
+        pushedAny = true;
+      } catch(e){
+        hadFailure = true;
+        await localDB.syncQueue.update(item.qid, {retryCount:(item.retryCount||0)+1, lastAttemptAt:Date.now()});
+      }
+    }
+    await pullServerChanges();
+    updateSyncStatusUI(hadFailure ? 'error' : (pushedAny ? 'success' : 'idle'));
+  } catch(e){
+    updateSyncStatusUI('error');
+  } finally {
+    isSyncing = false;
+    updateSyncBadge();
+  }
+}
+
+async function pullServerChanges(){
+  if(!currentUser) return;
+  const metaRow = await localDB.meta.get('lastSyncedAt');
+  const lastSync = metaRow?.value || '1970-01-01T00:00:00Z';
+  const nowIso = new Date().toISOString();
+
+  const remoteWorships = await SB.get(`worships?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+  for(const rw of remoteWorships){
+    const local = await localDB.worships.get(rw.id);
+    if(local && local.syncStatus==='pending') continue; // متعديلش فوق تعديل محلي لسه مزامنش
+    if(rw.deleted_at){ await localDB.worships.delete(rw.id); continue; }
+    await localDB.worships.put({...rw, syncStatus:'synced'});
+  }
+
+  const remoteLogs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+  for(const rl of remoteLogs){
+    const local = await localDB.dailyLogs.get(rl.id);
+    if(local && local.syncStatus==='pending') continue;
+    await localDB.dailyLogs.put({...rl, worshipId:rl.worship_id, syncStatus:'synced'});
+  }
+
+  try {
+    const remoteNotes = await SB.get(`daily_notes?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+    for(const rn of remoteNotes){
+      const local = await localDB.dailyNotes.get(rn.date);
+      if(local && local.syncStatus==='pending') continue;
+      await localDB.dailyNotes.put({...rn, syncStatus:'synced'});
+    }
+  } catch(e){}
+
+  await localDB.meta.put({key:'lastSyncedAt', value: nowIso});
+  refreshCurrentViewFromLocal();
+}
+
+function refreshCurrentViewFromLocal(){
+  if(!currentUser) return;
+  loadWorships().then(()=>{
+    const route = getCurrentRoute ? getCurrentRoute() : 'today';
+    if(route==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
+    else if(route==='calendar' && typeof renderCalendar==='function') renderCalendar();
+    else if(route==='progress' && typeof renderProgress==='function') renderProgress();
+    else if(route==='worships' && typeof renderBuilder==='function') renderBuilder();
+  }).catch(()=>{});
+}
+
+// ── مؤشر الاتصال وحالة المزامنة ──
+function showBanner(mode, text, showRetry){
+  const el = document.getElementById('offline-banner');
+  if(!el) return;
+  el.style.display='flex';
+  el.dataset.mode=mode;
+  el.querySelector('.offline-banner-text').textContent = text;
+  document.getElementById('offline-banner-retry').style.display = showRetry ? '' : 'none';
+  document.body.classList.add('has-offline-banner');
+}
+function hideBanner(){
+  const el = document.getElementById('offline-banner');
+  if(el) el.style.display='none';
+  document.body.classList.remove('has-offline-banner');
+}
+function updateSyncBadge(){
+  if(!localDB) return;
+  localDB.syncQueue.count().then(n=>{
+    if(!isOnline){
+      showBanner('offline', n>0
+        ? 'أنت غير متصل بالإنترنت — سنزامن تغييراتك عند عودة الاتصال'
+        : 'أنت غير متصل بالإنترنت — يمكنك الاستمرار');
+    } else if(n>0){
+      showBanner('pending', 'سيتم حفظ التغييرات عند اكتمال المزامنة…');
+    } else {
+      hideBanner();
+    }
+  });
+}
+function updateSyncStatusUI(state){
+  if(state==='syncing'){
+    showBanner('syncing', 'جاري مزامنة التغييرات…');
+  } else if(state==='success'){
+    showBanner('success', 'تم تحديث بياناتك');
+    setTimeout(updateSyncBadge, 1800);
+  } else if(state==='error'){
+    showBanner('error', 'تعذّر مزامنة بعض التغييرات', true);
+  } else {
+    updateSyncBadge();
+  }
+}
+function retrySyncNow(){ syncPendingChanges(); }
+
+// ── Service Worker: تخزين الـApp Shell محليًا لفتح التطبيق بدون نت ──
+let swWaiting = null;
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>{
+      if(reg.waiting) { swWaiting = reg.waiting; showSwUpdateBanner(); }
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            swWaiting = nw;
+            showSwUpdateBanner();
+          }
+        });
+      });
+    }).catch(()=>{});
+  });
+  let swReloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    // تحديث الـSW مبيمسحش IndexedDB أبدًا — بس بيبدّل ملفات التطبيق
+    // الثابتة (index.html/manifest/الأيقونات)، فأي بيانات محلية سليمة
+    if(swReloading) return;
+    swReloading = true;
+    window.location.reload();
+  });
+}
+function showSwUpdateBanner(){
+  const el = document.getElementById('sw-update-banner');
+  if(el) el.style.display = 'flex';
+}
+function applySwUpdate(){
+  if(swWaiting) swWaiting.postMessage('SKIP_WAITING');
+  document.getElementById('sw-update-banner').style.display = 'none';
+}
+
+window.addEventListener('online', ()=>{ isOnline=true; updateSyncBadge(); syncPendingChanges(); });
+window.addEventListener('offline', ()=>{ isOnline=false; updateSyncBadge(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncPendingChanges(); });
+setInterval(()=>{ if(isOnline) syncPendingChanges(); }, 90000); // fallback دوري بدل الاعتماد على Background Sync API لضعف دعمه (خصوصًا iOS)
+
+async function preloadLocalData(){
+  // بعد أول دخول ناجح: حمّل العبادات + آخر 45 يوم من السجلات محليًا
+  // عشان تجربة Offline تبقى جاهزة فورًا
+  try {
+    const [worshipsRes, notesRes] = await Promise.all([
+      SB.get(`worships?user_id=eq.${currentUser.id}&select=*`),
+      SB.get(`daily_notes?user_id=eq.${currentUser.id}&select=*`).catch(()=>[]),
+    ]);
+    await localDB.worships.clear();
+    for(const w of worshipsRes){ if(!w.deleted_at) await localDB.worships.put({...w, syncStatus:'synced'}); }
+    for(const n of notesRes){ await localDB.dailyNotes.put({...n, syncStatus:'synced'}); }
+    const since = addDays(getToday(), -45);
+    const logsRes = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${since}&select=*`);
+    for(const l of logsRes){ await localDB.dailyLogs.put({...l, worshipId:l.worship_id, syncStatus:'synced'}); }
+    try {
+      const fsRes = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
+      if(fsRes[0]) await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'});
+    } catch(e){}
+    await localDB.meta.put({key:'lastSyncedAt', value:new Date().toISOString()});
+  } catch(e){ /* أوفلاين أو أول استخدام — هيتحمّل لاحقًا لما النت يرجع */ }
+}
 
 // ════════════════════════════════════════════
 //  ICON SYSTEM — unified stroke-based SVG set (Lucide-inspired)
@@ -1182,20 +1471,40 @@ function openSettingsPanel(){
 mountIcons();
 
 // ── استعادة الجلسة بعد Refresh (بدل ما نرجّع المستخدم لشاشة الدخول) ──
+function fetchWithTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')), ms)),
+  ]);
+}
 async function restoreSession(){
   const savedId = localStorage.getItem('awwab-session');
   if(!savedId) return;
   showLoading('جاري الدخول...');
   try {
-    const rows = await SB.get(`users?id=eq.${savedId}&select=*`);
-    if(rows.length){
-      currentUser = rows[0];
-      await afterLogin();
-    } else {
-      localStorage.removeItem('awwab-session');
-      localStorage.removeItem('awwab-last-tab');
+    // Offline (Auth) — Session محلية صالحة تكفي لفتح التطبيق بدون نت،
+    // بدل ما نرجّع المستخدم لشاشة الدخول لمجرد إن السيرفر مش متاح
+    if(!navigator.onLine){
+      const cached = JSON.parse(localStorage.getItem('awwab-user-cache')||'null');
+      if(cached && cached.id===savedId){ currentUser = cached; await afterLogin(); return; }
     }
-  } catch(e){ /* تعذّر الاتصال — سيب المستخدم على شاشة الدخول */ }
+    try {
+      const rows = await fetchWithTimeout(SB.get(`users?id=eq.${savedId}&select=*`), 6000);
+      if(rows.length){
+        currentUser = rows[0];
+        localStorage.setItem('awwab-user-cache', JSON.stringify(currentUser));
+        await afterLogin();
+      } else {
+        localStorage.removeItem('awwab-session');
+        localStorage.removeItem('awwab-last-tab');
+        localStorage.removeItem('awwab-user-cache');
+      }
+    } catch(netErr){
+      // فشل الاتصال (مش رفض صريح من السيرفر) — استخدم النسخة المحفوظة لو موجودة
+      const cached = JSON.parse(localStorage.getItem('awwab-user-cache')||'null');
+      if(cached && cached.id===savedId){ currentUser = cached; await afterLogin(); }
+    }
+  } catch(e){ /* تعذّر تمامًا — سيب المستخدم على شاشة الدخول */ }
   finally { hideLoading(); }
 }
 restoreSession();
@@ -1639,8 +1948,16 @@ function doLogout(){
 
 async function afterLogin(){
   localStorage.setItem('awwab-session', currentUser.id);
+  localStorage.setItem('awwab-user-cache', JSON.stringify(currentUser));
   showLoading('جاري التحضير...');
   try {
+    localDB = await openLocalDB(currentUser.id);
+    if(!navigator.onLine){
+      // أوفلاين: من غير فحص شبكي — اعتمد على آخر حالة onboarding معروفة محليًا
+      if(currentUser.onboarding_done){ await enterMain(); }
+      else { hideLoading(); showToast('يحتاج أوّاب اتصالًا بالإنترنت عند الاستخدام الأول',true); showScreen('login'); }
+      return;
+    }
     const mine = await SB.get(`worships?user_id=eq.${currentUser.id}&select=id&limit=1`);
     if(!currentUser.onboarding_done){
       if(mine.length){
@@ -1655,7 +1972,11 @@ async function afterLogin(){
     } else {
       await enterMain();
     }
-  } catch(e){ showToast('خطأ في التحضير',true); }
+  } catch(e){
+    // فشل الشبكة أثناء التحضير (مش رفض من السيرفر) — ما تمنعش المستخدم من دخول نسخته المحلية
+    if(localDB && currentUser?.onboarding_done){ await enterMain(); }
+    else showToast('خطأ في التحضير',true);
+  }
   finally { hideLoading(); }
 }
 
@@ -1721,6 +2042,12 @@ async function enterMain(){
   document.getElementById('settings-username').textContent=currentUser.name;
   document.getElementById('admin-settings-group').style.display = currentUser.role==='admin' ? '' : 'none';
   viewDate = getToday();
+  isOnline = navigator.onLine;
+  updateSyncBadge();
+  if(isOnline && localDB){
+    const meta = await localDB.meta.get('lastSyncedAt');
+    if(!meta){ await preloadLocalData(); } else { await syncPendingChanges(); }
+  }
   await loadWorships();
   await loadDay(viewDate);
   checkNewEncouragements();
@@ -1759,12 +2086,16 @@ function switchTab(id,btn){
 //  WORSHIPS: LOAD + APPLICABILITY
 // ════════════════════════════════════════════
 async function loadWorships(){
-  worships = await SB.get(`worships?user_id=eq.${currentUser.id}&select=*&order=sort_order.asc`);
+  // Local-first: القراءة دايمًا من IndexedDB — الـSync Engine هو المسؤول
+  // عن إبقائها محدّثة من السيرفر، مش شاشة العرض
+  const all = await localDB.worships.filter(w=>!w.deleted_at).toArray();
+  all.sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  worships = all;
   const onceIds = worships.filter(w=>w.recurrence_type==='once').map(w=>w.id);
   onceCompletedSet = new Set();
   if(onceIds.length){
-    const rows = await SB.get(`daily_worship_logs?worship_id=in.(${onceIds.join(',')})&status=eq.completed&select=worship_id`);
-    rows.forEach(r=>onceCompletedSet.add(r.worship_id));
+    const rows = await localDB.dailyLogs.where('worshipId').anyOf(onceIds).filter(l=>l.status==='completed').toArray();
+    rows.forEach(r=>onceCompletedSet.add(r.worshipId));
   }
 }
 function isApplicable(w, dateStr){
@@ -1815,13 +2146,13 @@ async function loadDay(dateStr){
   showLoading('جاري تحميل اليوم...');
   let noteRow = null;
   try {
-    const [logs, notes] = await Promise.all([
-      SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=eq.${dateStr}&select=*`),
-      SB.get(`daily_notes?user_id=eq.${currentUser.id}&date=eq.${dateStr}&select=*`),
+    const [logs, note] = await Promise.all([
+      localDB.dailyLogs.where('date').equals(dateStr).toArray(),
+      localDB.dailyNotes.get(dateStr),
     ]);
     dayLogsMap = {};
-    logs.forEach(l=>{ dayLogsMap[l.worship_id]=l; l._date=dateStr; });
-    noteRow = notes[0] || null;
+    logs.forEach(l=>{ dayLogsMap[l.worshipId]=l; l._date=dateStr; });
+    noteRow = note || null;
   } catch(e){ dayLogsMap={}; showToast('تعذّر تحميل بيانات اليوم',true); }
   hideLoading();
 
@@ -1959,18 +2290,22 @@ function renderWorshipCard(w, dateStr, items, idx){
 }
 
 async function upsertLog(worshipId, dateStr, patch){
+  // Local-first: يكتب في IndexedDB فورًا ويحدّث الواجهة، وبيدخل الـSync
+  // Queue في الخلفية — من غير ما يستنى السيرفر خالص (شغّال أوفلاين 100%)
   const existing = dayLogsMap[worshipId];
+  const id = existing?.id || uuid();
   const body = Object.assign({
-    user_id: currentUser.id, worship_id: worshipId, date: dateStr,
+    id, user_id: currentUser.id, worship_id: worshipId, date: dateStr,
     status: existing?.status||'unrecorded', value: existing?.value ?? null,
     notes: existing?.notes ?? null, quality_rating: existing?.quality_rating ?? null,
+    order_override: existing?.order_override ?? null,
   }, patch, {updated_at: new Date().toISOString()});
   if(body.status==='completed' && !body.completed_at) body.completed_at = new Date().toISOString();
-  const rows = await SB.upsert('daily_worship_logs', body, 'user_id,worship_id,date');
-  const row = rows[0] || body;
-  row._date = dateStr;
-  dayLogsMap[worshipId] = row;
-  return row;
+  const localRow = {...body, worshipId, syncStatus:'pending', _date:dateStr};
+  await localDB.dailyLogs.put(localRow);
+  dayLogsMap[worshipId] = localRow;
+  await enqueueSync('daily_log', id, existing?'update':'create', body);
+  return localRow;
 }
 
 async function setBooleanStatus(worshipId, val, dateStr){
@@ -2098,14 +2433,14 @@ async function finalizeDrag(card, oldSection){
       // final DOM order (avoids colliding with existing sort_order values there)
       w.day_section = newSection;
       const ids = siblings.map(el=>el.dataset.wid);
-      await Promise.all(ids.map((id,i)=>SB.patch(`worships?id=eq.${id}`, {
+      await Promise.all(ids.map((id,i)=>localPatchWorship(id, {
         sort_order:(i+1)*10, ...(id===worshipId?{day_section:newSection}:{})
       })));
     } else if(permanent){
       // resequence every item in this section per its new DOM order — a partial
       // renumber (just the dragged item) can collide with untouched siblings
       const ids = siblings.map(el=>el.dataset.wid);
-      await Promise.all(ids.map((id,i)=>SB.patch(`worships?id=eq.${id}`, {sort_order:(i+1)*10})));
+      await Promise.all(ids.map((id,i)=>localPatchWorship(id, {sort_order:(i+1)*10})));
     } else {
       await upsertLog(w.id, viewDate, {order_override:newIndex});
     }
@@ -2121,8 +2456,9 @@ function onNotesInput(){
   const forDate = viewDate;
   clearTimeout(window._notesTimer);
   window._notesTimer = setTimeout(async ()=>{
-    try { await SB.upsert('daily_notes', {user_id: currentUser.id, date: forDate, notes: txt, updated_at: new Date().toISOString()}, 'user_id,date'); }
-    catch(e){ showToast('تعذّر حفظ الملاحظة',true); }
+    const body = {user_id: currentUser.id, date: forDate, notes: txt, updated_at: new Date().toISOString()};
+    await localDB.dailyNotes.put({...body, syncStatus:'pending'});
+    await enqueueSync('daily_note', forDate, 'update', body);
   }, 800);
 }
 
@@ -2154,7 +2490,8 @@ function renderWeeklyGoals(){
     </div>`;
   }).join('') + `</div>`;
   goals.forEach(async g=>{
-    const rows = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&worship_id=eq.${g.id}&date=gte.${weekDates[0]}&date=lte.${weekDates[6]}&status=eq.completed&select=id`);
+    const weekLogs = await localLogsInRange(weekDates[0], weekDates[6]);
+    const rows = weekLogs.filter(l=>l.worship_id===g.id && l.status==='completed');
     const target = g.weekly_target||1;
     const countEl = document.getElementById(`wg-count-${g.id}`);
     const fillEl = document.getElementById(`wg-fill-${g.id}`);
@@ -2177,7 +2514,7 @@ async function renderCatchup(dateStr){
   const yst = addDays(dateStr,-1);
   const ystApplicable = worships.filter(w=>isApplicable(w,yst));
   if(!ystApplicable.length){ slot.innerHTML=''; return; }
-  const ystLogs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=eq.${yst}&select=worship_id,status`);
+  const ystLogs = await localLogsInRange(yst, yst);
   const doneSet = new Set(ystLogs.filter(l=>l.status!=='unrecorded').map(l=>l.worship_id));
   const missingCount = ystApplicable.filter(w=>!doneSet.has(w.id)).length;
   if(!missingCount || sessionStorage.getItem('catchup-dismissed-'+yst)){ slot.innerHTML=''; return; }
@@ -2204,6 +2541,13 @@ function getMonthDates(offset){
   return {year,month,firstDow,daysInMonth};
 }
 function changeMonth(delta){ currentMonthOffset+=delta; renderCalendar(); }
+async function localLogsInRange(first, last){
+  if(localDB){
+    return await localDB.dailyLogs.where('date').between(first, last, true, true).toArray();
+  }
+  if(!isOnline) return [];
+  return await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=*`);
+}
 async function renderCalendar(){
   const {year,month,firstDow,daysInMonth} = getMonthDates(currentMonthOffset);
   const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -2212,7 +2556,7 @@ async function renderCalendar(){
   const last = `${year}-${pad(month+1)}-${pad(daysInMonth)}`;
   showLoading('جاري تحميل التقويم...');
   let logs=[];
-  try { logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=date,status,worship_id`); }
+  try { logs = await localLogsInRange(first, last); }
   catch(e){}
   hideLoading();
   const byDate={};
@@ -2268,7 +2612,7 @@ function isApplicableForRange(w, dateStr){ return isApplicable(w, dateStr); }
 async function computePeriodReport(dates){
   const active = worships.filter(w=>!w.is_paused && !w.is_hidden);
   const first=dates[0], last=dates[dates.length-1];
-  const logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=*`);
+  const logs = await localLogsInRange(first, last);
   const perWorship={};
   active.forEach(w=>{ perWorship[w.id]={id:w.id, name:w.name, unit:w.target_unit, scheduled:0, completed:0, isWeekly:w.recurrence_type==='times_per_week'}; });
   let scheduled=0, completed=0;
@@ -2363,8 +2707,8 @@ async function renderQuranProgress(){
   const last = getToday();
   const quranWorships = worships.filter(w=>w.category==='quran');
   if(!quranWorships.length) return `<div class="empty-day-hint"><div class="eh-icon">${ICON('bookOpen',22)}</div>لسه معندكش وِرد قرآن مضاف<br>ضيفه من "عباداتي"</div>`;
-  const ids = quranWorships.map(w=>w.id);
-  const logs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&worship_id=in.(${ids.join(',')})&date=gte.${first}&date=lte.${last}&select=*`);
+  const ids = new Set(quranWorships.map(w=>w.id));
+  const logs = (await localLogsInRange(first, last)).filter(l=>ids.has(l.worship_id));
   let pagesRead=0, hifzSessions=0, murajaaSessions=0, needsReview=0;
   logs.forEach(l=>{
     const w = quranWorships.find(x=>x.id===l.worship_id);
@@ -2433,16 +2777,20 @@ async function worshipAction(action){
   showLoading('جاري التنفيذ...');
   try {
     if(action==='duplicate'){
-      const copy = Object.assign({}, w, {name: w.name+' (نسخة)'});
-      delete copy.id; delete copy.created_at; delete copy.updated_at;
-      await SB.post('worships', copy);
+      const copy = Object.assign({}, stripLocalFields(w), {name: w.name+' (نسخة)'});
+      delete copy.created_at; delete copy.updated_at; delete copy.deleted_at;
+      copy.id = uuid();
+      copy.created_at = new Date().toISOString();
+      copy.updated_at = copy.created_at;
+      await localDB.worships.put({...copy, syncStatus:'pending'});
+      await enqueueSync('worship', copy.id, 'create', copy);
     } else if(action==='pause'){
-      await SB.patch(`worships?id=eq.${w.id}`, {is_paused: !w.is_paused});
+      await localPatchWorship(w.id, {is_paused: !w.is_paused});
     } else if(action==='hide'){
-      await SB.patch(`worships?id=eq.${w.id}`, {is_hidden: !w.is_hidden});
+      await localPatchWorship(w.id, {is_hidden: !w.is_hidden});
     } else if(action==='delete'){
       if(!confirm(`متأكد من حذف "${w.name}"؟ هيتم حذف كل سجلاتها كمان.`)) { hideLoading(); return; }
-      await SB.delete(`worships?id=eq.${w.id}`);
+      await localDeleteWorship(w.id);
     }
     await loadWorships();
     renderBuilder();
@@ -2571,13 +2919,18 @@ async function saveWorship(){
   };
   showLoading('جاري الحفظ...');
   try {
+    let full;
     if(editingWorshipId){
-      await SB.patch(`worships?id=eq.${editingWorshipId}`, body);
+      const existing = stripLocalFields(await localDB.worships.get(editingWorshipId));
+      full = {...existing, ...body, id:editingWorshipId, user_id:currentUser.id, updated_at:new Date().toISOString()};
     } else {
-      body.user_id = currentUser.id;
-      body.sort_order = (Math.max(0,...worships.map(w=>w.sort_order||0))+10);
-      await SB.post('worships', body);
+      full = {...body, id:uuid(), user_id:currentUser.id,
+        sort_order:(Math.max(0,...worships.map(w=>w.sort_order||0))+10),
+        is_active:true, is_paused:false, is_hidden:false, deleted_at:null,
+        created_at:new Date().toISOString(), updated_at:new Date().toISOString()};
     }
+    await localDB.worships.put({...full, syncStatus:'pending'});
+    await enqueueSync('worship', full.id, editingWorshipId?'update':'create', full);
     await loadWorships();
     renderBuilder();
     closeWorshipModal();
@@ -2585,13 +2938,28 @@ async function saveWorship(){
   } catch(e){ showToast('حصل خطأ في الحفظ',true); }
   finally { hideLoading(); window._wmQuranMode=null; window._wmCategory=null; }
 }
+async function localPatchWorship(id, patch){
+  const existing = stripLocalFields(await localDB.worships.get(id));
+  if(!existing) return null;
+  const full = {...existing, ...patch, updated_at:new Date().toISOString()};
+  await localDB.worships.put({...full, syncStatus:'pending'});
+  await enqueueSync('worship', id, 'update', full);
+  return full;
+}
+async function localDeleteWorship(id){
+  const existing = stripLocalFields(await localDB.worships.get(id));
+  if(!existing) return;
+  const full = {...existing, deleted_at:new Date().toISOString(), updated_at:new Date().toISOString()};
+  await localDB.worships.delete(id);
+  await enqueueSync('worship', id, 'delete', full);
+}
 async function deleteWorshipConfirm(){
   if(!editingWorshipId) return;
   const w = worships.find(x=>x.id===editingWorshipId);
   if(!confirm(`متأكد من حذف "${w.name}"؟`)) return;
   showLoading('جاري الحذف...');
   try {
-    await SB.delete(`worships?id=eq.${editingWorshipId}`);
+    await localDeleteWorship(editingWorshipId);
     await loadWorships();
     renderBuilder();
     closeWorshipModal();
@@ -2638,8 +3006,12 @@ async function computeReturnStatus(userId){
 async function renderRafeqa(){
   const list = document.getElementById('rafeqa-list');
   const goalCard = document.getElementById('group-goal-card');
-  list.innerHTML = `<div class="empty-day-hint">جاري التحميل...</div>`;
   goalCard.innerHTML = '';
+  if(!isOnline){
+    list.innerHTML = `<div class="empty-day-hint"><div class="eh-icon">${ICON('heartHandshake',22)}</div>رفقة أواب تحتاج اتصال بالإنترنت<br>هتظهر تلقائيًا لما تتصل تاني</div>`;
+    return;
+  }
+  list.innerHTML = `<div class="empty-day-hint">جاري التحميل...</div>`;
   try {
     const users = await SB.get(`users?select=id,name`);
     const settings = await SB.get(`fellowship_settings?select=*`);
@@ -2672,11 +3044,13 @@ async function renderRafeqa(){
   } catch(e){ list.innerHTML = '<div class="empty-day-hint">تعذّر تحميل رفقة أواب</div>'; }
 }
 async function sendEncouragement(toUserId, btn){
+  if(!isOnline){ showToast('التشجيع يحتاج اتصال بالإنترنت',true); return; }
   btn.disabled=true; btn.innerHTML = ICON('circleCheck',13)+'تم الإرسال';
   try { await SB.post('encouragements', {to_user_id: toUserId, from_user_id: currentUser.id}); }
   catch(e){ showToast('تعذّر الإرسال',true); }
 }
 async function checkNewEncouragements(){
+  if(!isOnline) return;
   try {
     const lastSeen = localStorage.getItem('awwab-enc-seen-'+currentUser.id) || '1970-01-01';
     const rows = await SB.get(`encouragements?to_user_id=eq.${currentUser.id}&created_at=gt.${lastSeen}&select=id,created_at&order=created_at.desc&limit=1`);
@@ -2711,23 +3085,41 @@ function renderSettings(){
   if(currentUser.role==='admin') renderAdmin();
 }
 async function loadMyFellowshipSettings(){
+  if(localDB){
+    const row = await localDB.fellowshipSettings.get(currentUser.id);
+    if(row) return row;
+  }
+  if(!isOnline) return {share_level:'none'};
   const rows = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
   return rows[0] || {share_level:'none'};
 }
+async function localSaveFellowshipSettings(patch){
+  const existing = await localDB.fellowshipSettings.get(currentUser.id);
+  const body = Object.assign({user_id: currentUser.id, share_level: existing?.share_level||'none', selected_text: existing?.selected_text||null}, patch, {updated_at: new Date().toISOString()});
+  await localDB.fellowshipSettings.put({...body, entityId: currentUser.id, syncStatus:'pending'});
+  await enqueueSync('fellowship_settings', currentUser.id, existing?'update':'create', body);
+  return body;
+}
 async function savePrivacy(level){
-  await SB.upsert('fellowship_settings', {user_id: currentUser.id, share_level: level}, 'user_id');
+  await localSaveFellowshipSettings({share_level: level});
   showToast('تم حفظ إعدادات الخصوصية');
   renderSettings();
 }
 async function saveSelectedText(text){
-  await SB.upsert('fellowship_settings', {user_id: currentUser.id, share_level:'selected', selected_text: text}, 'user_id');
+  await localSaveFellowshipSettings({share_level:'selected', selected_text: text});
   showToast('تم الحفظ');
 }
 
 async function renderAdmin(){
   document.getElementById('admin-settings-group').style.display='';
+  if(!isOnline){
+    document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">إدارة الأعضاء تحتاج اتصال بالإنترنت</div>`;
+    return;
+  }
   document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">جاري تحميل الأعضاء...</div>`;
-  const users = await SB.get('users?select=*&order=name.asc');
+  let users;
+  try { users = await SB.get('users?select=*&order=name.asc'); }
+  catch(e){ document.getElementById('members-list').innerHTML = `<div class="empty-day-hint" style="padding:1.5rem">تعذّر تحميل الأعضاء</div>`; return; }
   document.getElementById('members-list').innerHTML = users.map((u,i)=>`
     <div class="member-row">
       <div class="m-av2" style="background:${AVATAR_COLORS[i%AVATAR_COLORS.length]}">${u.name[0]}</div>
@@ -2739,6 +3131,7 @@ async function addMember(){
   const name = document.getElementById('inp-new-user').value.trim();
   const pass = document.getElementById('inp-new-pass').value;
   if(!name||pass.length<4){ showToast('البيانات ناقصة',true); return; }
+  if(!isOnline){ showToast('إضافة الأعضاء تحتاج اتصال بالإنترنت',true); return; }
   showLoading('جاري الإضافة...');
   try {
     await SB.post('users', {name, pass, role:'member', pages_goal:0, onboarding_done:false});
@@ -2751,6 +3144,7 @@ async function addMember(){
 }
 async function deleteMember(id,name){
   if(!confirm(`متأكد من حذف "${name}"؟ هيتم حذف كل بياناته.`)) return;
+  if(!isOnline){ showToast('حذف الأعضاء يحتاج اتصال بالإنترنت',true); return; }
   showLoading('جاري الحذف...');
   try { await SB.delete(`users?id=eq.${id}`); await renderAdmin(); showToast('تم الحذف'); }
   catch(e){ showToast('حصل خطأ',true); }
