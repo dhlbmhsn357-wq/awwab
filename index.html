@@ -541,7 +541,7 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 :root[data-theme="light"] .tour-highlight,
 @media(prefers-color-scheme:light){.tour-highlight{box-shadow:0 0 0 9999px rgba(15,23,42,.45);}}
 .tour-tooltip{position:fixed;z-index:852;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-elevated);padding:1rem 1.1rem;width:min(320px, calc(100vw - 24px));transition:top .35s var(--ease), left .35s var(--ease);}
-.tour-tooltip-progress{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:.4rem;}
+.tour-tooltip-progress{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:.4rem;direction:ltr;unicode-bidi:isolate;text-align:right;}
 .tour-tooltip-title{font-size:var(--fs-card-title);font-weight:800;color:var(--text-1);margin-bottom:.3rem;}
 .tour-tooltip-body{font-size:12.5px;color:var(--text-2);line-height:1.6;}
 .tour-tooltip-actions{display:flex;align-items:center;gap:.5rem;margin-top:.85rem;}
@@ -1323,7 +1323,11 @@ function prefersReducedMotion(){
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 function getCurrentRoute(){
-  return document.querySelector('.bn-btn.active')?.dataset.tab || 'today';
+  // اعتمد على الصفحة الظاهرة فعليًا، مش على bn-btn.active — الإعدادات
+  // مثلًا بتتفتح من زرار في الـHeader وملهاش bn-btn نشط أصلًا، فالاعتماد
+  // على bn-btn كان بيخلي الجولة تفتكر إنها "في اليوم" وهي لسه في الإعدادات
+  const panel = document.querySelector('.tab-panel.active');
+  return panel ? panel.id.replace('panel-','') : 'today';
 }
 function tourGoRoute(route){
   if(!route || getCurrentRoute()===route) return;
