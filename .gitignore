@@ -1,0 +1,6 @@
+# أسرار — ممنوع تتسجل في Git أبدًا (service_role key وأي مفاتيح تانية)
+.env
+.env.*
+!.env.example
+
+node_modules/
