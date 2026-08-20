@@ -2634,6 +2634,18 @@ async function renderCalendar(){
   let logs=[];
   try { logs = await localLogsInRange(first, last); }
   catch(e){}
+  // شهور أقدم من 90 يوم ممكن تكون سجلاتها الخام اتؤرشفت (Migration
+  // 017/018) — هات الملخص اليومي المحفوظ ليها بدل ما تفترض إنها
+  // فاضية. الشهور الحديثة (الأغلبية) مش بتتأثر خالص، بتفضل بنفس
+  // الحساب الحي المباشر زي ما هو
+  const archiveCutoff = addDays(getToday(), -90);
+  let daySummaryMap = {};
+  if(first <= archiveCutoff && isOnline){
+    try {
+      const rows = await SB.get(`monthly_day_summary?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=date,applicable_count,completed_count,has_record`);
+      rows.forEach(r=>{ daySummaryMap[r.date] = r; });
+    } catch(e){}
+  }
   hideLoading();
   const byDate={};
   logs.forEach(l=>{ (byDate[l.date] = byDate[l.date]||[]).push(l); });
@@ -2643,15 +2655,24 @@ async function renderCalendar(){
   let daysLogged=0, daysWithoutRecord=0, bestDay=null, bestPct=-1;
   for(let day=1; day<=daysInMonth; day++){
     const ds = `${year}-${pad(month+1)}-${pad(day)}`;
-    const applicable = worships.filter(w=>isApplicable(w,ds)).length;
-    const dLogs = byDate[ds]||[];
-    const done = dLogs.filter(l=>l.status==='completed').length;
+    const summary = daySummaryMap[ds];
+    let applicable, done, hasRecord;
+    if(ds < archiveCutoff && summary){
+      applicable = summary.applicable_count;
+      done = summary.completed_count;
+      hasRecord = summary.has_record;
+    } else {
+      applicable = worships.filter(w=>isApplicable(w,ds)).length;
+      const dLogs = byDate[ds]||[];
+      done = dLogs.filter(l=>l.status==='completed').length;
+      hasRecord = dLogs.length>0;
+    }
     let cls='';
     if(applicable>0){
       const pct = done/applicable;
-      cls = pct>=0.7?'streak-high':pct>=0.35?'streak-mid':(dLogs.length?'streak-low':'');
+      cls = pct>=0.7?'streak-high':pct>=0.35?'streak-mid':(hasRecord?'streak-low':'');
       if(ds<=today){
-        if(dLogs.length) daysLogged++; else daysWithoutRecord++;
+        if(hasRecord) daysLogged++; else daysWithoutRecord++;
         if(pct>bestPct){ bestPct=pct; bestDay=day; }
       }
     }
