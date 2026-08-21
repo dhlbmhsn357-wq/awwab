@@ -1279,8 +1279,10 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 setInterval(()=>{ if(isOnline) syncPendingChanges(); }, 90000); // fallback دوري بدل الاعتماد على Background Sync API لضعف دعمه (خصوصًا iOS)
 
 async function preloadLocalData(){
-  // بعد أول دخول ناجح: حمّل العبادات + آخر 45 يوم من السجلات محليًا
-  // عشان تجربة Offline تبقى جاهزة فورًا
+  // بعد أول دخول ناجح: حمّل العبادات + آخر 90 يوم من السجلات محليًا
+  // (بنفس حد الأرشفة بالظبط — 90 يوم — عشان مايفضلش فرق بين "أقدم
+  // حاجة متخزنة محليًا" و"أقدم حاجة لسه خام على السيرفر قبل ما
+  // تتلخّص") عشان تجربة الأوفلاين تبقى جاهزة فورًا
   try {
     const [worshipsRes, notesRes] = await Promise.all([
       SB.get(`worships?user_id=eq.${currentUser.id}&select=*`),
@@ -1289,7 +1291,7 @@ async function preloadLocalData(){
     await localDB.worships.clear();
     for(const w of worshipsRes){ if(!w.deleted_at) await localDB.worships.put({...w, syncStatus:'synced'}); }
     for(const n of notesRes){ await localDB.dailyNotes.put({...n, syncStatus:'synced'}); }
-    const since = addDays(getToday(), -45);
+    const since = addDays(getToday(), -90);
     const logsRes = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${since}&select=*`);
     for(const l of logsRes){ await localDB.dailyLogs.put({...l, worshipId:l.worship_id, syncStatus:'synced'}); }
     try {
@@ -1297,6 +1299,10 @@ async function preloadLocalData(){
       if(fsRes[0]) await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'});
     } catch(e){}
     await localDB.meta.put({key:'lastSyncedAt', value:new Date().toISOString()});
+    // علامة "أقدم تاريخ موثوق إن الكاش المحلي كامل بداية منه" —
+    // localLogsInRange بتستخدمها عشان تعرف تجيب فجوات قديمة من
+    // السيرفر لو حد فتح تقويم أقدم من كده
+    await localDB.meta.put({key:'localHistoryCutoff', value:since});
   } catch(e){ /* أوفلاين أو أول استخدام — هيتحمّل لاحقًا لما النت يرجع */ }
 }
 
@@ -2618,11 +2624,31 @@ function getMonthDates(offset){
 }
 function changeMonth(delta){ currentMonthOffset+=delta; renderCalendar(); }
 async function localLogsInRange(first, last){
-  if(localDB){
-    return await localDB.dailyLogs.where('date').between(first, last, true, true).toArray();
+  if(!localDB){
+    if(!isOnline) return [];
+    return await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=*`);
   }
-  if(!isOnline) return [];
-  return await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${last}&select=*`);
+  // لو الطلب بيرجع لتاريخ أقدم من آخر نقطة موثوق إن الكاش المحلي
+  // كامل عندها (حسابات قديمة كان عندها preloadLocalData بحد 45 يوم
+  // بس قبل ما نوسّعه لـ90)، هات الفجوة الناقصة من السيرفر مرة واحدة
+  // وخزّنها محليًا — بعدها أي طلب لنفس النطاق يبقى محلي بحت
+  if(isOnline){
+    try {
+      const meta = await localDB.meta.get('localHistoryCutoff');
+      // أجهزة قديمة من قبل التعديل ده مالهاش العلامة دي مسجّلة —
+      // افتراض متحفّظ إن كاشها موثوق لآخر 45 يوم بس (الحد القديم)
+      const cutoff = meta?.value || addDays(getToday(), -45);
+      if(first < cutoff){
+        const gapLast = last < cutoff ? last : addDays(cutoff, -1);
+        if(first <= gapLast){
+          const remote = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${first}&date=lte.${gapLast}&select=*`);
+          for(const r of remote){ await localDB.dailyLogs.put({...r, worshipId:r.worship_id, syncStatus:'synced'}); }
+          await localDB.meta.put({key:'localHistoryCutoff', value: first < cutoff ? first : cutoff});
+        }
+      }
+    } catch(e){ /* فشل جلب الفجوة (شبكة مثلًا) — نكمل بس بالمتاح محليًا */ }
+  }
+  return await localDB.dailyLogs.where('date').between(first, last, true, true).toArray();
 }
 async function renderCalendar(){
   const {year,month,firstDow,daysInMonth} = getMonthDates(currentMonthOffset);
