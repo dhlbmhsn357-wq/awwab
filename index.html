@@ -1104,7 +1104,17 @@ async function processQueueItem(item){
   // (Soft Delete/Tombstone) عشان أي جهاز تاني يعرف إنها اتحذفت وقت
   // الـSync بدل ما يفضل عنده نسخة قديمة فاضلة للأبد (راجع migrations/006)
   if(item.entityType==='worship') await SB.upsert('worships', item.payload, 'id');
-  else if(item.entityType==='daily_log') await SB.upsert('daily_worship_logs', item.payload, 'user_id,worship_id,date');
+  else if(item.entityType==='daily_log'){
+    // حماية من "إحياء" سجل اتؤرشف: لو تاريخه بقى أقدم من 90 يوم لحد
+    // ما نجح يتزامن (جهاز فضل أوفلاين مدة طويلة جدًا مثلًا)، مانبعتوش
+    // للسيرفر خالص — الأرشفة أصلًا مسحته وملخّصته، وده كان هيرجّعه
+    // كصف خام جديد بدل ما يفضل ملخّص بس (راجع migrations/018)
+    if(item.payload.date < addDays(getToday(), -90)){
+      await markLocalSynced(item.entityType, item.entityId);
+      return true;
+    }
+    await SB.upsert('daily_worship_logs', item.payload, 'user_id,worship_id,date');
+  }
   else if(item.entityType==='daily_note') await SB.upsert('daily_notes', item.payload, 'user_id,date');
   else if(item.entityType==='fellowship_settings') await SB.upsert('fellowship_settings', item.payload, 'user_id');
   else return true; // نوع غير معروف — تجاهله بدل ما يعلّق الطابور
