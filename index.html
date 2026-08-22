@@ -1131,6 +1131,11 @@ async function markLocalSynced(entityType, entityId){
   } catch(e){}
 }
 
+// حد أقصى لمحاولات إعادة المزامنة — بعده التعديل يعتبر "عالق"
+// نهائيًا (غالبًا بيانة تالفة أو تعارض دائم) بدل ما يفضل يحاول كل
+// 5 دقايق للأبد من غير ما حد يلاحظ أو يقدر يتصرف فيه
+const MAX_SYNC_RETRIES = 15;
+
 async function syncPendingChanges(){
   if(isSyncing || !isOnline || !currentUser || !localDB) return;
   isSyncing = true;
@@ -1139,6 +1144,7 @@ async function syncPendingChanges(){
   try {
     const queue = await localDB.syncQueue.orderBy('createdAt').toArray();
     for(const item of queue){
+      if(item.permanentlyFailed) continue;
       if(item.lastAttemptAt && (Date.now()-item.lastAttemptAt) < backoffDelay(item.retryCount||0)) continue;
       try {
         await processQueueItem(item);
@@ -1146,7 +1152,13 @@ async function syncPendingChanges(){
         pushedAny = true;
       } catch(e){
         hadFailure = true;
-        await localDB.syncQueue.update(item.qid, {retryCount:(item.retryCount||0)+1, lastAttemptAt:Date.now()});
+        const retryCount = (item.retryCount||0)+1;
+        const stuck = retryCount >= MAX_SYNC_RETRIES;
+        await localDB.syncQueue.update(item.qid, {
+          retryCount, lastAttemptAt:Date.now(),
+          permanentlyFailed: stuck,
+          lastError: stuck ? String(e?.message||e).slice(0,200) : undefined,
+        });
       }
     }
     await pullServerChanges();
@@ -1221,12 +1233,19 @@ function hideBanner(){
 }
 function updateSyncBadge(){
   if(!localDB) return;
-  localDB.syncQueue.count().then(n=>{
+  Promise.all([
+    localDB.syncQueue.filter(i=>!i.permanentlyFailed).count(),
+    localDB.syncQueue.filter(i=>!!i.permanentlyFailed).count(),
+  ]).then(([pending, stuck])=>{
     if(!isOnline){
-      showBanner('offline', n>0
+      showBanner('offline', pending>0
         ? 'أنت غير متصل بالإنترنت — سنزامن تغييراتك عند عودة الاتصال'
         : 'أنت غير متصل بالإنترنت — يمكنك الاستمرار');
-    } else if(n>0){
+    } else if(stuck>0){
+      // تعديلات فشلت نهائيًا بعد MAX_SYNC_RETRIES محاولة — تحتاج
+      // قرار من المستخدم (مراجعة/تجاهل) بدل ما تفضل تحاول بصمت للأبد
+      showBanner('error', `تعذّر حفظ ${stuck} ${stuck===1?'تعديل':'تعديلات'} نهائيًا`, true);
+    } else if(pending>0){
       showBanner('pending', 'سيتم حفظ التغييرات عند اكتمال المزامنة…');
     } else {
       hideBanner();
@@ -1245,7 +1264,22 @@ function updateSyncStatusUI(state){
     updateSyncBadge();
   }
 }
-function retrySyncNow(){ syncPendingChanges(); }
+async function retrySyncNow(){
+  if(localDB){
+    const stuck = await localDB.syncQueue.filter(i=>!!i.permanentlyFailed).toArray();
+    if(stuck.length){
+      const names = {worship:'عبادة', daily_log:'تسجيل يومي', daily_note:'ملاحظة', fellowship_settings:'إعدادات رفقة أواب'};
+      const summary = stuck.slice(0,3).map(i=>names[i.entityType]||i.entityType).join('، ');
+      if(confirm(`فيه ${stuck.length} ${stuck.length===1?'تعديل':'تعديلات'} (${summary}${stuck.length>3?'...':''}) اتعطّل نهائيًا ومش قادر يتزامن بعد محاولات كتير — غالبًا بيانة تعارضت أو تعطّلت.\n\nالبيانة عندك على الجهاز ده هتفضل موجودة، بس التعديل ده مش هيوصل لباقي أجهزتك. تحب تتجاهله؟`)){
+        await localDB.syncQueue.filter(i=>!!i.permanentlyFailed).delete();
+        showToast('تم تجاهل التعديلات العالقة');
+        updateSyncBadge();
+      }
+      return;
+    }
+  }
+  syncPendingChanges();
+}
 
 // ── Service Worker: تخزين الـApp Shell محليًا لفتح التطبيق بدون نت ──
 let swWaiting = null;
@@ -2742,7 +2776,61 @@ function switchProgressRange(r){
 }
 function isApplicableForRange(w, dateStr){ return isApplicable(w, dateStr); }
 
+// "الأبرز التزامًا" / "الأكثر تقصيرًا" — منطق مشترك بين المسار
+// المباشر (سجلات خام) ومسار الأرشيف (ملخّص شهري محفوظ)، بدعم
+// التعادل وعدم اختراع نتيجة لو مفيش بيانات كافية
+function summarizePerWorshipResult(perWorship, scheduled, completed, daysLogged, totalDays){
+  const pct = scheduled? Math.round(completed/scheduled*100):0;
+  const withData = Object.values(perWorship).filter(p=>p.scheduled>0).map(p=>({...p, r:p.completed/p.scheduled}));
+  let bestList=[], worstList=[], allDone=false, allZero=false;
+  if(withData.length){
+    const maxR = Math.max(...withData.map(p=>p.r));
+    const minR = Math.min(...withData.map(p=>p.r));
+    allDone = minR===1;
+    allZero = maxR===0;
+    if(!allDone && maxR>0) bestList = withData.filter(p=>p.r===maxR);
+    if(!allZero && minR<1) worstList = withData.filter(p=>p.r===minR);
+    const sameSet = bestList.length===worstList.length &&
+      bestList.every(b=>worstList.some(w=>w.id===b.id));
+    if(sameSet) worstList=[];
+  }
+  return {scheduled, completed, pct, daysLogged, perWorship, bestList, worstList, allDone, allZero, hasData:withData.length>0, totalDays};
+}
+
+// تقرير شهر اتؤرشف بالكامل (أقدم من 90 يوم) — السجلات الخام
+// اتمسحت فعلًا، فبنستخدم monthly_worship_summary المحفوظ وقت
+// الأرشفة (migrations/017/018) بدل ما نعتمد على سجلات مبقتش موجودة
+async function computePeriodReportFromArchive(dates){
+  const active = worships.filter(w=>!w.is_paused && !w.is_hidden);
+  const d = new Date(dates[0]+'T00:00:00');
+  const year = d.getFullYear(), month = d.getMonth()+1;
+  let rows=[], dayRows=[];
+  try {
+    [rows, dayRows] = await Promise.all([
+      SB.get(`monthly_worship_summary?user_id=eq.${currentUser.id}&year=eq.${year}&month=eq.${month}&select=worship_id,scheduled,completed`),
+      SB.get(`monthly_day_summary?user_id=eq.${currentUser.id}&date=gte.${dates[0]}&date=lte.${dates[dates.length-1]}&select=has_record`),
+    ]);
+  } catch(e){}
+  const byWorship = {}; rows.forEach(r=>{ byWorship[r.worship_id]=r; });
+  const perWorship={};
+  let scheduled=0, completed=0;
+  active.forEach(w=>{
+    const r = byWorship[w.id];
+    const sched = r?.scheduled||0, comp = r?.completed||0;
+    perWorship[w.id] = {id:w.id, name:w.name, unit:w.target_unit, scheduled:sched, completed:comp, isWeekly:w.recurrence_type==='times_per_week'};
+    scheduled += sched; completed += comp;
+  });
+  const daysLogged = dayRows.filter(r=>r.has_record).length;
+  return summarizePerWorshipResult(perWorship, scheduled, completed, daysLogged, dates.length);
+}
+
 async function computePeriodReport(dates){
+  // شهر اتؤرشف بالكامل (كل أيامه أقدم من حد الأرشفة) — السجلات
+  // الخام مبقتش موجودة، لازم نرجع للملخص المحفوظ بدل ما نحسب حي
+  const archiveCutoff = addDays(getToday(), -90);
+  if(dates[dates.length-1] < archiveCutoff && isOnline){
+    try { return await computePeriodReportFromArchive(dates); } catch(e){ /* نكمل بالمسار العادي لو فشل */ }
+  }
   const active = worships.filter(w=>!w.is_paused && !w.is_hidden);
   const first=dates[0], last=dates[dates.length-1];
   const logs = await localLogsInRange(first, last);
@@ -2765,27 +2853,7 @@ async function computePeriodReport(dates){
     if(l.status==='completed'){ pw.completed++; completed++; }
   });
   const daysLogged = new Set(logs.filter(l=>l.status!=='unrecorded').map(l=>l.date)).size;
-  const pct = scheduled? Math.round(completed/scheduled*100):0;
-
-  // "الأبرز التزامًا" / "الأكثر تقصيرًا" — مبنية على نسب حقيقية فقط،
-  // بدعم التعادل (أكتر من عبادة) وعدم اختراع نتيجة لو مفيش بيانات كافية
-  const withData = Object.values(perWorship).filter(p=>p.scheduled>0).map(p=>({...p, r:p.completed/p.scheduled}));
-  let bestList=[], worstList=[], allDone=false, allZero=false;
-  if(withData.length){
-    const maxR = Math.max(...withData.map(p=>p.r));
-    const minR = Math.min(...withData.map(p=>p.r));
-    allDone = minR===1;
-    allZero = maxR===0;
-    if(!allDone && maxR>0) bestList = withData.filter(p=>p.r===maxR);
-    if(!allZero && minR<1) worstList = withData.filter(p=>p.r===minR);
-    // لو كل العبادات متعادلة بنفس النسبة بالظبط (min===max)، بيبقى
-    // best وworst نفس المجموعة — عرضهم مرتين حشو ومربك، اكتفِ بالأبرز
-    const sameSet = bestList.length===worstList.length &&
-      bestList.every(b=>worstList.some(w=>w.id===b.id));
-    if(sameSet) worstList=[];
-  }
-
-  return {scheduled, completed, pct, daysLogged, perWorship, bestList, worstList, allDone, allZero, hasData:withData.length>0, totalDays:dates.length};
+  return summarizePerWorshipResult(perWorship, scheduled, completed, daysLogged, dates.length);
 }
 
 async function renderProgress(){
