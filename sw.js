@@ -15,7 +15,7 @@
 //    عادي، من غير تدخل من الـSW.
 // ════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'awwab-v1';
+const CACHE_VERSION = 'awwab-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -24,6 +24,8 @@ const APP_SHELL = [
   '/icon-512.png',
   '/apple-touch-icon.png',
   '/favicon-32.png',
+  '/vendor/dexie.min.js',
+  '/vendor/supabase.js',
 ];
 
 self.addEventListener('install', (event) => {

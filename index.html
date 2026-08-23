@@ -963,8 +963,16 @@ body.has-offline-banner .main-header{top:34px;}
 
 <div class="save-toast" id="save-toast"><span data-icon="circleCheck" data-size="15"></span><span id="toast-text">تم الحفظ بنجاح</span></div>
 
-<script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Dexie/Supabase-js متسلّفتين محليًا (vendor/) بدل CDN مباشر: الـSW
+     مايقدرش يكاش أصل تاني (jsdelivr) بشكل مضمون، فلو الجهاز فتح
+     التطبيق أوفلاين (خصوصًا أول فتح على أندرويد أو بعد ما الكاش
+     يتمسح) والسكريبتات دي متحمّلتش، التطبيق كله بيوقع من غير ما
+     يفتح خالص — رغم إنه مصمم يشتغل أوفلاين. النسخة هنا مثبّتة بدقة
+     (Dexie 4.0.8 / supabase-js 2.112.3) بنفس المحتوى تمامًا اللي كان
+     بييجي من الـCDN وقت الإضافة (SHA-256 اتوثّق). حدّثها يدويًا لو
+     احتجنا نسخة أحدث مستقبلًا. -->
+<script src="/vendor/dexie.min.js"></script>
+<script src="/vendor/supabase.js"></script>
 <script>
 // ════════════════════════════════════════════
 //  SUPABASE CONFIG
@@ -1326,6 +1334,66 @@ window.addEventListener('online', ()=>{ isOnline=true; updateSyncBadge(); syncPe
 window.addEventListener('offline', ()=>{ isOnline=false; updateSyncBadge(); });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncPendingChanges(); });
 setInterval(()=>{ if(isOnline) syncPendingChanges(); }, 90000); // fallback دوري بدل الاعتماد على Background Sync API لضعف دعمه (خصوصًا iOS)
+
+// ════════════════════════════════════════════
+//  ANDROID (Capacitor) NATIVE: شبكة + دورة حياة + زر الرجوع
+//  الويب/PWA ماتلمسهوش خالص — كل حاجة هنا محكومة بـisNativePlatform()،
+//  فلو مفيش Capacitor (متصفح عادي) الكتلة دي كلها بتتخطى ويفضل
+//  سلوك الويب الحالي زي ما هو تمامًا.
+// ════════════════════════════════════════════
+if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+  const { Network, App } = window.Capacitor.Plugins;
+
+  // navigator.onLine/أحداث online-offline جوه WebView أندرويد أقل
+  // دقة من حالة الشبكة الحقيقية اللي بيوفرها Network plugin (بيقرا
+  // من ConnectivityManager نفسه على مستوى النظام، مش من الـWebView) —
+  // بنستخدمه بدل كده وقت Native بس
+  if(Network){
+    Network.getStatus().then(s=>{ isOnline = !!s.connected; updateSyncBadge(); }).catch(()=>{});
+    Network.addListener('networkStatusChange', (s)=>{
+      isOnline = !!s.connected;
+      updateSyncBadge();
+      if(isOnline) syncPendingChanges();
+    });
+  }
+
+  if(App){
+    // document.visibilitychange مش مضمون دايمًا جوه WebView وقت رجوع
+    // التطبيق من الخلفية (بيفرق حسب أندرويد/الشركة المصنّعة) —
+    // App plugin بيقرا من دورة حياة الـActivity الحقيقية
+    // (onResume/onPause) فهو الأدق لمزامنة فورية عند العودة
+    App.addListener('appStateChange', ({ isActive }) => {
+      if(!isActive) return;
+      (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
+        isOnline = !!s.connected;
+        updateSyncBadge();
+        if(isOnline) syncPendingChanges();
+      }).catch(()=>{});
+    });
+
+    // زرار الرجوع الفعلي بالأندرويد: يقفل أي جولة تعريفية/نافذة
+    // مفتوحة الأول (بدل إغلاق التطبيق المفاجئ)، بعدين يرجّع لتبويب
+    // "اليوم" لو المستخدم في تبويب تاني، ولو هو أصلًا في "اليوم"
+    // يسيب السلوك الافتراضي (تصغير/إغلاق التطبيق زي أي تطبيق أندرويد عادي)
+    App.addListener('backButton', () => {
+      if(typeof tourActive!=='undefined' && tourActive){ tourSkipAll(); return; }
+      const openOverlay = document.querySelector('.modal-overlay:not(.hidden)');
+      if(openOverlay){
+        if(openOverlay.id==='worship-modal') closeWorshipModal();
+        else if(openOverlay.id==='action-modal') closeActionModal();
+        else if(openOverlay.id==='datepick-modal') openOverlay.classList.add('hidden');
+        else openOverlay.remove(); // نوافذ ديناميكية (ترحيب/استئناف/ختام الجولة)
+        return;
+      }
+      const activeTab = document.querySelector('.tab-panel.active');
+      if(activeTab && activeTab.id!=='panel-today'){
+        const todayBtn = document.querySelector('.bn-btn[data-tab="today"]');
+        if(todayBtn){ switchTab('today', todayBtn); return; }
+      }
+      App.exitApp();
+    });
+  }
+}
 
 async function preloadLocalData(){
   // بعد أول دخول ناجح: حمّل العبادات + آخر 90 يوم من السجلات محليًا

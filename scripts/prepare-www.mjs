@@ -18,14 +18,26 @@ const FILES = [
   'favicon-32.png',
 ];
 
+// مكتبات متسلّفة محليًا (Dexie/Supabase-js) بدل CDN مباشر — لازم
+// تتنسخ لـwww/vendor/ برضه عشان نفس ملف index.html (زي ما هو، بدون
+// أي فرق) يشتغل صح جوه تطبيق Android
+const VENDOR_FILES = ['dexie.min.js', 'supabase.js'];
+
 if (existsSync(wwwDir)) rmSync(wwwDir, { recursive: true, force: true });
 mkdirSync(wwwDir, { recursive: true });
+mkdirSync(path.join(wwwDir, 'vendor'), { recursive: true });
 
 let copied = 0;
 for (const f of FILES) {
   const src = path.join(root, f);
   if (!existsSync(src)) { console.warn(`  ⚠ متلقاش ${f}، اتخطى`); continue; }
   copyFileSync(src, path.join(wwwDir, f));
+  copied++;
+}
+for (const f of VENDOR_FILES) {
+  const src = path.join(root, 'vendor', f);
+  if (!existsSync(src)) { console.warn(`  ⚠ متلقاش vendor/${f}، اتخطى`); continue; }
+  copyFileSync(src, path.join(wwwDir, 'vendor', f));
   copied++;
 }
 console.log(`✓ نسخت ${copied} ملف لـ www/`);
