@@ -1963,6 +1963,8 @@ function initInstallTracking(){
     localStorage.setItem('awwab_install_prompt_installed','true');
     return; // شغّال بالفعل كـ App مثبّت — متعرضش حاجة
   }
+  // أندرويد (نيتف أو ويب) عنده بانر تحميل التطبيق الحقيقي بدل كده
+  if(IS_NATIVE || isAndroidUA()) return;
   if(localStorage.getItem('awwab_install_prompt_installed')==='true') return;
   if(localStorage.getItem('awwab_install_prompt_completed')==='true') return;
 
@@ -2159,7 +2161,7 @@ const TOUR_STEPS = [
     getTarget:()=>document.querySelector('.rafeqa-header') },
   { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
     getTarget:()=>document.getElementById('install-settings-group'),
-    skipIf:()=>isStandaloneMode() },
+    skipIf:()=>isStandaloneMode() || IS_NATIVE || isAndroidUA() },
   { route:'settings', title:'ودجت على شاشتك الرئيسية', body:'أضف ودجت أوّاب لشاشتك الرئيسية عشان تشوف عدد عباداتك المُنجزة اليوم من غير ما تفتح التطبيق. تقدر تفعّل وضع الخصوصية من هنا لو مش عايز التفاصيل تظهر.',
     getTarget:()=>document.getElementById('widget-settings-group'),
     skipIf:()=>!IS_NATIVE },
@@ -3643,8 +3645,17 @@ async function checkNewEncouragements(){
 // (بيرجع لتقدير المتصفح نفسه، مش حاجة نتحكم فيها) يلاقي هنا طريقة
 // يدوية واضحة أي وقت
 function renderInstallSettings(){
+  const group = document.getElementById('install-settings-group');
   const body = document.getElementById('install-settings-body');
   if(!body) return;
+  // أندرويد (نيتف أو ويب) عنده بديل حقيقي أفضل — تطبيق أندرويد كامل
+  // (قسم "تطبيق أندرويد" تحت) بدل PWA. قسم تثبيت الـPWA ده بقى بس
+  // لمتصفحات مالهاش تطبيق نيتف (آيفون/ديسكتوب)
+  if(IS_NATIVE || isAndroidUA()){
+    if(group) group.style.display = 'none';
+    return;
+  }
+  if(group) group.style.display = '';
   if(isStandaloneMode()){
     body.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;color:var(--success);font-weight:600;font-size:var(--fs-card-title)">${ICON('circleCheck',16)}التطبيق مثبّت بالفعل على جهازك</div>`;
     return;
