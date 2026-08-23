@@ -806,6 +806,11 @@ body.has-offline-banner .main-header{top:34px;}
         <div class="sr-desc" style="margin-top:.5rem">التسجيل بقى مفتوحًا للكل — الأعضاء الجدد يسجّلوا حسابهم بنفسهم من شاشة الدخول.</div>
       </div>
 
+      <div class="settings-group" id="install-settings-group">
+        <h3>تثبيت التطبيق</h3>
+        <div id="install-settings-body"></div>
+      </div>
+
       <div class="settings-group">
         <h3>المساعدة</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
@@ -1727,6 +1732,7 @@ function getCurrentRoute(){
 }
 function tourGoRoute(route){
   if(!route || getCurrentRoute()===route) return;
+  if(route==='settings'){ openSettingsPanel(); return; }
   const btn = document.querySelector(`.bn-btn[data-tab="${route}"]`);
   if(btn) switchTab(route, btn);
 }
@@ -1775,6 +1781,9 @@ const TOUR_STEPS = [
     getTarget:()=>document.querySelector('#progress-slot .report-summary') },
   { route:'rafeqa', title:'رفقة للتشجيع', body:'هذه المساحة للتشجيع على الثبات، وليست للمقارنة أو التفاخر.',
     getTarget:()=>document.querySelector('.rafeqa-header') },
+  { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
+    getTarget:()=>document.getElementById('install-settings-group'),
+    skipIf:()=>isStandaloneMode() },
 ];
 
 async function tourGoToStep(index){
@@ -3245,8 +3254,40 @@ async function checkNewEncouragements(){
 // ════════════════════════════════════════════
 //  SETTINGS
 // ════════════════════════════════════════════
+// حالة "تثبيت التطبيق" في الإعدادات — بديل دائم موجود دايمًا، مش
+// بس بانر مؤقت بيختفي، عشان لو المتصفح ماعرضش دعوة التثبيت التلقائية
+// (بيرجع لتقدير المتصفح نفسه، مش حاجة نتحكم فيها) يلاقي هنا طريقة
+// يدوية واضحة أي وقت
+function renderInstallSettings(){
+  const body = document.getElementById('install-settings-body');
+  if(!body) return;
+  if(isStandaloneMode()){
+    body.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;color:var(--success);font-weight:600;font-size:var(--fs-card-title)">${ICON('circleCheck',16)}التطبيق مثبّت بالفعل على جهازك</div>`;
+    return;
+  }
+  if(deferredInstallPrompt){
+    body.innerHTML = `
+      <div class="sr-desc" style="margin-bottom:.7rem">ثبّت أوّاب على جهازك عشان يفتح زي أي تطبيق عادي، حتى بدون نت.</div>
+      <button class="btn-add" style="width:100%;justify-content:center" onclick="doInstallApp()">${ICON('arrowStart',15)}ثبّت التطبيق الآن</button>`;
+    return;
+  }
+  const ios = isIOSSafari();
+  body.innerHTML = ios ? `
+    <div class="sr-desc">المتصفح مش عارض دعوة التثبيت التلقائية؟ ثبّته يدويًا بخطوتين:</div>
+    <ol style="margin:.6rem 0 0;padding-inline-start:1.2rem;font-size:var(--fs-caption);color:var(--text-1);line-height:1.9">
+      <li>دوس زر <b>المشاركة</b> (المربّع وسهم لفوق) في أسفل الشاشة</li>
+      <li>اختار <b>"إضافة إلى الشاشة الرئيسية"</b></li>
+    </ol>` : `
+    <div class="sr-desc">المتصفح مش عارض دعوة التثبيت التلقائية؟ ثبّته يدويًا بخطوتين:</div>
+    <ol style="margin:.6rem 0 0;padding-inline-start:1.2rem;font-size:var(--fs-caption);color:var(--text-1);line-height:1.9">
+      <li>دوس أيقونة <b>النقاط التلاتة (⋮)</b> فوق يمين المتصفح</li>
+      <li>اختار <b>"تثبيت التطبيق"</b> أو <b>"إضافة إلى الشاشة الرئيسية"</b></li>
+    </ol>`;
+}
+
 function renderSettings(){
   syncThemeToggleUI();
+  renderInstallSettings();
   const options = [
     {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
     {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},
