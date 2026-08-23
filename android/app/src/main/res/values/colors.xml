@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- ألوان هوية أوّاب (نفس اللون الأساسي في icon-512.png / الويب) -->
+    <color name="colorPrimary">#017C6E</color>
+    <color name="colorPrimaryDark">#015C51</color>
+    <color name="colorAccent">#017C6E</color>
+</resources>
