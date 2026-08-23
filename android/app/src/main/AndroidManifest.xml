@@ -71,4 +71,9 @@
          الموفّر للبطارية) — بيتطلب موافقة صريحة من المستخدم على
          أندرويد 12+ لو مفعّلة، وبنعامله كـfallback غير حرج لو اتمنعت -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- تحديثات التطبيق داخل التطبيق نفسه (Phase 7) — بدون الإذن ده
+         أندرويد 8+ بيرفض فتح مثبّت الحزم لأي APK نزّلناه إحنا (مش
+         Google Play). المستخدم برضه لازم يوافق صراحة من إعدادات
+         النظام أول مرة (UpdaterPlugin بيوجّهه هناك تلقائيًا لو محتاج) -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

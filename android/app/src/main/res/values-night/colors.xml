@@ -4,4 +4,5 @@
     <color name="widget_bg">#12211F</color>
     <color name="widget_text_primary">#5FD9C4</color>
     <color name="widget_text_secondary">#9BC4BE</color>
+    <color name="widget_track">#1F3532</color>
 </resources>

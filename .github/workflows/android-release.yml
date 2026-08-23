@@ -1,21 +1,29 @@
 name: Android Release
 
-# بناء APK ونشره كـ GitHub Release عام (الريبو Public)، مع تحديث
-# latest-release.json تلقائيًا — الملف ده اللي صفحة /download في
-# الموقع بتقراه عشان تعرف آخر إصدار من غير أي رابط ثابت مكتوب يدويًا.
+# بناء APK **موقّع بمفتاح إصدار حقيقي وثابت** ونشره كـGitHub Release
+# عام، مع تحديث latest-release.json تلقائيًا — صفحة /download وفاحص
+# التحديث جوه التطبيق (Phase 6) بيقروا الملف ده.
 #
-# ملاحظة: الـAPK ده موقّع بمفتاح Debug الافتراضي بتاع أندرويد (زي
-# APK البناء العادي) — مش موقّع بمفتاح إصدار حقيقي لأن ده محتاج
-# keystore خاص بالمستخدم (راجع RELEASE.md). المستخدمين هيحتاجوا
-# يسمحوا بـ"التثبيت من مصادر غير معروفة" — متوقّع وموثّق في صفحة
-# التحميل نفسها.
+# حرج جدًا: كل إصدار لازم يتوقّع بنفس المفتاح بالظبط (ANDROID_KEYSTORE_*
+# secrets) عشان أندرويد يقبل يثبت التحديث فوق النسخة القديمة من غير
+# ما يطلب حذفها الأول. المفتاح ده اتحفظ فقط كـGitHub Secrets — مش في
+# الريبو خالص (راجع RELEASE.md).
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'رقم الإصدار (مثال: 1.0.0) — لو فاضي، بياخد versionName من build.gradle'
+        description: 'رقم الإصدار (مثال: 1.0.1) — لو فاضي، بياخد versionName من build.gradle'
         required: false
         type: string
+      releaseNotes:
+        description: 'وصف مختصر للتحديث (بيظهر للمستخدم جوه التطبيق)'
+        required: false
+        type: string
+      mandatory:
+        description: 'تحديث إجباري؟ (استخدمها بس لو فيه مشكلة أمان خطيرة)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -49,36 +57,62 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
-      - name: Build debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-
       - name: Determine version
         id: ver
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             V="${{ inputs.version }}"
           else
-            V=$(grep -oP 'versionName\s+"\K[^"]+' android/app/build.gradle)
+            V=$(grep -oP 'versionName.*:\s*"\K[^"]+' android/app/build.gradle)
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tag=v$V" >> "$GITHUB_OUTPUT"
+          echo "code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Rename APK
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret مش موجود — مينفعش نبني إصدار موقّع من غيره"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/awwab-release.keystore
+          cat > android/keystore.properties <<EOF
+          storeFile=awwab-release.keystore
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Build signed release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PandroidVersionCode=${{ steps.ver.outputs.code }} -PandroidVersionName=${{ steps.ver.outputs.version }}
+
+      - name: Remove keystore from disk
+        if: always()
+        run: rm -f android/awwab-release.keystore android/keystore.properties
+
+      - name: Rename APK + checksum
         id: apk
         run: |
           NAME="Awwab-Android-v${{ steps.ver.outputs.version }}.apk"
-          cp android/app/build/outputs/apk/debug/app-debug.apk "$NAME"
+          cp android/app/build/outputs/apk/release/app-release.apk "$NAME"
           SIZE=$(stat -c%s "$NAME")
+          SHA256=$(sha256sum "$NAME" | cut -d' ' -f1)
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        id: release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: "أوّاب v${{ steps.ver.outputs.version }}"
+          body: ${{ inputs.releaseNotes || '' }}
           files: ${{ steps.apk.outputs.name }}
           # صفحة الإصدار نفسها مش جزء من تجربة المستخدم العادي (زي ما
           # اتفقنا في /download) — بس محتاجينها كاستضافة خلفية للملف
@@ -90,9 +124,14 @@ jobs:
           cat > latest-release.json <<EOF
           {
             "version": "${{ steps.ver.outputs.version }}",
+            "versionCode": ${{ steps.ver.outputs.code }},
             "apkUrl": "$ASSET_URL",
             "fileSize": ${{ steps.apk.outputs.size }},
-            "releasedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            "sha256": "${{ steps.apk.outputs.sha256 }}",
+            "releaseNotes": ${{ toJSON(inputs.releaseNotes || '') }},
+            "mandatory": ${{ inputs.mandatory || false }},
+            "releasedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "publishedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
           EOF
           git config user.name "github-actions[bot]"

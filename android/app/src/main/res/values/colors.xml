@@ -9,4 +9,5 @@
     <color name="widget_bg">#F2F0F1</color>
     <color name="widget_text_primary">#015C51</color>
     <color name="widget_text_secondary">#4B6B67</color>
+    <color name="widget_track">#DCE6E4</color>
 </resources>

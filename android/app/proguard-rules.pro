@@ -30,6 +30,8 @@
 -keepclassmembers class * extends com.getcapacitor.Plugin {
     @com.getcapacitor.PluginMethod public *;
 }
-# الـplugins المحلية الخاصة بأوّاب (الودجت)
+# الـplugins المحلية الخاصة بأوّاب (الودجت + التحديثات)
 -keep class com.awwab.app.WidgetBridgePlugin { *; }
 -keep class com.awwab.app.AwwabWidgetProvider { *; }
+-keep class com.awwab.app.WidgetPinPlugin { *; }
+-keep class com.awwab.app.UpdaterPlugin { *; }

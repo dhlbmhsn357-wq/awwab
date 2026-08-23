@@ -3,9 +3,9 @@
      دقيقة (بيتجاهل أي قيمة أقل) — ده fallback دوري بس، التحديث
      الحقيقي بيحصل فورًا لما التطبيق يبعت لقطة جديدة عبر WidgetBridge -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="110dp"
-    android:targetCellWidth="4"
+    android:minWidth="180dp"
+    android:minHeight="90dp"
+    android:targetCellWidth="3"
     android:targetCellHeight="2"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_awwab"

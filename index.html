@@ -833,7 +833,9 @@ body.has-offline-banner .main-header{top:34px;}
            على الويب/PWA عبر renderWidgetSettings() -->
       <div class="settings-group" id="widget-settings-group" style="display:none">
         <h3>ودجت الشاشة الرئيسية</h3>
-        <div class="sr-desc" style="margin-bottom:.75rem">لو ضفت ودجت أوّاب لشاشتك الرئيسية، يظهر فيها عدد عباداتك المُنجزة اليوم واسم التالية.</div>
+        <div class="sr-desc" style="margin-bottom:.75rem">لو ضفت ودجت أوّاب لشاشتك الرئيسية، يظهر فيها عدد عباداتك المُنجزة اليوم والعبادة التالية، من غير ما تفتح التطبيق.</div>
+        <div id="widget-add-status"></div>
+        <button class="btn-add" id="widget-add-btn" data-tour="widget-add-button" style="width:100%;justify-content:center;margin-bottom:.9rem" onclick="onAddWidgetClick()"><span data-icon="arrowStart" data-size="15"></span>أضفها الآن</button>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
           <div>
             <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">وضع الخصوصية</div>
@@ -1408,6 +1410,8 @@ if(IS_NATIVE){
     App.addListener('appStateChange', ({ isActive }) => {
       if(!isActive) return;
       collectAndSyncWidgetSnapshot(); // اعرض حالة اليوم المحلية فورًا (Local-first) قبل ما ننتظر نتيجة الشبكة
+      checkWidgetPinResultOnResume();
+      checkForAppUpdate();
       (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
         isOnline = !!s.connected;
         updateSyncBadge();
@@ -1492,6 +1496,103 @@ async function collectAndSyncWidgetSnapshot(){
       privacyMode: isWidgetPrivacyMode(),
     });
   } catch(e){ /* الودجت ميزة إضافية — أي خطأ هنا ميأثرش على التطبيق نفسه */ }
+}
+
+// ════════════════════════════════════════════
+//  فاحص التحديث داخل التطبيق (Phase 6+7) — أندرويد نيتف بس. بيتأكد
+//  في الخلفية من غير ما يأخّر فتح التطبيق، ولو فيه إصدار أحدث بيعرض
+//  Bottom Sheet فيها تحميل + فتح مثبّت أندرويد الرسمي. مفيش Silent
+//  Install — المستخدم دايمًا بيشوف تأكيد أندرويد ويضغطه بنفسه.
+// ════════════════════════════════════════════
+const UPDATE_CHECK_URL = 'https://awwab-ashen.vercel.app/latest-release.json';
+const UPDATE_CHECK_MIN_INTERVAL = 30*60*1000; // نص ساعة بين كل فحص تلقائي وتاني (مش على كل resume)
+
+async function checkForAppUpdate(force){
+  if(!IS_NATIVE) return;
+  if(!force){
+    const last = parseInt(localStorage.getItem('awwab-last-update-check')||'0',10);
+    if(Date.now()-last < UPDATE_CHECK_MIN_INTERVAL) return;
+  }
+  localStorage.setItem('awwab-last-update-check', String(Date.now()));
+  try {
+    const { App } = window.Capacitor.Plugins;
+    const info = await App.getInfo();
+    const installedCode = parseInt(info.build,10) || 0;
+    const r = await fetch(UPDATE_CHECK_URL, {cache:'no-store'});
+    if(!r.ok) throw new Error('fetch failed');
+    const release = await r.json();
+    if(!release.versionCode || release.versionCode<=installedCode){
+      if(force) showToast('أنت تستخدم أحدث إصدار');
+      return;
+    }
+    if(!force){
+      // لو دوس "لاحقًا" قبل كده لنفس النسخة ومفيش أكتر من 24 ساعة، متزعجوش تاني
+      const dismissed = JSON.parse(localStorage.getItem('awwab-update-dismissed')||'{}');
+      if(!release.mandatory && dismissed.versionCode===release.versionCode && (Date.now()-dismissed.at) < 24*60*60*1000) return;
+    }
+    showUpdateSheet(release);
+  } catch(e){
+    if(force) showToast('تعذّر التحقق من التحديثات، حاول تاني لاحقًا', true);
+  }
+}
+
+function showUpdateSheet(release){
+  if(document.getElementById('update-sheet-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='update-sheet-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px;text-align:center">
+      <div class="modal-title">يتوفر تحديث جديد لأوّاب</div>
+      <p style="font-size:13px;color:var(--text-2);margin:.3rem 0 0">الإصدار ${esc(release.version||'')}</p>
+      ${release.releaseNotes?`<p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-top:.5rem">${esc(release.releaseNotes)}</p>`:''}
+      ${release.mandatory?`<p style="font-size:12px;color:var(--danger);margin-top:.6rem;font-weight:600">هذا التحديث ضروري لاستمرار استخدام أوّاب بأمان.</p>`:''}
+      <div id="update-progress-area" style="display:none;margin-top:1rem">
+        <div style="height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden"><div id="update-progress-bar" style="height:100%;width:0%;background:var(--primary);transition:width .2s"></div></div>
+        <div id="update-progress-label" style="font-size:11.5px;color:var(--text-3);margin-top:.4rem">جاري تحميل التحديث… 0%</div>
+      </div>
+      <div class="modal-actions" id="update-sheet-actions" style="margin-top:1rem">
+        ${release.mandatory?'':`<button class="m-cancel" onclick="dismissUpdateSheet(${JSON.stringify(release.versionCode)})">لاحقًا</button>`}
+        <button class="m-save" id="update-now-btn" onclick="startAppUpdate()">تحديث الآن</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  window._awwabPendingUpdateRelease = release;
+}
+function dismissUpdateSheet(versionCode){
+  localStorage.setItem('awwab-update-dismissed', JSON.stringify({versionCode, at:Date.now()}));
+  document.getElementById('update-sheet-overlay')?.remove();
+}
+async function startAppUpdate(){
+  const release = window._awwabPendingUpdateRelease;
+  const { Updater } = window.Capacitor.Plugins;
+  if(!release || !Updater) return;
+  const actions = document.getElementById('update-sheet-actions');
+  const progressArea = document.getElementById('update-progress-area');
+  if(actions) actions.style.display='none';
+  if(progressArea) progressArea.style.display='block';
+  let listenerHandle = null;
+  try {
+    listenerHandle = await Updater.addListener('updateDownloadProgress', ({percent})=>{
+      const bar = document.getElementById('update-progress-bar');
+      const label = document.getElementById('update-progress-label');
+      if(bar) bar.style.width = percent+'%';
+      if(label) label.textContent = 'جاري تحميل التحديث… '+percent+'%';
+    });
+    const res = await Updater.downloadAndInstall({ apkUrl: release.apkUrl });
+    if(res.needsPermission){
+      showToast('اسمح بتثبيت التطبيقات من هذا المصدر، وارجع اضغط "تحديث الآن" تاني', true);
+      await Updater.openInstallPermissionSettings();
+      if(actions) actions.style.display='flex';
+      if(progressArea) progressArea.style.display='none';
+    }
+  } catch(e){
+    showToast('تعذّر تحميل التحديث، حاول تاني لاحقًا', true);
+    if(actions) actions.style.display='flex';
+    if(progressArea) progressArea.style.display='none';
+  } finally {
+    if(listenerHandle) listenerHandle.remove();
+  }
 }
 
 // يفتح تبويب معيّن من تبويبات الشريط السفلي — مستخدم من الإشعار
@@ -1626,13 +1727,90 @@ function onWidgetPrivacyToggle(checked){
   try { localStorage.setItem(WIDGET_PRIVACY_KEY, checked?'1':'0'); } catch(e){}
   collectAndSyncWidgetSnapshot();
 }
-function renderWidgetSettings(){
+async function renderWidgetSettings(){
   const group = document.getElementById('widget-settings-group');
   if(!group) return;
   if(!IS_NATIVE){ group.style.display='none'; return; }
   group.style.display = '';
   const toggle = document.getElementById('widget-privacy-toggle');
   if(toggle) toggle.checked = isWidgetPrivacyMode();
+  await refreshWidgetAddStatus();
+}
+
+// ════════════════════════════════════════════
+//  إضافة الودجت بزر واحد (Phase 2) — AppWidgetManager.requestPinAppWidget
+//  الرسمية لو مدعومة، وإلا تعليمات يدوية مختصرة (Fallback بس، مش
+//  الحالة الافتراضية)
+// ════════════════════════════════════════════
+async function refreshWidgetAddStatus(){
+  const btn = document.getElementById('widget-add-btn');
+  const status = document.getElementById('widget-add-status');
+  if(!btn || !status || !IS_NATIVE) return;
+  try {
+    const { WidgetPin } = window.Capacitor.Plugins;
+    if(!WidgetPin){ btn.style.display='none'; return; }
+    const { count } = await WidgetPin.getWidgetCount();
+    if(count>0){
+      status.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;color:var(--success);font-weight:600;font-size:var(--fs-card-title);margin-bottom:.75rem">${ICON('circleCheck',16)}ودجت أوّاب مضافة بالفعل على شاشتك</div>`;
+      btn.textContent = 'إضافة ودجت تانية';
+    } else {
+      status.innerHTML = '';
+    }
+  } catch(e){}
+}
+
+async function onAddWidgetClick(){
+  if(!IS_NATIVE) return;
+  const { WidgetPin } = window.Capacitor.Plugins;
+  if(!WidgetPin){ showWidgetAddFallbackSheet(); return; }
+  try {
+    const sup = await WidgetPin.isSupported();
+    if(!sup.supported){ showWidgetAddFallbackSheet(); return; }
+    const before = await WidgetPin.getWidgetCount();
+    window._awwabWidgetCountBeforePin = before.count;
+    window._awwabWidgetPinPending = true;
+    const res = await WidgetPin.requestPin();
+    if(!res.requested){ window._awwabWidgetPinPending=false; showWidgetAddFallbackSheet(); }
+  } catch(e){
+    window._awwabWidgetPinPending = false;
+    showWidgetAddFallbackSheet();
+  }
+}
+
+// بعد طلب Pin، أندرويد بيرجّع المستخدم للتطبيق (تفاعل مع نافذة
+// النظام) — بنتأكد من النجاح هنا بمقارنة عدد الودجتس قبل/بعد بدل ما
+// نعتمد على Callback مش مضمون في كل الـLaunchers
+async function checkWidgetPinResultOnResume(){
+  if(!window._awwabWidgetPinPending) return;
+  window._awwabWidgetPinPending = false;
+  try {
+    const { WidgetPin } = window.Capacitor.Plugins;
+    if(!WidgetPin) return;
+    const after = await WidgetPin.getWidgetCount();
+    if(after.count > (window._awwabWidgetCountBeforePin||0)){
+      showToast('تمت إضافة ودجت أوّاب إلى الشاشة الرئيسية');
+      refreshWidgetAddStatus();
+    }
+  } catch(e){}
+}
+
+function showWidgetAddFallbackSheet(){
+  if(document.getElementById('widget-fallback-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='widget-fallback-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px">
+      <div class="modal-title">طريقة إضافة الودجت</div>
+      <ol style="margin:.7rem 0 0;padding-inline-start:1.2rem;font-size:var(--fs-caption);color:var(--text-1);line-height:2">
+        <li>اضغط مطوّلًا على مكان فاضي في الشاشة الرئيسية</li>
+        <li>اختار <b>الأدوات</b> أو <b>Widgets</b></li>
+        <li>دوّر على <b>أوّاب</b> في القائمة</li>
+        <li>اسحب الودجت لمكانها في الشاشة الرئيسية</li>
+      </ol>
+      <div class="modal-actions" style="margin-top:1rem"><button class="m-save" style="width:100%" onclick="document.getElementById('widget-fallback-overlay').remove()">تمام</button></div>
+    </div>`;
+  document.body.appendChild(el);
 }
 
 // قسم "تطبيق أندرويد" في الإعدادات — زر لصفحة التحميل على الويب، أو
@@ -1647,7 +1825,9 @@ async function renderAndroidAppSettings(){
       const info = await App.getInfo();
       versionText = info?.version || '';
     } catch(e){}
-    body.innerHTML = `<div class="sr-desc">الإصدار الحالي: <span style="color:var(--text-1);font-weight:600">${esc(versionText||'—')}</span></div>`;
+    body.innerHTML = `
+      <div class="sr-desc" style="margin-bottom:.75rem">الإصدار الحالي: <span style="color:var(--text-1);font-weight:600">${esc(versionText||'—')}</span></div>
+      <button class="btn-add" style="width:100%;justify-content:center" onclick="checkForAppUpdate(true)">التحقق من وجود تحديث</button>`;
     return;
   }
   body.innerHTML = `
@@ -2162,8 +2342,12 @@ const TOUR_STEPS = [
   { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
     getTarget:()=>document.getElementById('install-settings-group'),
     skipIf:()=>isStandaloneMode() || IS_NATIVE || isAndroidUA() },
-  { route:'settings', title:'ودجت على شاشتك الرئيسية', body:'أضف ودجت أوّاب لشاشتك الرئيسية عشان تشوف عدد عباداتك المُنجزة اليوم من غير ما تفتح التطبيق. تقدر تفعّل وضع الخصوصية من هنا لو مش عايز التفاصيل تظهر.',
+  { route:'settings', title:'ودجت أوّاب على شاشتك الرئيسية', body:'أضف ودجت أوّاب لتشاهد تقدم يومك والعبادة التالية دون الحاجة لفتح التطبيق.',
     getTarget:()=>document.getElementById('widget-settings-group'),
+    skipIf:()=>!IS_NATIVE },
+  { route:'settings', title:'أضفها الآن', body:'اضغط هنا وسيطلب منك أندرويد إضافة ودجت أوّاب مباشرة إلى شاشتك الرئيسية.',
+    getTarget:()=>document.getElementById('widget-add-btn'),
+    actionLabel:'إضافة الودجت', onAction:()=>onAddWidgetClick(),
     skipIf:()=>!IS_NATIVE },
   { route:'settings', title:'استخدم أوّاب كتطبيق على هاتفك', body:'يمكنك تحميل نسخة أوّاب للأندرويد لتجربة أسرع ووصول أسهل، مع دعم ميزات مثل الودجت والإشعارات بشكل أفضل.',
     getTarget:()=>document.getElementById('android-app-settings-group'),
@@ -2227,10 +2411,12 @@ function renderTourStepUI(step, target, index){
     <div class="tour-tooltip-actions">
       <button class="tour-btn tour-btn-skip" onclick="tourSkipAll()">تخطي</button>
       ${index>0?`<button class="tour-btn tour-btn-prev" onclick="tourPrev()">السابق</button>`:''}
+      ${step.actionLabel?`<button class="tour-btn tour-btn-next" onclick="window._tourStepAction && window._tourStepAction()">${esc(step.actionLabel)}</button>`:''}
       <button class="tour-btn tour-btn-next" id="tour-next-btn" onclick="tourNext()">${index===TOUR_STEPS.length-1?'إنهاء':'التالي'}</button>
     </div>`;
   document.body.appendChild(hl);
   document.body.appendChild(tip);
+  window._tourStepAction = step.onAction || null;
   positionTourUI(target);
   document.getElementById('tour-next-btn')?.focus();
   window._tourReposition = ()=>positionTourUI(target);
@@ -2577,6 +2763,7 @@ async function enterMain(){
     }
   }
   initTourCheck();
+  checkForAppUpdate(); // بدون await — فحص خلفي، مايأخّرش فتح التطبيق خالص
 }
 
 function switchTab(id,btn){

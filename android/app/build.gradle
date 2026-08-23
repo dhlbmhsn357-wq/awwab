@@ -19,8 +19,13 @@ android {
         applicationId "com.awwab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
+        // نظام الإصدارات (Phase 5): versionCode لازم يزيد مع كل إصدار
+        // عشان فاحص التحديث جوه التطبيق يقارن بدقة — بيتحدد وقت
+        // البناء عبر -PversionCode=N (workflow الإصدار بيمرره تلقائيًا
+        // برقم تشغيلة الـworkflow، وهو رقم فريد ومتزايد دايمًا). لو
+        // مش موجود (بناء debug عادي)، بيرجع لـ1 زي ما كان.
+        versionCode (project.hasProperty('androidVersionCode') ? (project.property('androidVersionCode') as Integer) : 1)
+        versionName (project.hasProperty('androidVersionName') ? project.property('androidVersionName') : "1.0.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -35,6 +40,7 @@ android {
                 storePassword keystoreProperties['storePassword']
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
+                storeType 'PKCS12'
             }
         }
     }

@@ -9,7 +9,11 @@ node_modules/
 # عبر scripts/prepare-www.mjs، مش مصدر حقيقي للكود
 www/
 
-# مفاتيح توقيع Android — سرية، أبدًا متتسجلش في Git (راجع Phase 10)
+# مفاتيح توقيع Android — سرية، أبدًا متتسجلش في Git (راجع Phase 10 / RELEASE.md)
 *.keystore
+*.keystore.*
 *.jks
+*.p12
+*.pem
 android/keystore.properties
+android/keystore-password*.txt
