@@ -1,6 +1,11 @@
 {
-  "version": "1.0.0",
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.0.0/Awwab-Android-v1.0.0.apk",
-  "fileSize": 5906496,
-  "releasedAt": "2026-08-23T21:31:41Z"
+  "version": "1.1.0",
+  "versionCode": 2,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.1.0/Awwab-Android-v1.1.0.apk",
+  "fileSize": 4856323,
+  "sha256": "450350a330931239211d38a41830085590a20976c6aa033dd02e52918e1df5bf",
+  "releaseNotes": "ودجت أصغر واحترافية، إضافة الودجت بزر واحد، إصلاح الجولة التعريفية، ونظام تحديث تلقائي داخل التطبيق.",
+  "mandatory": false,
+  "releasedAt": "2026-08-23T22:22:05Z",
+  "publishedAt": "2026-08-23T22:22:05Z"
 }
