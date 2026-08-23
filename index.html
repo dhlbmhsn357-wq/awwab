@@ -843,6 +843,13 @@ body.has-offline-banner .main-header{top:34px;}
         </div>
       </div>
 
+      <!-- تطبيق أندرويد: زر لصفحة التحميل على الويب، أو رقم الإصدار
+           لو المستخدم أصلًا جوه التطبيق النيتف (Phase Android-Download) -->
+      <div class="settings-group" id="android-app-settings-group">
+        <h3>تطبيق أندرويد</h3>
+        <div id="android-app-settings-body"></div>
+      </div>
+
       <div class="settings-group">
         <h3>المساعدة</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
@@ -1628,6 +1635,26 @@ function renderWidgetSettings(){
   if(toggle) toggle.checked = isWidgetPrivacyMode();
 }
 
+// قسم "تطبيق أندرويد" في الإعدادات — زر لصفحة التحميل على الويب، أو
+// رقم الإصدار الحالي لو المستخدم جوه التطبيق النيتف أصلًا
+async function renderAndroidAppSettings(){
+  const body = document.getElementById('android-app-settings-body');
+  if(!body) return;
+  if(IS_NATIVE){
+    let versionText = '';
+    try {
+      const { App } = window.Capacitor.Plugins;
+      const info = await App.getInfo();
+      versionText = info?.version || '';
+    } catch(e){}
+    body.innerHTML = `<div class="sr-desc">الإصدار الحالي: <span style="color:var(--text-1);font-weight:600">${esc(versionText||'—')}</span></div>`;
+    return;
+  }
+  body.innerHTML = `
+    <div class="sr-desc" style="margin-bottom:.7rem">حمّل تطبيق أوّاب للأندرويد لتجربة أسرع، إشعارات، وودجت على شاشتك الرئيسية.</div>
+    <a class="btn-add" style="width:100%;justify-content:center;text-decoration:none" href="/download" target="_blank" rel="noopener">صفحة التحميل</a>`;
+}
+
 async function preloadLocalData(){
   // بعد أول دخول ناجح: حمّل العبادات + آخر 90 يوم من السجلات محليًا
   // (بنفس حد الأرشفة بالظبط — 90 يوم — عشان مايفضلش فرق بين "أقدم
@@ -2016,6 +2043,54 @@ async function doInstallApp(){
 initInstallTracking();
 
 // ════════════════════════════════════════════
+//  بانر تحميل تطبيق أندرويد — لمستخدمي أندرويد اللي بيستخدموا نسخة
+//  الويب ومعندهمش التطبيق النيتف (IS_NATIVE=false). مستقل تمامًا عن
+//  بانر تثبيت الـPWA فوق (مايظهروش مع بعض في نفس اللحظة).
+// ════════════════════════════════════════════
+function isAndroidUA(){ return /Android/i.test(navigator.userAgent); }
+
+function initAndroidAppBannerCheck(){
+  if(IS_NATIVE || !isAndroidUA()) return;
+  if(sessionStorage.getItem('awwab_android_app_banner_dismissed_session')==='1') return;
+  setTimeout(tryShowAndroidAppBanner, 2600);
+}
+function tryShowAndroidAppBanner(){
+  if(sessionStorage.getItem('awwab_android_app_banner_dismissed_session')==='1') return;
+  if(document.getElementById('install-banner') || document.getElementById('android-app-banner')) return; // مايتزاحمش مع بانر تثبيت الـPWA
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay && !overlay.classList.contains('hidden')){ setTimeout(tryShowAndroidAppBanner, 800); return; }
+  renderAndroidAppBanner();
+}
+function renderAndroidAppBanner(){
+  if(document.getElementById('android-app-banner')) return;
+  const aboveNav = document.getElementById('screen-main')?.classList.contains('active');
+  const el = document.createElement('div');
+  el.className = 'install-banner' + (aboveNav ? ' above-nav' : '');
+  el.id = 'android-app-banner';
+  el.innerHTML = `
+    <div class="install-banner-icon"><img src="/icon-192.png" alt="أواب"></div>
+    <div class="install-banner-body">
+      <div class="install-banner-title">أوّاب متاح كتطبيق للأندرويد</div>
+      <div class="install-banner-desc">حمّله لتجربة أسرع ووصول أسهل، مع دعم الودجت والإشعارات</div>
+      <div class="install-banner-actions">
+        <button class="install-banner-btn" onclick="window.open('/download','_blank'); dismissAndroidAppBanner()">تحميل التطبيق</button>
+        <button class="install-banner-later" onclick="dismissAndroidAppBanner()">لاحقًا</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+}
+function dismissAndroidAppBanner(){
+  sessionStorage.setItem('awwab_android_app_banner_dismissed_session','1');
+  const el = document.getElementById('android-app-banner');
+  if(!el) return;
+  el.classList.remove('show');
+  setTimeout(()=>el.remove(), 320);
+}
+initAndroidAppBannerCheck();
+
+// ════════════════════════════════════════════
 //  GUIDED ONBOARDING TOUR
 // ════════════════════════════════════════════
 let tourActive=false, tourIndex=0, tourManualReplay=false, tourPreviewGuard=false;
@@ -2088,6 +2163,9 @@ const TOUR_STEPS = [
   { route:'settings', title:'ودجت على شاشتك الرئيسية', body:'أضف ودجت أوّاب لشاشتك الرئيسية عشان تشوف عدد عباداتك المُنجزة اليوم من غير ما تفتح التطبيق. تقدر تفعّل وضع الخصوصية من هنا لو مش عايز التفاصيل تظهر.',
     getTarget:()=>document.getElementById('widget-settings-group'),
     skipIf:()=>!IS_NATIVE },
+  { route:'settings', title:'استخدم أوّاب كتطبيق على هاتفك', body:'يمكنك تحميل نسخة أوّاب للأندرويد لتجربة أسرع ووصول أسهل، مع دعم ميزات مثل الودجت والإشعارات بشكل أفضل.',
+    getTarget:()=>document.getElementById('android-app-settings-group'),
+    skipIf:()=>IS_NATIVE || !isAndroidUA() },
 ];
 
 async function tourGoToStep(index){
@@ -3596,6 +3674,7 @@ function renderSettings(){
   renderInstallSettings();
   renderReminderSettings();
   renderWidgetSettings();
+  renderAndroidAppSettings();
   const options = [
     {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
     {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},

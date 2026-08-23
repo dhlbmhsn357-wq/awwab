@@ -1,0 +1,102 @@
+name: Android Release
+
+# بناء APK ونشره كـ GitHub Release عام (الريبو Public)، مع تحديث
+# latest-release.json تلقائيًا — الملف ده اللي صفحة /download في
+# الموقع بتقراه عشان تعرف آخر إصدار من غير أي رابط ثابت مكتوب يدويًا.
+#
+# ملاحظة: الـAPK ده موقّع بمفتاح Debug الافتراضي بتاع أندرويد (زي
+# APK البناء العادي) — مش موقّع بمفتاح إصدار حقيقي لأن ده محتاج
+# keystore خاص بالمستخدم (راجع RELEASE.md). المستخدمين هيحتاجوا
+# يسمحوا بـ"التثبيت من مصادر غير معروفة" — متوقّع وموثّق في صفحة
+# التحميل نفسها.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'رقم الإصدار (مثال: 1.0.0) — لو فاضي، بياخد versionName من build.gradle'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web assets + sync Capacitor
+        run: npm run cap:sync
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Determine version
+        id: ver
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            V="${{ inputs.version }}"
+          else
+            V=$(grep -oP 'versionName\s+"\K[^"]+' android/app/build.gradle)
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
+
+      - name: Rename APK
+        id: apk
+        run: |
+          NAME="Awwab-Android-v${{ steps.ver.outputs.version }}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$NAME"
+          SIZE=$(stat -c%s "$NAME")
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        id: release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: "أوّاب v${{ steps.ver.outputs.version }}"
+          files: ${{ steps.apk.outputs.name }}
+          # صفحة الإصدار نفسها مش جزء من تجربة المستخدم العادي (زي ما
+          # اتفقنا في /download) — بس محتاجينها كاستضافة خلفية للملف
+          make_latest: true
+
+      - name: Update latest-release.json
+        run: |
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.apk.outputs.name }}"
+          cat > latest-release.json <<EOF
+          {
+            "version": "${{ steps.ver.outputs.version }}",
+            "apkUrl": "$ASSET_URL",
+            "fileSize": ${{ steps.apk.outputs.size }},
+            "releasedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest-release.json
+          git diff --cached --quiet || git commit -m "chore: update latest-release.json for v${{ steps.ver.outputs.version }}"
+          git push

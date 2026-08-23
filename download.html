@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحميل تطبيق أوّاب</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F8FA; --surface-1:#FFFFFF; --surface-2:#F1F3F6; --surface-3:#E9ECF1;
+  --border:rgba(15,23,42,.08); --border-strong:rgba(15,23,42,.15);
+  --primary:#1E9683; --primary-strong:#167864; --primary-tint:rgba(30,150,131,.10);
+  --success:#1F9D66; --success-tint:rgba(31,157,102,.10);
+  --warning:#B67A1E; --warning-tint:rgba(182,122,30,.10);
+  --text-1:#101826; --text-2:#4B5768; --text-3:#8792A2;
+  --shadow-card:0 1px 2px rgba(15,23,42,.04), 0 1px 1px rgba(15,23,42,.03);
+  --shadow-elevated:0 8px 30px rgba(15,23,42,.10);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#070D18; --surface-1:#0D1626; --surface-2:#111C2E; --surface-3:#16233A;
+    --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.13);
+    --primary:#2EB7A0; --primary-strong:#3FCBB3; --primary-tint:rgba(46,183,160,.14);
+    --success:#34B27B; --success-tint:rgba(52,178,123,.14);
+    --warning:#E0A94A; --warning-tint:rgba(224,169,74,.13);
+    --text-1:#F4F6F8; --text-2:#A9B3C1; --text-3:#6B7688;
+    --shadow-card:0 1px 2px rgba(0,0,0,.25); --shadow-elevated:0 20px 60px rgba(0,0,0,.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#070D18; --surface-1:#0D1626; --surface-2:#111C2E; --surface-3:#16233A;
+  --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.13);
+  --primary:#2EB7A0; --primary-strong:#3FCBB3; --primary-tint:rgba(46,183,160,.14);
+  --success:#34B27B; --success-tint:rgba(52,178,123,.14);
+  --warning:#E0A94A; --warning-tint:rgba(224,169,74,.13);
+  --text-1:#F4F6F8; --text-2:#A9B3C1; --text-3:#6B7688;
+  --shadow-card:0 1px 2px rgba(0,0,0,.25); --shadow-elevated:0 20px 60px rgba(0,0,0,.45);
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-1);font-family:'IBM Plex Sans Arabic','Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow-x:hidden}
+.card{width:100%;max-width:420px;background:var(--surface-1);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow-elevated);padding:28px 22px;text-align:center}
+.icon{width:88px;height:88px;border-radius:22px;overflow:hidden;box-shadow:var(--shadow-card);margin:0 auto 16px}
+.icon img{width:100%;height:100%;object-fit:cover;display:block}
+h1{font-size:20px;font-weight:800;margin:0 0 6px}
+.sub{font-size:13.5px;color:var(--text-2);line-height:1.7;margin:0 0 18px}
+.meta{display:flex;justify-content:center;gap:14px;font-size:11.5px;color:var(--text-3);margin-bottom:20px}
+.meta b{color:var(--text-2);font-weight:600}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:14px;font-size:15px;font-weight:700;border:none;cursor:pointer;text-decoration:none}
+.btn-primary{background:var(--primary);color:#06251F;box-shadow:0 6px 20px var(--primary-tint)}
+.btn-primary:active{background:var(--primary-strong)}
+.btn-secondary{background:var(--surface-2);color:var(--text-1);margin-top:10px}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.note{font-size:11.5px;color:var(--text-3);line-height:1.7;margin-top:14px}
+.state-box{background:var(--surface-2);border-radius:14px;padding:16px;text-align:right}
+.state-box .t{font-weight:700;font-size:14px;margin-bottom:4px}
+.state-box .d{font-size:12.5px;color:var(--text-2);line-height:1.7}
+.ok-badge{display:inline-flex;align-items:center;gap:6px;background:var(--success-tint);color:var(--success);font-weight:700;font-size:13.5px;border-radius:10px;padding:10px 14px}
+.steps{text-align:right;margin-top:18px;background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.steps .st{font-weight:700;font-size:13px;margin-bottom:8px}
+.steps ol{margin:0;padding-inline-start:1.2rem;font-size:12.5px;color:var(--text-2);line-height:2}
+.security-note{margin-top:12px;font-size:11px;color:var(--text-3);background:var(--warning-tint);border-radius:10px;padding:8px 12px;line-height:1.7}
+.hidden{display:none !important}
+.spinner{width:22px;height:22px;border-radius:50%;border:3px solid var(--border-strong);border-top-color:var(--primary);animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="icon"><img src="/icon-512.png" alt="أوّاب"></div>
+  <h1 id="title">حمّل أوّاب للأندرويد</h1>
+  <p class="sub" id="subtitle">استخدم أوّاب كتطبيق مستقل على هاتفك، مع تجربة أسرع ووصول أسهل وميزات أندرويد الإضافية.</p>
+
+  <div id="loading-state"><div class="spinner"></div></div>
+
+  <div id="content" class="hidden">
+    <div class="meta" id="meta-row"></div>
+    <div id="action-area"></div>
+    <div id="steps-box" class="steps hidden">
+      <div class="st">بعد التنزيل</div>
+      <ol>
+        <li>افتح ملف <b>Awwab.apk</b> من الإشعارات أو التنزيلات</li>
+        <li>لو طلب أندرويد السماح بالتثبيت من هذا المصدر، فعّله لهذا المتصفح فقط</li>
+        <li>اضغط <b>تثبيت</b></li>
+        <li>افتح أوّاب من الشاشة الرئيسية</li>
+      </ol>
+    </div>
+    <div id="security-note" class="security-note hidden">قد يطلب أندرويد السماح بالتثبيت من هذا المصدر لأن التطبيق لم يُنشر بعد على متجر Google Play.</div>
+  </div>
+</div>
+
+<script>
+function isNative(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
+function isAndroid(){ return /Android/i.test(navigator.userAgent); }
+function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+
+(function initTheme(){
+  const saved = localStorage.getItem('awwab-theme');
+  if(saved==='light' || saved==='dark') document.documentElement.dataset.theme = saved;
+})();
+
+function fmtSize(bytes){
+  if(!bytes) return '';
+  const mb = bytes/1024/1024;
+  return mb.toFixed(1).replace(/\.0$/,'') + ' MB';
+}
+
+async function init(){
+  const loading = document.getElementById('loading-state');
+  const content = document.getElementById('content');
+  const title = document.getElementById('title');
+  const subtitle = document.getElementById('subtitle');
+  const metaRow = document.getElementById('meta-row');
+  const actionArea = document.getElementById('action-area');
+  const stepsBox = document.getElementById('steps-box');
+  const securityNote = document.getElementById('security-note');
+
+  // المستخدم أصلًا جوه تطبيق أوّاب النيتف — مفيش داعي لأي دعوة تحميل
+  if(isNative()){
+    loading.classList.add('hidden');
+    content.classList.remove('hidden');
+    title.textContent = 'أنت تستخدم تطبيق أوّاب الآن';
+    subtitle.textContent = '';
+    actionArea.innerHTML = `<div class="ok-badge">✓ تطبيق أوّاب مثبّت وشغّال</div>`;
+    return;
+  }
+
+  let release = null;
+  try {
+    const r = await fetch('/latest-release.json', {cache:'no-store'});
+    if(r.ok) release = await r.json();
+  } catch(e){}
+
+  loading.classList.add('hidden');
+  content.classList.remove('hidden');
+
+  if(isIOS()){
+    title.textContent = 'نسخة أندرويد غير متوافقة مع آيفون';
+    subtitle.textContent = 'يمكنك استخدام أوّاب من المتصفح مباشرة، أو إضافته إلى الشاشة الرئيسية لتجربة أقرب لتطبيق مستقل.';
+    actionArea.innerHTML = `<a class="btn btn-secondary" href="/" style="margin-top:0">استخدام نسخة الويب</a>`;
+    return;
+  }
+
+  if(!release || !release.apkUrl){
+    title.textContent = 'التحميل غير متاح حاليًا';
+    subtitle.textContent = 'حصل خطأ في تجهيز رابط التحميل، حاول مرة تانية بعد شوية.';
+    actionArea.innerHTML = `<a class="btn btn-secondary" href="/" style="margin-top:0">استخدام نسخة الويب</a>`;
+    return;
+  }
+
+  if(release.version) metaRow.innerHTML += `<span>الإصدار <b>${release.version}</b></span>`;
+  if(release.fileSize) metaRow.innerHTML += `<span>الحجم <b>${fmtSize(release.fileSize)}</b></span>`;
+
+  if(!isAndroid()){
+    subtitle.textContent = 'استخدم أوّاب كتطبيق مستقل على هاتفك الأندرويد. انقل الملف لهاتفك بعد التحميل لتثبيته.';
+  }
+
+  actionArea.innerHTML = `
+    <a class="btn btn-primary" href="${release.apkUrl}" id="download-btn">تنزيل تطبيق أوّاب</a>
+    <a class="btn btn-secondary" href="/">استخدام نسخة الويب</a>`;
+  stepsBox.classList.remove('hidden');
+  securityNote.classList.remove('hidden');
+}
+init();
+</script>
+
+</body>
+</html>

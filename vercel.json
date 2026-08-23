@@ -3,6 +3,9 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/download", "destination": "/download.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
