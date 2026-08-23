@@ -1,0 +1,19 @@
+{
+  "name": "awwab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "أوّاب — تطبيق متابعة العبادات (Web/PWA + Android عبر Capacitor)",
+  "scripts": {
+    "prepare:www": "node scripts/prepare-www.mjs",
+    "cap:sync": "npm run prepare:www && cap sync android",
+    "cap:open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "typescript": "^7.0.2"
+  }
+}

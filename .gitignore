@@ -4,3 +4,12 @@
 !.env.example
 
 node_modules/
+
+# مجلد ويب مؤقت لـCapacitor — منسوخ تلقائيًا من الملفات الحقيقية
+# عبر scripts/prepare-www.mjs، مش مصدر حقيقي للكود
+www/
+
+# مفاتيح توقيع Android — سرية، أبدًا متتسجلش في Git (راجع Phase 10)
+*.keystore
+*.jks
+android/keystore.properties
