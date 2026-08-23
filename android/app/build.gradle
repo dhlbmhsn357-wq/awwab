@@ -1,5 +1,17 @@
 apply plugin: 'com.android.application'
 
+// توقيع الإصدار (Release) — بيتقرا من keystore.properties لو موجود
+// (ملف محلي/سرّي، متسجّلش في Git أبدًا — راجع RELEASE.md لخطوات
+// إنشاؤه). لو مش موجود (الحالة الحالية، وأي بناء CI عادي)، بيتبني
+// APK إصدار من غير توقيع — صالح للبناء، مش صالح للتثبيت لحد ما
+// يتوقّع. الغياب ده مايكسرش أي بناء حالي (debug) خالص.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def hasKeystoreProperties = keystorePropertiesFile.exists()
+def keystoreProperties = new Properties()
+if (hasKeystoreProperties) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.awwab.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -8,7 +20,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +28,29 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasKeystoreProperties) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            // R8/ProGuard متسيّب false عمدًا — القواعد (proguard-rules.pro)
+            // جاهزة ومظبوطة لـCapacitor، بس تفعيلها من غير جهاز حقيقي
+            // للتأكد إن التطبيق لسه شغال زي ما هو (خصوصًا الـpluginات
+            // اللي بتتحمّل بالـreflection) خطر مايستهاش هنا. راجع
+            // RELEASE.md لخطوات تفعيلها بأمان وقت ما يبقى عندك جهاز
+            // تختبر عليه.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasKeystoreProperties) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ════════════════════════════════════════════
+#  قواعد Capacitor (جاهزة لو minifyEnabled اتفعّلت مستقبلًا — راجع
+#  RELEASE.md). الـBridge بيحمّل الـplugins بالـreflection من اسم
+#  الكلاس (capacitor.plugins.json)، فلازم تتحفظ من إعادة التسمية/الحذف.
+# ════════════════════════════════════════════
+-keep class com.getcapacitor.** { *; }
+-keep @com.getcapacitor.annotation.CapacitorPlugin public class * extends com.getcapacitor.Plugin
+-keepclassmembers class * extends com.getcapacitor.Plugin {
+    @com.getcapacitor.PluginMethod public *;
+}
+# الـplugins المحلية الخاصة بأوّاب (الودجت)
+-keep class com.awwab.app.WidgetBridgePlugin { *; }
+-keep class com.awwab.app.AwwabWidgetProvider { *; }

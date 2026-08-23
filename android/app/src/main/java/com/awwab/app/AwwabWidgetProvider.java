@@ -33,8 +33,14 @@ public class AwwabWidgetProvider extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_awwab);
 
         long updatedAt = prefs.getLong("updatedAt", 0);
+        boolean privacyMode = prefs.getBoolean("privacyMode", false);
         if (updatedAt == 0) {
             views.setTextViewText(R.id.widget_summary, context.getString(R.string.widget_no_data));
+            views.setTextViewText(R.id.widget_next, context.getString(R.string.widget_open_hint));
+        } else if (privacyMode) {
+            // وضع الخصوصية (Phase 8) — مفيش أي رقم أو اسم عبادة ظاهر
+            // على الشاشة الرئيسية، حتى لو حد تاني شايف الموبايل
+            views.setTextViewText(R.id.widget_summary, context.getString(R.string.app_name));
             views.setTextViewText(R.id.widget_next, context.getString(R.string.widget_open_hint));
         } else {
             int completed = prefs.getInt("completedCount", 0);

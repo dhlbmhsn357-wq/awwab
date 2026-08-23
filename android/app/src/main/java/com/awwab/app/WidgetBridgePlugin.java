@@ -30,6 +30,7 @@ public class WidgetBridgePlugin extends Plugin {
         editor.putInt("completedCount", call.getInt("completedCount", 0));
         editor.putInt("totalCount", call.getInt("totalCount", 0));
         editor.putString("nextWorshipName", call.getString("nextWorshipName", ""));
+        editor.putBoolean("privacyMode", call.getBoolean("privacyMode", false));
         editor.putLong("updatedAt", System.currentTimeMillis());
         editor.apply();
 

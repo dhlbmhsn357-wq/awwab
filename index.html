@@ -829,6 +829,20 @@ body.has-offline-banner .main-header{top:34px;}
         <div class="sr-desc" id="reminder-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
       </div>
 
+      <!-- ودجت الشاشة الرئيسية — أندرويد بس (Phase 8)، مخفي بالكامل
+           على الويب/PWA عبر renderWidgetSettings() -->
+      <div class="settings-group" id="widget-settings-group" style="display:none">
+        <h3>ودجت الشاشة الرئيسية</h3>
+        <div class="sr-desc" style="margin-bottom:.75rem">لو ضفت ودجت أوّاب لشاشتك الرئيسية، يظهر فيها عدد عباداتك المُنجزة اليوم واسم التالية.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
+          <div>
+            <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">وضع الخصوصية</div>
+            <div class="sr-desc">إخفاء التفاصيل من الودجت (يظهر فقط "افتح التطبيق")</div>
+          </div>
+          <label style="flex-shrink:0"><input type="checkbox" id="widget-privacy-toggle" onchange="onWidgetPrivacyToggle(this.checked)"></label>
+        </div>
+      </div>
+
       <div class="settings-group">
         <h3>المساعدة</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
@@ -1468,6 +1482,7 @@ async function collectAndSyncWidgetSnapshot(){
       completedCount: completed,
       totalCount: total,
       nextWorshipName,
+      privacyMode: isWidgetPrivacyMode(),
     });
   } catch(e){ /* الودجت ميزة إضافية — أي خطأ هنا ميأثرش على التطبيق نفسه */ }
 }
@@ -1590,6 +1605,27 @@ function renderReminderSettings(){
   if(toggle) toggle.checked = !!pref.enabled;
   if(timeRow) timeRow.style.display = pref.enabled ? 'block' : 'none';
   if(timeInput) timeInput.value = String(pref.hour).padStart(2,'0')+':'+String(pref.minute).padStart(2,'0');
+}
+
+// ════════════════════════════════════════════
+//  إعدادات الودجت + وضع الخصوصية (Phase 8) — تفضيل جهاز محلي بحت،
+//  زي التذكير اليومي بالظبط
+// ════════════════════════════════════════════
+const WIDGET_PRIVACY_KEY = 'awwab-widget-privacy';
+function isWidgetPrivacyMode(){
+  try { return localStorage.getItem(WIDGET_PRIVACY_KEY)==='1'; } catch(e){ return false; }
+}
+function onWidgetPrivacyToggle(checked){
+  try { localStorage.setItem(WIDGET_PRIVACY_KEY, checked?'1':'0'); } catch(e){}
+  collectAndSyncWidgetSnapshot();
+}
+function renderWidgetSettings(){
+  const group = document.getElementById('widget-settings-group');
+  if(!group) return;
+  if(!IS_NATIVE){ group.style.display='none'; return; }
+  group.style.display = '';
+  const toggle = document.getElementById('widget-privacy-toggle');
+  if(toggle) toggle.checked = isWidgetPrivacyMode();
 }
 
 async function preloadLocalData(){
@@ -2049,6 +2085,9 @@ const TOUR_STEPS = [
   { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
     getTarget:()=>document.getElementById('install-settings-group'),
     skipIf:()=>isStandaloneMode() },
+  { route:'settings', title:'ودجت على شاشتك الرئيسية', body:'أضف ودجت أوّاب لشاشتك الرئيسية عشان تشوف عدد عباداتك المُنجزة اليوم من غير ما تفتح التطبيق. تقدر تفعّل وضع الخصوصية من هنا لو مش عايز التفاصيل تظهر.',
+    getTarget:()=>document.getElementById('widget-settings-group'),
+    skipIf:()=>!IS_NATIVE },
 ];
 
 async function tourGoToStep(index){
@@ -3556,6 +3595,7 @@ function renderSettings(){
   syncThemeToggleUI();
   renderInstallSettings();
   renderReminderSettings();
+  renderWidgetSettings();
   const options = [
     {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
     {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},
