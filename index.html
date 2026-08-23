@@ -811,6 +811,24 @@ body.has-offline-banner .main-header{top:34px;}
         <div id="install-settings-body"></div>
       </div>
 
+      <!-- إشعار محلي يومي — أندرويد بس (Phase 5)، مخفي بالكامل على
+           الويب/PWA عبر renderReminderSettings() -->
+      <div class="settings-group" id="reminder-settings-group" style="display:none">
+        <h3>التذكير اليومي</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
+          <div>
+            <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">تذكير بتسجيل عباداتي</div>
+            <div class="sr-desc">إشعار يومي في الوقت اللي تحدده</div>
+          </div>
+          <label style="flex-shrink:0"><input type="checkbox" id="reminder-enabled-toggle" onchange="onReminderToggle(this.checked)"></label>
+        </div>
+        <div class="field" id="reminder-time-row" style="margin-top:.75rem;display:none">
+          <label for="reminder-time-input" style="font-size:var(--fs-caption);color:var(--text-3);display:block;margin-bottom:.35rem">وقت التذكير</label>
+          <input type="time" id="reminder-time-input" value="20:00" onchange="onReminderTimeChange(this.value)">
+        </div>
+        <div class="sr-desc" id="reminder-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
+      </div>
+
       <div class="settings-group">
         <h3>المساعدة</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
@@ -979,6 +997,10 @@ body.has-offline-banner .main-header{top:34px;}
 // ════════════════════════════════════════════
 const SB_URL = 'https://uzzrkqkudyroswvekeoz.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6enJrcWt1ZHlyb3N3dmVrZW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NTY0MjAsImV4cCI6MjA5NzEzMjQyMH0.muQqOBZFz02KsnN3dqTnyTdtxYUOgCjVkVEzVQ5Obek';
+
+// true بس جوه تطبيق أندرويد (Capacitor) — false على أي متصفح عادي/PWA،
+// فأي كود محكوم بيها بيتخطى تمامًا هناك ويفضل السلوك الأصلي زي ما هو
+const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
 // عميل Supabase Auth الرسمي — بيدير الجلسة وتجديد الـtoken تلقائيًا.
 // بيستخدم الـanon key نفسه (عام وآمن طالما RLS مفعّل، مش سر).
@@ -1341,8 +1363,8 @@ setInterval(()=>{ if(isOnline) syncPendingChanges(); }, 90000); // fallback دو
 //  فلو مفيش Capacitor (متصفح عادي) الكتلة دي كلها بتتخطى ويفضل
 //  سلوك الويب الحالي زي ما هو تمامًا.
 // ════════════════════════════════════════════
-if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
-  const { Network, App } = window.Capacitor.Plugins;
+if(IS_NATIVE){
+  const { Network, App, LocalNotifications } = window.Capacitor.Plugins;
 
   // navigator.onLine/أحداث online-offline جوه WebView أندرويد أقل
   // دقة من حالة الشبكة الحقيقية اللي بيوفرها Network plugin (بيقرا
@@ -1392,7 +1414,147 @@ if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isN
       }
       App.exitApp();
     });
+
+    // Deep Links (awwab://today، awwab://calendar...إلخ) — بتتفتح لو
+    // التطبيق شغال بالفعل. لو التطبيق كان مقفول، أندرويد بيفتحه عادي
+    // على آخر تبويب زي أي فتح طبيعي، والرابط نفسه بيتلقّط هنا برضه
+    // أول ما التطبيق يخلّص التحميل
+    App.addListener('appUrlOpen', ({ url }) => {
+      try { routeDeepLink(new URL(url).hostname || new URL(url).pathname.replace(/^\//,'')); }
+      catch(e){}
+    });
   }
+
+  if(LocalNotifications){
+    // الضغط على إشعار التذكير اليومي يودّي لتبويب "اليوم" مباشرة —
+    // بيشتغل سواء التطبيق كان شغال في الخلفية أو مقفول تمامًا
+    LocalNotifications.addListener('localNotificationActionPerformed', () => {
+      routeDeepLink('today');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initDailyReminderFromStorage);
+  if(document.readyState !== 'loading') initDailyReminderFromStorage();
+}
+
+// يفتح تبويب معيّن من تبويبات الشريط السفلي — مستخدم من الإشعار
+// اليومي ومن Deep Links (awwab://<tab>) بنفس المنطق بالظبط
+function routeDeepLink(tab){
+  const known = ['today','calendar','progress','rafeqa','worships'];
+  if(!known.includes(tab)) return;
+  // لو التطبيق لسه بيفتح من الصفر (تسجيل الدخول لسه مايتمّش) "اليوم"
+  // هو التبويب الافتراضي أصلًا — تجاهل الرابط هنا بدل ما نستدعي شاشات
+  // بيانات محتاجة currentUser قبل ما يكون جاهز، ولو التطبيق شغال
+  // بالفعل هتشتغل عادي
+  if(typeof currentUser==='undefined' || !currentUser) return;
+  const btn = document.querySelector(`.bn-btn[data-tab="${tab}"]`);
+  if(btn) switchTab(tab, btn);
+}
+
+// ════════════════════════════════════════════
+//  التذكير اليومي (Local Notifications) — أندرويد بس. تفضيل جهاز
+//  محلي بحت (وقت/تفعيل)، متخزّنش في Supabase — كل جهاز له تذكيره
+//  الخاص، ومفيش داعي يتزامن بين الأجهزة.
+// ════════════════════════════════════════════
+const REMINDER_STORAGE_KEY = 'awwab-daily-reminder';
+const REMINDER_NOTIF_ID = 9001;
+
+function loadReminderPref(){
+  try {
+    const raw = localStorage.getItem(REMINDER_STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  } catch(e){}
+  return { enabled:false, hour:20, minute:0 };
+}
+function saveReminderPref(pref){
+  try { localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify(pref)); } catch(e){}
+}
+
+async function initDailyReminderFromStorage(){
+  if(!IS_NATIVE) return;
+  const pref = loadReminderPref();
+  if(pref.enabled){
+    // إعادة الجدولة كل ما التطبيق يفتح — رخيصة وبتضمن استمرار التذكير
+    // حتى لو النظام مسح الجدولة القديمة لأي سبب (تحديث/إعادة تشغيل)
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const perm = await LocalNotifications.checkPermissions().catch(()=>({display:'denied'}));
+    if(perm.display === 'granted') scheduleDailyReminder(pref.hour, pref.minute, true);
+  }
+}
+
+async function scheduleDailyReminder(hour, minute, silent){
+  const { LocalNotifications } = window.Capacitor.Plugins;
+  // إنشاء القناة (Android 8+) — عملية آمنة التكرار، مبتعملش تكرار لو
+  // القناة موجودة بالفعل
+  await LocalNotifications.createChannel({
+    id: 'daily-reminder',
+    name: 'التذكير اليومي',
+    description: 'تذكير يومي بتسجيل عباداتك',
+    importance: 4,
+    visibility: 1,
+  }).catch(()=>{});
+  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: REMINDER_NOTIF_ID,
+      title: 'أوّاب',
+      body: 'حان وقت متابعة عباداتك اليوم',
+      schedule: { on: { hour, minute }, allowWhileIdle: true },
+      channelId: 'daily-reminder',
+    }],
+  });
+  if(!silent) showToast('اتفعّل التذكير اليومي');
+}
+async function cancelDailyReminder(){
+  const { LocalNotifications } = window.Capacitor.Plugins;
+  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
+}
+
+async function onReminderToggle(checked){
+  const pref = loadReminderPref();
+  const noteEl = document.getElementById('reminder-permission-note');
+  const timeRow = document.getElementById('reminder-time-row');
+  if(checked){
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const res = await LocalNotifications.requestPermissions().catch(()=>({display:'denied'}));
+    if(res.display !== 'granted'){
+      document.getElementById('reminder-enabled-toggle').checked = false;
+      if(noteEl){ noteEl.style.display='block'; noteEl.textContent = 'محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
+      return;
+    }
+    if(noteEl) noteEl.style.display = 'none';
+    if(timeRow) timeRow.style.display = 'block';
+    pref.enabled = true;
+    saveReminderPref(pref);
+    await scheduleDailyReminder(pref.hour, pref.minute);
+  } else {
+    if(timeRow) timeRow.style.display = 'none';
+    pref.enabled = false;
+    saveReminderPref(pref);
+    await cancelDailyReminder();
+    showToast('اتلغى التذكير اليومي');
+  }
+}
+async function onReminderTimeChange(value){
+  const [h,m] = value.split(':').map(Number);
+  const pref = loadReminderPref();
+  pref.hour = h; pref.minute = m;
+  saveReminderPref(pref);
+  if(pref.enabled) await scheduleDailyReminder(h, m);
+}
+
+function renderReminderSettings(){
+  const group = document.getElementById('reminder-settings-group');
+  if(!group) return;
+  if(!IS_NATIVE){ group.style.display='none'; return; }
+  group.style.display = '';
+  const pref = loadReminderPref();
+  const toggle = document.getElementById('reminder-enabled-toggle');
+  const timeInput = document.getElementById('reminder-time-input');
+  const timeRow = document.getElementById('reminder-time-row');
+  if(toggle) toggle.checked = !!pref.enabled;
+  if(timeRow) timeRow.style.display = pref.enabled ? 'block' : 'none';
+  if(timeInput) timeInput.value = String(pref.hour).padStart(2,'0')+':'+String(pref.minute).padStart(2,'0');
 }
 
 async function preloadLocalData(){
@@ -3356,6 +3518,7 @@ function renderInstallSettings(){
 function renderSettings(){
   syncThemeToggleUI();
   renderInstallSettings();
+  renderReminderSettings();
   const options = [
     {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
     {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},

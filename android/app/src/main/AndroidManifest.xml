@@ -22,6 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep Links: awwab://today ، awwab://calendar ...إلخ —
+                 بيتلقّطها App.addListener('appUrlOpen') في index.html.
+                 مستخدمة داخليًا لفتح التطبيق على تبويب معيّن عند الضغط
+                 على إشعار محلي، ومتاحة لأي استخدام مستقبلي تاني. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="awwab" />
+            </intent-filter>
+
         </activity>
 
         <provider
@@ -38,4 +49,12 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- إشعارات محلية (تذكير يومي) — أندرويد 13+ محتاج إذن وقت التشغيل
+         صراحة، بيتطلب فعليًا عبر LocalNotifications.requestPermissions()
+         في index.html، مش تلقائي بمجرد التصريح هنا -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- عشان التذكير يوصل في الوقت المحدد بالظبط (مش بعد تأخير النظام
+         الموفّر للبطارية) — بيتطلب موافقة صريحة من المستخدم على
+         أندرويد 12+ لو مفعّلة، وبنعامله كـfallback غير حرج لو اتمنعت -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 </manifest>

@@ -16,6 +16,14 @@ const config: CapacitorConfig = {
     // مش تتعلق جوه الـWebView (بند 69 من الخطة)
     allowMixedContent: false,
   },
+  plugins: {
+    LocalNotifications: {
+      // أيقونة شريط الحالة (مولّدة من scripts/generate-android-icons.py)
+      // + لون هوية أوّاب بدل الأخضر الافتراضي لأندرويد
+      smallIcon: 'ic_stat_notify',
+      iconColor: '#017C6E',
+    },
+  },
 };
 
 export default config;

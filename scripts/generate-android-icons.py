@@ -8,6 +8,7 @@
 #      (بدون النص) مقصوص ومحطوط في المنطقة الآمنة، عشان مايتقصش
 #      لما أندرويد يطبّق شكل (دائرة/مربع مدوّر...) حسب جهاز المستخدم.
 #   3) Round (ic_launcher_round.png): نفس الشعار بدون نص، على دائرة.
+import math
 import os
 from PIL import Image, ImageDraw
 
@@ -21,6 +22,9 @@ BG_COLOR = (242, 240, 241)  # نفس لون خلفية الشعار الحقيق
 
 LEGACY_SIZES = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
 ADAPTIVE_SIZES = {'mdpi': 108, 'hdpi': 162, 'xhdpi': 216, 'xxhdpi': 324, 'xxxhdpi': 432}
+# أيقونة شريط الحالة (الإشعارات) — أندرويد بيتجاهل الألوان تمامًا
+# وبيستخدم قناة الشفافية بس كقناع (Silhouette أبيض دايمًا)
+NOTIF_SIZES = {'mdpi': 24, 'hdpi': 36, 'xhdpi': 48, 'xxhdpi': 72, 'xxxhdpi': 96}
 SAFE_ZONE_RATIO = 0.62  # المنطقة الآمنة لأيقونات Adaptive (~66% كحد أقصى موصى بيه)
 
 
@@ -31,9 +35,41 @@ def circle_mask(size):
     return mask
 
 
+def glyph_to_white_silhouette(glyph_rgb):
+    # مفيش قناة شفافية حقيقية في المصدر (رسمة نقطية عادية)، فبنستنتجها:
+    # أي بكسل بعيد عن لون الخلفية الحقيقي (بأي درجة لون — تييل غامق
+    # للخط الخارجي، نعناعي فاتح لتعبئة القبة...إلخ) يبقى جزء من
+    # الشعار، وبيتحوّل لأبيض صريح بشفافية متدرّجة على الحواف بس
+    w, h = glyph_rgb.size
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    px_in = glyph_rgb.load()
+    px_out = out.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px_in[x, y]
+            dist = math.sqrt((r - BG_COLOR[0]) ** 2 + (g - BG_COLOR[1]) ** 2 + (b - BG_COLOR[2]) ** 2)
+            alpha = 0 if dist < 18 else min(255, int(dist * 4.2))
+            px_out[x, y] = (255, 255, 255, alpha)
+    return out
+
+
 def main():
     src = Image.open(SRC).convert('RGBA')
     glyph = src.crop(GLYPH_BOX)
+    glyph_silhouette = glyph_to_white_silhouette(glyph.convert('RGB'))
+
+    for density, size in NOTIF_SIZES.items():
+        out_dir = os.path.join(RES, f'drawable-{density}')
+        os.makedirs(out_dir, exist_ok=True)
+        # هامش أمان زي أيقونات الإشعارات القياسية بالأندرويد (مش لازقة
+        # في الحواف)
+        canvas = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        g = glyph_silhouette.copy()
+        target = int(size * 0.75)
+        g.thumbnail((target, target), Image.LANCZOS)
+        pos = ((size - g.width) // 2, (size - g.height) // 2)
+        canvas.paste(g, pos, g)
+        canvas.save(os.path.join(out_dir, 'ic_stat_notify.png'))
 
     for density, size in LEGACY_SIZES.items():
         out_dir = os.path.join(RES, f'mipmap-{density}')
@@ -100,6 +136,7 @@ def main():
         canvas.save(out_path)
 
     print('[OK] generated all icons (Legacy + Adaptive foreground + Round) for all densities')
+    print('[OK] generated notification status-bar icon (white silhouette) for all densities')
     print('[OK] generated all splash screens (brand color + full logo, replacing default blank Capacitor splash)')
     print(f'[OK] adaptive icon background color: {bg_hex}')
 
