@@ -36,10 +36,16 @@ npm run cap:open:android   # يفتح المشروع في Android Studio
 - **App Name**: أوّاب (بالعربي، ظاهر صح في Launcher — مُتحقق منه في
   `android/app/src/main/res/values/strings.xml`).
 
-## الحالة الحالية (Phase 1)
+## الحالة الحالية (Phase 1 — مكتملة)
 
-- ✅ مشروع Android مولّد (`npx cap add android`).
-- ✅ خط بناء APK سحابي شغّال (GitHub Actions).
+- ✅ مشروع Android مولّد (`npx cap add android`)، appId
+  `com.awwab.app`، اسم التطبيق "أوّاب" ظاهر صح في الموارد.
+- ✅ خط بناء APK سحابي شغّال وناجح (GitHub Actions، JDK 21 + Node 22
+  — Capacitor 8 محتاجهم بالظبط).
+- ✅ اتأكد إن ملفات `www/` (المنسوخة لـAndroid) مطابقة بايت-لبايت
+  لملفات الويب الحقيقية.
+- ✅ اتأكد إن نشر الويب/PWA على Vercel مش متأثر خالص (قبل وبعد إضافة
+  ملفات Android، فحصت الموقع الحي مباشرة).
 - ⏳ الأيقونة/Splash لسه افتراضية من Capacitor — Phase 2.
 - ⏳ Auth/Offline/Widget/Notifications — مراحل لاحقة، راجع خطة
   التنفيذ في المحادثة.
