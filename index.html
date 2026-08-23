@@ -1386,6 +1386,7 @@ if(IS_NATIVE){
     // (onResume/onPause) فهو الأدق لمزامنة فورية عند العودة
     App.addListener('appStateChange', ({ isActive }) => {
       if(!isActive) return;
+      collectAndSyncWidgetSnapshot(); // اعرض حالة اليوم المحلية فورًا (Local-first) قبل ما ننتظر نتيجة الشبكة
       (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
         isOnline = !!s.connected;
         updateSyncBadge();
@@ -1435,6 +1436,40 @@ if(IS_NATIVE){
 
   document.addEventListener('DOMContentLoaded', initDailyReminderFromStorage);
   if(document.readyState !== 'loading') initDailyReminderFromStorage();
+}
+
+// ════════════════════════════════════════════
+//  WIDGET BRIDGE (Phase 6) — بيبعت "لقطة" مختصرة من حالة اليوم محليًا
+//  (بدون أي شبكة) لـPlugin نيتف بيخزّنها في SharedPreferences خاصة
+//  بالودجت. الودجت نفسها (Phase 7) بتقرا من هناك بس — أبدًا ماتكلّمش
+//  Supabase مباشرة (بند 91 من المتطلبات الأصلية).
+// ════════════════════════════════════════════
+async function collectAndSyncWidgetSnapshot(){
+  if(!IS_NATIVE || !currentUser || !localDB) return;
+  try {
+    const { WidgetBridge } = window.Capacitor.Plugins;
+    if(!WidgetBridge) return;
+    const todayStr = getToday();
+    const todayLogs = await localDB.dailyLogs.where('date').equals(todayStr).toArray();
+    const logByWorship = {};
+    todayLogs.forEach(l=>{ logByWorship[l.worshipId] = l; });
+    const applicable = worships.filter(w=>isApplicable(w, todayStr));
+    const total = applicable.length;
+    const completed = applicable.filter(w=>logByWorship[w.id]?.status==='completed').length;
+    // أول عبادة لسه مسجّلتش، بنفس ترتيب فترات اليوم في شاشة "اليوم"
+    let nextWorshipName = '';
+    for(const sec of DAY_SECTIONS){
+      const items = applicable.filter(w=>w.day_section===sec.key).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+      const pending = items.find(w=>logByWorship[w.id]?.status!=='completed');
+      if(pending){ nextWorshipName = pending.name; break; }
+    }
+    await WidgetBridge.updateSnapshot({
+      date: todayStr,
+      completedCount: completed,
+      totalCount: total,
+      nextWorshipName,
+    });
+  } catch(e){ /* الودجت ميزة إضافية — أي خطأ هنا ميأثرش على التطبيق نفسه */ }
 }
 
 // يفتح تبويب معيّن من تبويبات الشريط السفلي — مستخدم من الإشعار
@@ -2459,6 +2494,7 @@ async function loadWorships(){
     const rows = await localDB.dailyLogs.where('worshipId').anyOf(onceIds).filter(l=>l.status==='completed').toArray();
     rows.forEach(r=>onceCompletedSet.add(r.worshipId));
   }
+  collectAndSyncWidgetSnapshot(); // بدون await — الويدجت ميزة إضافية، مش لازم تأخّر تحميل الشاشة
 }
 function isApplicable(w, dateStr){
   if(w.is_paused || w.is_hidden) return false;
@@ -2667,6 +2703,7 @@ async function upsertLog(worshipId, dateStr, patch){
   await localDB.dailyLogs.put(localRow);
   dayLogsMap[worshipId] = localRow;
   await enqueueSync('daily_log', id, existing?'update':'create', body);
+  if(dateStr===getToday()) collectAndSyncWidgetSnapshot(); // بدون await — ميزة إضافية مش لازم تأخّر حفظ العبادة نفسها
   return localRow;
 }
 

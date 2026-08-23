@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- ألوان ودجت الشاشة الرئيسية (وضع داكن) -->
+    <color name="widget_bg">#12211F</color>
+    <color name="widget_text_primary">#5FD9C4</color>
+    <color name="widget_text_secondary">#9BC4BE</color>
+</resources>

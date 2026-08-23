@@ -35,6 +35,20 @@
 
         </activity>
 
+        <!-- ودجت الشاشة الرئيسية (Phase 7) — للقراءة بس، بتقرا من
+             SharedPreferences اللي WidgetBridgePlugin بيحدّثها، أبدًا
+             مالهاش اتصال مباشر بـSupabase -->
+        <receiver
+            android:name=".AwwabWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_awwab_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

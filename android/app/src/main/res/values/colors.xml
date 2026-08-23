@@ -4,4 +4,9 @@
     <color name="colorPrimary">#017C6E</color>
     <color name="colorPrimaryDark">#015C51</color>
     <color name="colorAccent">#017C6E</color>
+
+    <!-- ألوان ودجت الشاشة الرئيسية (وضع فاتح) — نفس بطاقة الأيقونة -->
+    <color name="widget_bg">#F2F0F1</color>
+    <color name="widget_text_primary">#015C51</color>
+    <color name="widget_text_secondary">#4B6B67</color>
 </resources>

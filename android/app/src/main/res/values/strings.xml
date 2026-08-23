@@ -4,4 +4,11 @@
     <string name="title_activity_main">أوّاب</string>
     <string name="package_name">com.awwab.app</string>
     <string name="custom_url_scheme">com.awwab.app</string>
+
+    <!-- ودجت الشاشة الرئيسية (Phase 7) -->
+    <string name="widget_summary_format">%1$d من %2$d اليوم</string>
+    <string name="widget_next_format">التالي: %1$s</string>
+    <string name="widget_all_done">خلّصت عباداتك المجدولة اليوم 🌿</string>
+    <string name="widget_no_data">افتح التطبيق لعرض عباداتك</string>
+    <string name="widget_open_hint">افتح التطبيق للمتابعة</string>
 </resources>
