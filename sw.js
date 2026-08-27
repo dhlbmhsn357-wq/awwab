@@ -15,7 +15,7 @@
 //    عادي، من غير تدخل من الـSW.
 // ════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'awwab-v2';
+const CACHE_VERSION = 'awwab-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -49,10 +49,15 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // مش أصل التطبيق (Supabase/CDN...) — سيبها للمتصفح
 
-  // تنقّل بين الصفحات (فتح/تحديث التطبيق نفسه)
+  // تنقّل بين الصفحات (فتح/تحديث التطبيق نفسه) — مهلة زمنية هنا
+  // مهمة عشان شبكة بطيئة (مش أوفلاين تمامًا، بس بطيئة/متقطعة) ماتعلّقش
+  // فتح التطبيق نفسه؛ أي تأخير أكتر من 4 ثواني يترجع للنسخة المخزنة فورًا
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
+      Promise.race([
+        fetch(req),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000)),
+      ])
         .then((res) => {
           caches.open(CACHE_VERSION).then((cache) => cache.put('/index.html', res.clone()));
           return res;

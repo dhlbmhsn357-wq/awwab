@@ -600,6 +600,19 @@ body.has-offline-banner .main-header{top:34px;}
   <div class="loading-text" id="loading-text">جاري التحميل...</div>
 </div>
 
+<!-- Startup Error Boundary — شبكة أمان لو الإقلاع علّق أو فشل بشكل
+     غير متوقّع؛ مايظهرش إلا لو فعلاً المستخدم قاعد قدام شاشة فاضية/
+     معلّقة لفترة طويلة، مش أول ما فيه أي خطأ عادي (ده ليه Toast) -->
+<div class="loading-overlay hidden" id="startup-error-boundary" style="background:var(--bg);flex-direction:column;gap:.9rem">
+  <div style="font-size:2rem">⚠️</div>
+  <div class="loading-text" style="font-weight:700;font-size:1.05rem">تعذّر تحميل أوّاب</div>
+  <div class="sr-desc" style="text-align:center;max-width:280px">حصلت مشكلة غير متوقعة أثناء فتح التطبيق. تقدر تحاول تاني، أو تكمل بالنسخة المحلية لو متاحة.</div>
+  <div style="display:flex;gap:.6rem;margin-top:.4rem">
+    <button class="btn-add" onclick="location.reload()">إعادة المحاولة</button>
+    <button class="btn-logout" id="startup-boundary-local-btn" style="display:none" onclick="startupBoundaryUseLocal()">استخدام النسخة المحلية</button>
+  </div>
+</div>
+
 <!-- Offline / Sync status banner -->
 <div class="offline-banner" id="offline-banner" style="display:none" role="status">
   <span class="offline-banner-dot"></span>
@@ -1039,7 +1052,10 @@ const SB = {
     // كافي لاستدعاءات RPC العامة زي get_login_email/is_name_taken.
     let token = SB_KEY;
     try {
-      const { data } = await sbAuth.auth.getSession();
+      // getSession() ممكن تحاول تجدّد التوكن عبر الشبكة لو قرب ينتهي
+      // — من غير مهلة هنا، أي نداء API في التطبيق كله كان ممكن يعلّق
+      // بلا حد أقصى قبل حتى ما يوصل لمهلة الـ12 ثانية بتاعة الطلب نفسه
+      const { data } = await fetchWithTimeout(sbAuth.auth.getSession(), 5000);
       if(data?.session?.access_token) token = data.session.access_token;
     } catch(e){}
     const headers = {
@@ -2040,7 +2056,7 @@ function showLoading(txt='جاري التحميل...'){
   document.getElementById('loading-text').textContent=txt;
   document.getElementById('loading-overlay').classList.remove('hidden');
 }
-function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); }
+function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); clearStartupWatchdog(); }
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
 
 // ---- Theme (light / dark / system) ----
@@ -2074,23 +2090,78 @@ function openSettingsPanel(){
 }
 mountIcons();
 
-// ── استعادة الجلسة بعد Refresh (بدل ما نرجّع المستخدم لشاشة الدخول) ──
+// ── استعادة الجلسة بعد Refresh/Cold Start (بدل ما نرجّع المستخدم
+//    لشاشة الدخول لمجرد إن الشبكة مش موجودة) ──
 function fetchWithTimeout(promise, ms){
   return Promise.race([
     promise,
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')), ms)),
   ]);
 }
+
+// نفس صيغة المفتاح اللي supabase-js بيستخدمها افتراضيًا لتخزين
+// الجلسة (sb-<project-ref>-auth-token) — بنقراه هنا مباشرة (بدون أي
+// طلب شبكة) عشان نعرف "فيه جلسة اتسجّلت على الجهاز ده قبل كده" قبل
+// حتى ما نستنى sbAuth.auth.getSession() اللي ممكن تحاول تجدّد
+// التوكن عبر الشبكة لو قرب ينتهي — وده بالظبط سبب مشكلة Cold Start
+// أوفلاين: لو التوكن منتهي والجهاز أوفلاين، getSession() بترجع
+// session:null بدل ما تسيب الجلسة المحلية زي ما هي (تفصيل موثّق في
+// تقرير الإصلاح).
+const SB_STORAGE_KEY = `sb-${new URL(SB_URL).hostname.split('.')[0]}-auth-token`;
+function readRawLocalSession(){
+  try {
+    const raw = localStorage.getItem(SB_STORAGE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(parsed?.user?.id && parsed?.access_token) return parsed;
+  } catch(e){}
+  return null;
+}
+
+// حالة تسجيل الدخول الفعلية — أدق من "فيه currentUser ولا لأ" بس،
+// عشان أي كود تاني (Auth Guards) يقدر يفرّق بوضوح بين "شبكة مش
+// موجودة" و"فعلاً مش مسجّل دخول"
+// authenticated | unauthenticated | offline_session | auth_checking
+let authState = 'auth_checking';
+
 async function restoreSession(){
   showLoading('جاري الدخول...');
+  authState = 'auth_checking';
   try {
-    // supabase-js بيخزن الجلسة في localStorage ويقراها محليًا من غير
-    // نداء شبكة — شغالة حتى لو أوفلاين
-    const { data } = await sbAuth.auth.getSession();
-    const session = data?.session;
-    if(!session){ return; }
+    const rawLocal = readRawLocalSession();
+    if(!rawLocal){
+      // مفيش أي جلسة اتسجّلت على الجهاز ده قبل كده خالص — صح إنه
+      // يروح لشاشة الدخول (بند: أول مستخدم جديد ميتخطاش Auth أوفلاين)
+      authState = 'unauthenticated';
+      return;
+    }
+
+    let session = null;
+    let authRejected = false; // رفض حقيقي من السيرفر (مش مجرد فشل شبكة)
+    try {
+      const { data, error } = await fetchWithTimeout(sbAuth.auth.getSession(), 8000);
+      session = data?.session || null;
+      // status رقم HTTP معناه فعلاً وصل رد من السيرفر (رفض حقيقي)،
+      // مش استثناء شبكة/timeout من غير رد خالص
+      if(error && typeof error.status==='number') authRejected = true;
+    } catch(netErr){ /* فشل شبكة/timeout — هنكمل بالجلسة المحلية تحت */ }
+
+    if(session){
+      authState = 'authenticated';
+    } else if(authRejected){
+      // رفض صريح (توكن اتلغى فعلاً، حساب اتحذف...إلخ) — ده مختلف عن
+      // مجرد عدم وجود شبكة، صح نرجّعه لشاشة الدخول
+      authState = 'unauthenticated';
+      return;
+    } else {
+      // فشل الشبكة بس (أوفلاين أو مهلة) — عندنا جلسة محلية صالحة
+      // الشكل، كمّل بيها بدل ما نطرد المستخدم من نسخته المحلية
+      session = rawLocal;
+      authState = 'offline_session';
+    }
+
     let profile = null;
-    if(navigator.onLine){
+    if(isOnline && authState==='authenticated'){
       try {
         const rows = await fetchWithTimeout(SB.get(`profiles?id=eq.${session.user.id}&select=*`), 6000);
         if(rows.length){
@@ -2104,9 +2175,44 @@ async function restoreSession(){
       if(cached && cached.id===session.user.id) profile = cached;
     }
     if(profile){ currentUser = profile; await afterLogin(); }
-  } catch(e){ /* تعذّر تمامًا — سيب المستخدم على شاشة الدخول */ }
+    else if(authState==='offline_session'){
+      // جلسة محلية موجودة بس مفيش أي بروفايل متكاش أبدًا على الجهاز
+      // ده (نادر جدًا — معناه المستخدم ده مادخلش أوفلاين قبل كده)
+      authState = 'unauthenticated';
+    }
+  } catch(e){
+    authState = 'unauthenticated';
+    /* تعذّر تمامًا — سيب المستخدم على شاشة الدخول */
+  }
   finally { hideLoading(); }
 }
+
+// ── Startup Error Boundary — لو الإقلاع فضل معلّق (Loading Overlay
+//    ظاهر ومفيش أي شاشة استقرت) لمدة طويلة غير طبيعية، اعرض خيار
+//    "إعادة المحاولة" بدل ما نسيب المستخدم قدام Spinner للأبد ──
+let startupWatchdog = null;
+function clearStartupWatchdog(){ if(startupWatchdog){ clearTimeout(startupWatchdog); startupWatchdog=null; } }
+function armStartupWatchdog(){
+  startupWatchdog = setTimeout(()=>{
+    const overlay = document.getElementById('loading-overlay');
+    const mainActive = document.getElementById('screen-main')?.classList.contains('active');
+    const stillLoading = overlay && !overlay.classList.contains('hidden');
+    if(stillLoading && !mainActive){
+      document.getElementById('startup-error-boundary')?.classList.remove('hidden');
+      const localBtn = document.getElementById('startup-boundary-local-btn');
+      if(localStorage.getItem('awwab-user-cache') && localBtn) localBtn.style.display='';
+    }
+  }, 12000);
+}
+function startupBoundaryUseLocal(){
+  document.getElementById('startup-error-boundary')?.classList.add('hidden');
+  hideLoading();
+  try {
+    const cached = JSON.parse(localStorage.getItem('awwab-user-cache')||'null');
+    if(cached){ currentUser = cached; authState = 'offline_session'; afterLogin(); }
+  } catch(e){}
+}
+armStartupWatchdog();
 restoreSession();
 
 // ════════════════════════════════════════════
@@ -2654,7 +2760,10 @@ async function afterLogin(){
   showLoading('جاري التحضير...');
   try {
     localDB = await openLocalDB(currentUser.id);
-    if(!navigator.onLine){
+    // authState==='offline_session' هي الإشارة الأدق (جاية من جلسة
+    // محلية فعلية فشلت تتجدّد بسبب الشبكة، مش من navigator.onLine
+    // اللي ممكن يكذب) — isOnline زي fallback إضافي بس
+    if(authState==='offline_session' || !isOnline){
       // أوفلاين: من غير فحص شبكي — اعتمد على آخر حالة onboarding معروفة محليًا
       if(currentUser.onboarding_done){ await enterMain(); }
       else { hideLoading(); showToast('يحتاج أوّاب اتصالًا بالإنترنت عند الاستخدام الأول',true); showScreen('login'); }
@@ -2744,7 +2853,9 @@ async function enterMain(){
   document.getElementById('settings-username').textContent=currentUser.display_name;
   document.getElementById('admin-settings-group').style.display = currentUser.role==='admin' ? '' : 'none';
   viewDate = getToday();
-  isOnline = navigator.onLine;
+  // navigator.onLine بس على الويب — على أندرويد النيتف isOnline
+  // أصلاً بيتحدّث من Network plugin (أدق)، ماينفعش نكتبه فوقه هنا
+  if(!IS_NATIVE) isOnline = navigator.onLine;
   updateSyncBadge();
   if(isOnline && localDB){
     const meta = await localDB.meta.get('lastSyncedAt');
