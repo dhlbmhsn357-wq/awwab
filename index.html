@@ -316,6 +316,12 @@ button{ -webkit-tap-highlight-color:transparent; }
 .hint-once svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;}
 .hint-once .hx-close{margin-inline-start:auto;background:none;border:none;color:#06251F;cursor:pointer;opacity:.7;padding:0 .2rem;flex-shrink:0;}
 
+/* أيقونة التحديث في الهيدر */
+.update-icon-btn{position:relative;color:var(--primary);}
+.update-icon-btn::after{content:'';position:absolute;top:5px;inset-inline-end:5px;width:7px;height:7px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--surface-1);animation:updatePulse 1.8s ease-in-out infinite;}
+@keyframes updatePulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.25);opacity:.7;}}
+@media(prefers-reduced-motion:reduce){.update-icon-btn::after{animation:none;}}
+
 /* weekly goals compact */
 .weekly-goals-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card);}
 .wg-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);margin-bottom:.5rem;}
@@ -755,6 +761,7 @@ body.has-offline-banner .main-header{top:34px;}
   <header class="main-header">
     <div class="header-brand"><span class="brand-mark"></span>أوّاب</div>
     <div class="header-user">
+      <button class="icon-btn update-icon-btn" id="update-icon-btn" style="display:none" onclick="openUpdateFromIcon()" aria-label="تحديث متاح" title="تحديث متاح"><span data-icon="downloadCloud" data-size="18"></span></button>
       <button class="icon-btn subtle" onclick="openSettingsPanel()" aria-label="الإعدادات" title="الإعدادات"><span data-icon="settings" data-size="18"></span></button>
       <div class="user-avatar" id="hdr-avatar"></div>
       <span id="hdr-name" style="display:none"></span>
@@ -1514,7 +1521,7 @@ if(IS_NATIVE){
       if(!isActive) return;
       collectAndSyncWidgetSnapshot(); // اعرض حالة اليوم المحلية فورًا (Local-first) قبل ما ننتظر نتيجة الشبكة
       checkWidgetPinResultOnResume();
-      checkForAppUpdate();
+      checkForUpdatesUnified(); // حدّث أيقونة التحديث عند الرجوع من الخلفية
       reminderLifecycleResync(); // أعِد تسليح التذكيرات (يغطّي تغيّر اليوم/إعادة التشغيل)
       (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
         isOnline = !!s.connected;
@@ -1660,6 +1667,62 @@ async function checkForAppUpdate(force){
   } catch(e){
     if(force) showToast('تعذّر التحقق من التحديثات، حاول تاني لاحقًا', true);
   }
+}
+
+// ════════════════════════════════════════════
+//  أيقونة التحديث الموحّدة (ويب + نيتف) — بتظهر لكل المستخدمين أول ما
+//  يفتحوا لو فيه إصدار أحدث، يضغطوا عليها فيتحدّثوا ويشوفوا مزايا
+//  التحديث باختصار. على النيتف = تحميل APK وتثبيت؛ على الويب = عرض
+//  الجديد + إعادة تحميل تجيب أحدث كود.
+// ════════════════════════════════════════════
+const APP_SEEN_VERSION_KEY = 'awwab-seen-version';
+let _latestRelease = null;
+async function checkForUpdatesUnified(){
+  try {
+    const r = await fetch(UPDATE_CHECK_URL, {cache:'no-store'});
+    if(!r.ok) return;
+    const rel = await r.json();
+    if(!rel || !rel.version) return;
+    _latestRelease = rel;
+    let isNew = false;
+    if(IS_NATIVE){
+      let installed = 0;
+      try { const { App } = window.Capacitor.Plugins; const info = await App.getInfo(); installed = parseInt(info.build,10)||0; } catch(e){}
+      isNew = (rel.versionCode||0) > installed; // تحديث حقيقي فوق المثبّت
+    } else {
+      // الويب بيتحدّث تلقائيًا عند إعادة التحميل — الأيقونة "الجديد في
+      // هذا الإصدار" لما الإصدار المنشور يختلف عن آخر واحد شافه المستخدم
+      isNew = localStorage.getItem(APP_SEEN_VERSION_KEY) !== rel.version;
+    }
+    const icon = document.getElementById('update-icon-btn');
+    if(icon) icon.style.display = isNew ? 'flex' : 'none';
+  } catch(e){ /* أوفلاين أو الملف مش متاح — الأيقونة تفضل مخفية */ }
+}
+function openUpdateFromIcon(){
+  const rel = _latestRelease; if(!rel) return;
+  if(IS_NATIVE) showUpdateSheet(rel);
+  else showWebWhatsNew(rel);
+}
+function showWebWhatsNew(rel){
+  if(document.getElementById('whatsnew-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='whatsnew-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px;text-align:center">
+    <div class="modal-title">تحديث جديد لأوّاب</div>
+    <p style="font-size:13px;color:var(--text-2);margin:.3rem 0 0">الإصدار ${esc(rel.version)}</p>
+    ${rel.releaseNotes?`<p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-top:.5rem">${esc(rel.releaseNotes)}</p>`:''}
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="m-cancel" onclick="document.getElementById('whatsnew-overlay').remove()">لاحقًا</button>
+      <button class="m-save" onclick="applyWebUpdate()">تحديث الآن</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function applyWebUpdate(){
+  try { if(_latestRelease) localStorage.setItem(APP_SEEN_VERSION_KEY, _latestRelease.version); } catch(e){}
+  try { if(swWaiting) swWaiting.postMessage('SKIP_WAITING'); } catch(e){}
+  const icon = document.getElementById('update-icon-btn'); if(icon) icon.style.display='none';
+  document.getElementById('whatsnew-overlay')?.remove();
+  location.reload();
 }
 
 function showUpdateSheet(release){
@@ -2400,6 +2463,7 @@ const ICON_PATHS = {
   alarmClock: '<circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.5"/><path d="M5 3 2.5 5.5"/><path d="M19 3l2.5 2.5"/>',
   userMinus: '<circle cx="9" cy="8" r="3.4"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16.5 11.5h5"/>',
   ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
+  downloadCloud: '<path d="M7 18a4.5 4.5 0 0 1-.5-8.97 5.5 5.5 0 0 1 10.9 1.17A4 4 0 0 1 17 18"/><path d="M12 12v6"/><path d="M9 15.5 12 18.5l3-3"/>',
 };
 function ICON(name, size){
   size = size || 20;
@@ -2921,10 +2985,7 @@ const TOUR_STEPS = [
   { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
     getTarget:()=>document.getElementById('install-settings-group'),
     skipIf:()=>isStandaloneMode() || IS_NATIVE || isAndroidUA() },
-  { route:'settings', title:'ودجت أوّاب على شاشتك الرئيسية', body:'أضف ودجت أوّاب لتشاهد تقدم يومك والعبادة التالية دون الحاجة لفتح التطبيق.',
-    getTarget:()=>document.getElementById('widget-settings-group'),
-    skipIf:()=>!IS_NATIVE },
-  { route:'settings', title:'أضفها الآن', body:'اضغط هنا وسيطلب منك أندرويد إضافة ودجت أوّاب مباشرة إلى شاشتك الرئيسية.',
+  { route:'settings', title:'أضف ودجت أوّاب', body:'ودجت تعرض تقدم يومك والعبادة التالية على شاشتك الرئيسية دون فتح التطبيق. اضغط "إضافة الودجت" وسيطلب منك أندرويد إضافتها مباشرة.',
     getTarget:()=>document.getElementById('widget-add-btn'),
     actionLabel:'إضافة الودجت', onAction:()=>onAddWidgetClick(),
     skipIf:()=>!IS_NATIVE },
@@ -2983,15 +3044,19 @@ function renderTourStepUI(step, target, index){
   tip.className='tour-tooltip'; tip.id='tour-tooltip';
   tip.setAttribute('role','dialog');
   tip.setAttribute('aria-modal','true');
+  // العدّاد يحسب الخطوات الظاهرة فقط (المتخطّاة بـskipIf متتحسبش)،
+  // عشان الترقيم يبقى صح على كل جهاز (نيتف/ويب/آيفون)
+  const visibleSteps = TOUR_STEPS.filter(s=>!(s.skipIf && s.skipIf()));
+  const visPos = visibleSteps.indexOf(step)+1 || (index+1);
   tip.innerHTML = `
-    <div class="tour-tooltip-progress">${index+1} / ${TOUR_STEPS.length}</div>
+    <div class="tour-tooltip-progress">${visPos} / ${visibleSteps.length}</div>
     <div class="tour-tooltip-title">${esc(step.title)}</div>
     <div class="tour-tooltip-body">${esc(step.body)}</div>
     <div class="tour-tooltip-actions">
       <button class="tour-btn tour-btn-skip" onclick="tourSkipAll()">تخطي</button>
       ${index>0?`<button class="tour-btn tour-btn-prev" onclick="tourPrev()">السابق</button>`:''}
       ${step.actionLabel?`<button class="tour-btn tour-btn-next" onclick="window._tourStepAction && window._tourStepAction()">${esc(step.actionLabel)}</button>`:''}
-      <button class="tour-btn tour-btn-next" id="tour-next-btn" onclick="tourNext()">${index===TOUR_STEPS.length-1?'إنهاء':'التالي'}</button>
+      <button class="tour-btn tour-btn-next" id="tour-next-btn" onclick="tourNext()">${visPos>=visibleSteps.length?'إنهاء':'التالي'}</button>
     </div>`;
   document.body.appendChild(hl);
   document.body.appendChild(tip);
@@ -3347,7 +3412,7 @@ async function enterMain(){
     }
   }
   initTourCheck();
-  checkForAppUpdate(); // بدون await — فحص خلفي، مايأخّرش فتح التطبيق خالص
+  checkForUpdatesUnified(); // أيقونة تحديث لكل المستخدمين (ويب + نيتف) لو فيه إصدار أحدث
   rescheduleAllReminders(); // دلوقتي worships + dayLogsMap اتحمّلوا، فتذكيرات العبادات تتجدول صح
 }
 
@@ -4872,9 +4937,20 @@ function openCompanionWhatsapp(userId){
   </div>`;
   document.body.appendChild(el);
 }
+// wa.me محتاج رقم دولي بدون + أو 00 أو صفر بادئ محلي. بنطبّع الرقم
+// عشان المستخدم يكتبه محلي عادي (01227958232) ويشتغل. الرقم المحلي
+// اللي بيبدأ بصفر بنفترضه مصري (كود 20) — غيّر DEFAULT_CC لو لزم.
+const DEFAULT_CC = '20';
+function normalizeWhatsapp(raw){
+  let n = String(raw||'').replace(/[^0-9+]/g,'');
+  if(n.startsWith('+')) n = n.slice(1);
+  if(n.startsWith('00')) n = n.slice(2);          // بادئة دولية 00
+  else if(n.startsWith('0')) n = DEFAULT_CC + n.slice(1); // رقم محلي → أضف كود الدولة
+  return n.replace(/[^0-9]/g,'');
+}
 function sendCompanionWhatsapp(number){
   const msg = document.getElementById('wa-msg')?.value || '';
-  const clean = String(number).replace(/[^0-9]/g,'');
+  const clean = normalizeWhatsapp(number);
   document.getElementById('wa-overlay')?.remove();
   const url = `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
