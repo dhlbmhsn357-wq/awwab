@@ -301,10 +301,20 @@ button{ -webkit-tap-highlight-color:transparent; }
 .companion-card .cc-encourage{font-size:11.5px;color:var(--primary);margin-top:.25rem;}
 .companion-card .cc-needs{display:flex;align-items:center;gap:.3rem;font-size:11.5px;color:var(--accent);margin-top:.25rem;}
 .companion-card .cc-needs svg{width:12px;height:12px;}
-.companion-card .cc-side{display:flex;gap:.3rem;flex-shrink:0;}
-.cc-icon-btn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.cc-icon-btn.wa{color:#25D366;}
-.cc-icon-btn svg{width:15px;height:15px;}
+.companion-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.5rem;box-shadow:var(--shadow-card);overflow:hidden;}
+.companion-wrap .companion-card{border:none;box-shadow:none;margin:0;background:transparent;}
+.cc-action-bar{display:flex;border-top:1px solid var(--border);}
+.cc-act{flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;padding:.6rem .3rem;background:none;border:none;border-inline-start:1px solid var(--border);color:var(--text-2);font-size:12px;font-weight:700;cursor:pointer;}
+.cc-act:first-child{border-inline-start:none;}
+.cc-act:active{background:var(--surface-2);}
+.cc-act.wa{color:#1FA855;}
+.cc-act svg{width:15px;height:15px;}
+.sohba-settings-btn{display:inline-flex;align-items:center;gap:.35rem;background:var(--surface-2);border:1px solid var(--border);border-radius:99px;padding:.4rem .8rem;font-size:12px;font-weight:700;color:var(--text-1);cursor:pointer;}
+.sohba-settings-btn svg{width:15px;height:15px;}
+.sohba-guide{background:var(--primary-tint);border:1px solid var(--border);border-radius:var(--r-md);padding:.8rem .9rem;margin:.7rem 0 .9rem;}
+.sohba-guide .sg-title{display:flex;align-items:center;gap:.4rem;font-weight:800;font-size:var(--fs-caption);color:var(--text-1);margin-bottom:.5rem;}
+.sohba-guide .sg-title svg{width:15px;height:15px;color:var(--primary);}
+.sohba-guide .sg-steps{font-size:11.5px;color:var(--text-2);line-height:1.9;}
 .companion-card .cc-actions{display:flex;flex-direction:column;gap:.35rem;flex-shrink:0;}
 .cc-btn{font-size:12px;font-weight:700;border-radius:var(--r-sm);padding:.4rem .8rem;cursor:pointer;border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);white-space:nowrap;}
 .cc-btn.primary{background:var(--primary);border-color:var(--primary);color:#06251F;}
@@ -570,7 +580,8 @@ span[data-icon]{display:inline-flex;align-items:center;justify-content:center;}
 .btn-del{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--r-sm);padding:.3rem .6rem;font-size:11px;cursor:pointer;font-weight:600;}
 .add-member-form{display:flex;gap:.5rem;margin-top:var(--sp-3);min-width:0;}
 .add-member-form input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .8rem;color:var(--text-1);font-size:var(--fs-caption);outline:none;height:42px;box-sizing:border-box;}
-.btn-add{background:var(--primary);border:none;border-radius:var(--r-sm);color:#06251F;padding:0 var(--sp-4);font-size:var(--fs-caption);font-weight:700;cursor:pointer;white-space:nowrap;height:42px;}
+.btn-add{background:var(--primary);border:none;border-radius:var(--r-sm);color:#06251F;padding:0 var(--sp-4);font-size:var(--fs-caption);font-weight:700;cursor:pointer;white-space:nowrap;height:42px;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;}
+.btn-add svg{width:15px;height:15px;flex-shrink:0;}
 
 .notes-textarea{width:100%;min-height:80px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.75rem .9rem;color:var(--text-1);font-size:var(--fs-caption);resize:vertical;outline:none;line-height:1.6;box-shadow:var(--shadow-card);}
 .notes-textarea:focus{border-color:var(--primary);}
@@ -4642,6 +4653,52 @@ async function checkNewEncouragements(){
       localStorage.setItem('awwab-enc-seen-'+currentUser.id, rows[0].created_at);
     }
   } catch(e){}
+  // طلبات الصحبة الواردة — بانر واضح قابل للضغط يودّي لصحبتي للقبول/الرفض
+  checkIncomingCompanionRequests();
+}
+
+// بانر طلب صحبة وارد — يظهر أول ما تفتح لو فيه طلب معلّق، والضغط
+// يوديك لصحبتي مباشرة (مش رسالة تشجيع غلط زي ما كان)
+async function checkIncomingCompanionRequests(){
+  if(!isOnline || !currentUser) return;
+  if(sessionStorage.getItem('awwab-comp-req-banner-shown')==='1') return;
+  try {
+    const reqs = await companionRPC('get_companion_requests');
+    const incoming = (reqs||[]).filter(r=>r.direction==='incoming');
+    if(!incoming.length) return;
+    sessionStorage.setItem('awwab-comp-req-banner-shown','1');
+    setTimeout(()=>showCompanionRequestBanner(incoming), 1400);
+  } catch(e){}
+}
+function showCompanionRequestBanner(incoming){
+  if(document.getElementById('comp-req-banner')) return;
+  const one = incoming[0];
+  const title = incoming.length===1
+    ? `${esc(one.other_name)} يدعوك لصحبة تفقّد`
+    : `لديك ${incoming.length} طلبات صحبة جديدة`;
+  const el = document.createElement('div');
+  el.className='install-banner above-nav'; el.id='comp-req-banner';
+  el.innerHTML = `
+    <div class="install-banner-icon" style="display:flex;align-items:center;justify-content:center;background:var(--primary-tint);color:var(--primary)">${ICON('heartHandshake',22)}</div>
+    <div class="install-banner-body">
+      <div class="install-banner-title">${title}</div>
+      <div class="install-banner-desc">للتواصي والتشجيع على الثبات — اضغط للردّ.</div>
+      <div class="install-banner-actions">
+        <button class="install-banner-btn" onclick="openCompanionRequestsFromBanner()">عرض الطلب</button>
+        <button class="install-banner-later" onclick="dismissCompanionRequestBanner()">لاحقًا</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+}
+function dismissCompanionRequestBanner(){
+  const el = document.getElementById('comp-req-banner'); if(!el) return;
+  el.classList.remove('show'); setTimeout(()=>el.remove(),320);
+}
+function openCompanionRequestsFromBanner(){
+  dismissCompanionRequestBanner();
+  const btn = document.querySelector('.bn-btn[data-tab="rafeqa"]');
+  if(btn){ switchTab('rafeqa', btn); _rafeqaSub='sohba'; switchRafeqaSub('sohba'); }
 }
 
 // ════════════════════════════════════════════
@@ -4674,6 +4731,11 @@ function hintOnce(key, text){
 
 function renderRafeqaPanel(){
   if(_rafeqaSub==='sohba') renderSohba(); else renderRafeqa();
+}
+// من صحبتي → تبويب رفقة أوّاب (مكان إضافة الأصحاب)
+function goToRafeqaFeed(){
+  switchRafeqaSub('feed');
+  hintOnce('add-companion','اضغط على أي شخص هنا ثم اختر «طلب صحبة للتفقد».');
 }
 function switchRafeqaSub(which){
   _rafeqaSub = which;
@@ -4716,17 +4778,29 @@ function sohbaHTML(companions, requests, offline){
   const outgoing = requests.filter(r=>r.direction==='outgoing');
   let html = `<div class="sohba-top">
     <div class="sohba-count">صحبتي · ${companions.length}/5</div>
-    <button class="icon-btn subtle" onclick="openCompanionSettings()" aria-label="إعدادات المشاركة" title="إعدادات المشاركة">${ICON('settings',17)}</button>
-  </div>
-  <div class="sr-desc" style="margin-bottom:.7rem">رفقة خاصة للتواصي والتشجيع على الثبات.</div>`;
+    <button class="sohba-settings-btn" onclick="openCompanionSettings()">${ICON('settings',15)}<span>إعدادات المشاركة</span></button>
+  </div>`;
 
   if(offline){
     html += `<div class="sohba-offline-note">${ICON('circleAlert',14)} أنت غير متصل — العرض من آخر نسخة محفوظة، والإجراءات تحتاج اتصالًا.</div>`;
   }
 
-  // "أحتاج تفقدًا"
+  // بطاقة إرشادية: بتوضّح للي بيدخل الصفحة أول مرة يعمل إيه بالظبط
+  html += `<div class="sohba-guide">
+    <div class="sg-title">${ICON('heartHandshake',15)} إزاي تستخدم صحبتي؟</div>
+    <div class="sg-steps">
+      <div>· <b>أضف صحبة</b>: من تبويب «رفقة أوّاب» اضغط على أي شخص وابعتله طلب صحبة.</div>
+      <div>· <b>شارك ما تريد فقط</b>: من «إعدادات المشاركة» فوق تتحكم في اللي أصحابك يشوفوه.</div>
+      <div>· <b>تفقّد أصحابك</b>: من كل بطاقة تقدر تشجّعه، تراسله واتساب، أو تجدول تذكيرًا لتفقّده.</div>
+    </div>
+  </div>`;
+
   if(!offline){
-    html += `<button class="btn-add" style="width:100%;justify-content:center;margin-bottom:.9rem" onclick="openNeedCheckinSheet()">${ICON('heartHandshake',15)}أحتاج بعض التشجيع اليوم</button>`;
+    // أزرار رئيسية واضحة: أضف صحبة (يوديك للتبويب الصح) + أحتاج تشجيعًا
+    html += `<div style="display:flex;gap:.5rem;margin-bottom:.9rem">
+      <button class="btn-add" style="flex:1" onclick="goToRafeqaFeed()">${ICON('users',15)}أضف صحبة</button>
+      <button class="btn-add" style="flex:1;background:var(--surface-2);color:var(--text-1);border:1px solid var(--border)" onclick="openNeedCheckinSheet()">${ICON('heartHandshake',15)}أحتاج تشجيعًا</button>
+    </div>`;
   }
 
   // طلبات واردة
@@ -4778,13 +4852,14 @@ function companionCardHTML(c, i){
       ${enc.length?`<div class="cc-encourage">يحتاج تشجيعًا في: ${esc(enc.join('، '))}</div>`:''}
       ${c.needs_checkin?`<div class="cc-needs">${ICON('heartHandshake',12)} ${esc(c.needs_checkin_note||'يحتاج بعض التشجيع اليوم')}</div>`:''}
     </div>
-    <div class="cc-side">
-      <button class="cc-icon-btn" onclick="encourageCompanion('${c.user_id}',this)" title="شجّعه">${ICON('heart',15)}</button>
-      ${c.whatsapp?`<button class="cc-icon-btn wa" onclick="openCompanionWhatsapp('${c.user_id}')" title="واتساب">${ICON('messageCircle',15)}</button>`:''}
-      <button class="cc-icon-btn" onclick="openCompanionManage('${c.comp_id}','${esc(c.display_name||'').replace(/'/g,"\\'")}')" title="إدارة">${ICON('moreVertical',15)}</button>
-    </div>
   </div>`;
-  return html;
+  // شريط إجراءات بأزرار عليها كلام واضح (مش أيقونات مبهمة)
+  html += `<div class="cc-action-bar">
+    <button class="cc-act" onclick="encourageCompanion('${c.user_id}',this)">${ICON('heart',15)}<span>تشجيع</span></button>
+    ${c.whatsapp?`<button class="cc-act wa" onclick="openCompanionWhatsapp('${c.user_id}')">${ICON('messageCircle',15)}<span>واتساب</span></button>`:''}
+    <button class="cc-act" onclick="openCompanionManage('${c.comp_id}','${esc(c.display_name||'').replace(/'/g,"\\'")}')">${ICON('alarmClock',15)}<span>تفقّد وإدارة</span></button>
+  </div>`;
+  return `<div class="companion-wrap">${html}</div>`;
 }
 
 // ── إجراءات (كلها online-only، مش بتتأكد إلا بعد رد السيرفر — بند 62) ──
