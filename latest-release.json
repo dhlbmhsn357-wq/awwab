@@ -1,11 +1,11 @@
 {
-  "version": "1.1.1",
-  "versionCode": 3,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.1.1/Awwab-Android-v1.1.1.apk",
-  "fileSize": 4858743,
-  "sha256": "a53f4e9d7d804935c98911d96970e7a557431050d968bd6d8e8cc8254bce0c9e",
-  "releaseNotes": "إصلاح جذري لمشكلة فتح التطبيق أوفلاين من الصفر — كان بيرجّعك لصفحة الدخول أحيانًا رغم إنك مسجّل دخول.",
+  "version": "1.2.0",
+  "versionCode": 4,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.0/Awwab-Android-v1.2.0.apk",
+  "fileSize": 4873871,
+  "sha256": "aea3db4576cac29a217b7e24a6c835c23f5ed5cf90792049179662265f6a8350",
+  "releaseNotes": "ثوابت اليوم: ثبّت عباداتك المهمة أعلى يومك. مواعيد تذكير متعددة بالساعة والدقيقة وأيام محددة. صحبتي: رفقة خاصة للتواصي والتشجيع، بخصوصية كاملة تتحكم فيها.",
   "mandatory": false,
-  "releasedAt": "2026-08-27T20:23:37Z",
-  "publishedAt": "2026-08-27T20:23:37Z"
+  "releasedAt": "2026-08-29T01:51:55Z",
+  "publishedAt": "2026-08-29T01:51:55Z"
 }
