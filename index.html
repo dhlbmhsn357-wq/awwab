@@ -454,6 +454,19 @@ button{ -webkit-tap-highlight-color:transparent; }
 .m-save:hover{filter:brightness(1.05);}
 .m-danger{background:var(--danger-tint);color:var(--danger);border:1px solid var(--danger) !important;}
 
+/* قائمة إجراءات احترافية داخل الـsheets (بدل الأزرار المستطيلة الصغيرة) */
+.sheet-action-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.3rem;}
+.sheet-action{display:flex;align-items:center;gap:.75rem;width:100%;padding:.7rem .85rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);font-size:var(--fs-card-title);font-weight:600;color:var(--text-1);cursor:pointer;text-align:start;transition:background var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease);}
+.sheet-action:active{background:var(--surface-3);transform:scale(.985);}
+.sheet-action .sa-ic{width:36px;height:36px;border-radius:11px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sheet-action .sa-ic svg{width:18px;height:18px;}
+.sheet-action .sa-txt{flex:1;min-width:0;}
+.sheet-action .sa-sub{display:block;font-size:11.5px;font-weight:500;color:var(--text-3);margin-top:.12rem;}
+.sheet-action.danger{color:var(--danger);}
+.sheet-action.danger .sa-ic{background:var(--danger-tint);color:var(--danger);}
+.sheet-action .sa-chev{color:var(--text-3);flex-shrink:0;}
+.sheet-action .sa-chev svg{width:16px;height:16px;}
+
 /* forms */
 .field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem var(--sp-4);color:var(--text-1);font-size:var(--fs-body);outline:none;min-height:46px;}
 .field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint);}
@@ -1077,13 +1090,13 @@ body.has-offline-banner .main-header{top:34px;}
   <div class="modal-sheet" style="max-width:380px">
     <div class="sheet-handle"></div>
     <div class="modal-title" id="am-title"></div>
-    <div style="display:flex;flex-direction:column;gap:.4rem">
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pin')" id="am-pin-btn"><span data-icon="pin" data-size="16"></span>ثبّت في يومي</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('edit')"><span data-icon="pencil" data-size="16"></span>تعديل</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('duplicate')"><span data-icon="copy" data-size="16"></span>تكرار</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pause')" id="am-pause-btn"><span data-icon="pause" data-size="16"></span>إيقاف مؤقت</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('hide')" id="am-hide-btn"><span data-icon="eyeOff" data-size="16"></span>إخفاء</button>
-      <button class="m-danger" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('delete')"><span data-icon="trash" data-size="16"></span>حذف</button>
+    <div class="sheet-action-list">
+      <button class="sheet-action" onclick="worshipAction('pin')" id="am-pin-btn"><span class="sa-ic"><span data-icon="pin" data-size="18"></span></span><span class="sa-txt">ثبّت في يومي</span></button>
+      <button class="sheet-action" onclick="worshipAction('edit')"><span class="sa-ic"><span data-icon="pencil" data-size="18"></span></span><span class="sa-txt">تعديل</span></button>
+      <button class="sheet-action" onclick="worshipAction('duplicate')"><span class="sa-ic"><span data-icon="copy" data-size="18"></span></span><span class="sa-txt">تكرار</span></button>
+      <button class="sheet-action" onclick="worshipAction('pause')" id="am-pause-btn"><span class="sa-ic"><span data-icon="pause" data-size="18"></span></span><span class="sa-txt">إيقاف مؤقت</span></button>
+      <button class="sheet-action" onclick="worshipAction('hide')" id="am-hide-btn"><span class="sa-ic"><span data-icon="eyeOff" data-size="18"></span></span><span class="sa-txt">إخفاء</span></button>
+      <button class="sheet-action danger" onclick="worshipAction('delete')"><span class="sa-ic"><span data-icon="trash" data-size="18"></span></span><span class="sa-txt">حذف</span></button>
     </div>
     <div class="modal-actions"><button class="m-cancel" onclick="closeActionModal()">إغلاق</button></div>
   </div>
@@ -4319,12 +4332,14 @@ function openActionModal(id){
   actionWorshipId = id;
   const w = worships.find(x=>x.id===id);
   document.getElementById('am-title').textContent = w.name;
-  document.getElementById('am-pause-btn').innerHTML = ICON(w.is_paused?'play':'pause',16) + (w.is_paused ? 'إعادة تفعيل' : 'إيقاف مؤقت');
-  document.getElementById('am-hide-btn').innerHTML = ICON(w.is_hidden?'eye':'eyeOff',16) + (w.is_hidden ? 'إظهار' : 'إخفاء');
+  const saRow = (icon,label)=>`<span class="sa-ic"><span data-icon="${icon}" data-size="18"></span></span><span class="sa-txt">${label}</span>`;
+  document.getElementById('am-pause-btn').innerHTML = saRow(w.is_paused?'play':'pause', w.is_paused ? 'إعادة تفعيل' : 'إيقاف مؤقت');
+  document.getElementById('am-hide-btn').innerHTML = saRow(w.is_hidden?'eye':'eyeOff', w.is_hidden ? 'إظهار' : 'إخفاء');
+  mountIcons(document.getElementById('action-modal'));
   // زر التثبيت — بيتحدّث حسب حالة العبادة الحالية
   isWorshipPinned(id).then(pinned=>{
     const btn = document.getElementById('am-pin-btn');
-    if(btn) btn.innerHTML = ICON(pinned?'pinOff':'pin',16) + (pinned ? 'إلغاء التثبيت' : 'ثبّت في يومي');
+    if(btn){ btn.innerHTML = saRow(pinned?'pinOff':'pin', pinned ? 'إلغاء التثبيت' : 'ثبّت في يومي'); mountIcons(btn); }
   });
   document.getElementById('action-modal').classList.remove('hidden');
 }
@@ -4343,15 +4358,9 @@ function openPinScopeSheet(worshipId, name){
       <div class="sheet-handle"></div>
       <div class="modal-title">تثبيت "${esc(name)}"</div>
       <p style="font-size:12.5px;color:var(--text-3);line-height:1.6;margin:.2rem 0 .9rem">تظهر في "ثوابت اليوم" أعلى عباداتك عشان متنساهاش.</p>
-      <div style="display:flex;flex-direction:column;gap:.5rem">
-        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','today')">
-          <span style="font-weight:700;color:var(--text-1)">اليوم فقط</span>
-          <span style="font-size:11.5px;color:var(--text-3)">تظهر في ثوابت هذا اليوم فقط</span>
-        </button>
-        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','always')">
-          <span style="font-weight:700;color:var(--text-1)">دائمًا</span>
-          <span style="font-size:11.5px;color:var(--text-3)">تظهر كل يوم تكون فيه العبادة مجدولة</span>
-        </button>
+      <div class="sheet-action-list">
+        <button class="sheet-action" onclick="confirmPin('${worshipId}','today')"><span class="sa-ic">${ICON('calendar',18)}</span><span class="sa-txt">اليوم فقط<span class="sa-sub">تظهر في ثوابت هذا اليوم فقط</span></span></button>
+        <button class="sheet-action" onclick="confirmPin('${worshipId}','always')"><span class="sa-ic">${ICON('pin',18)}</span><span class="sa-txt">دائمًا<span class="sa-sub">تظهر كل يوم تكون فيه العبادة مجدولة</span></span></button>
       </div>
       <div class="modal-actions" style="margin-top:.9rem"><button class="m-cancel" onclick="document.getElementById('pin-scope-overlay').remove()">إلغاء</button></div>
     </div>`;
@@ -4871,9 +4880,9 @@ function openRafeqaUserSheet(userId, name){
   el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
     <div class="sheet-handle"></div>
     <div class="modal-title">${esc(name)}</div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="openSendRequestSheet('${userId}','${esc(name).replace(/'/g,"\\'")}')">${ICON('heartHandshake',16)}طلب صحبة للتفقد</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="document.getElementById('rf-user-overlay').remove();sendEncouragementById('${userId}')">${ICON('heart',16)}شجّعه</button>
+    <div class="sheet-action-list" style="margin-top:.5rem">
+      <button class="sheet-action" onclick="openSendRequestSheet('${userId}','${esc(name).replace(/'/g,"\\'")}')"><span class="sa-ic">${ICON('heartHandshake',18)}</span><span class="sa-txt">طلب صحبة للتفقّد<span class="sa-sub">تكوّنا صحبة تتواصوا على الثبات</span></span></button>
+      <button class="sheet-action" onclick="document.getElementById('rf-user-overlay').remove();sendEncouragementById('${userId}')"><span class="sa-ic">${ICON('heart',18)}</span><span class="sa-txt">شجّعه<span class="sa-sub">ابعتله رسالة تشجيع مجهولة</span></span></button>
     </div>
     <div class="modal-actions" style="margin-top:.8rem"><button class="m-cancel" onclick="document.getElementById('rf-user-overlay').remove()">إغلاق</button></div>
   </div>`;
@@ -4923,10 +4932,10 @@ function openCompanionManage(compId, name){
   el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
     <div class="sheet-handle"></div>
     <div class="modal-title">${esc(name)}</div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="openCheckinSchedule('${compId}','${esc(name).replace(/'/g,"\\'")}')">${ICON('alarmClock',16)}جدولة تفقده</button>
-      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="confirmRemoveCompanion('${compId}')">${ICON('userMinus',16)}إزالة من الصحبة</button>
-      <button class="m-danger" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="confirmBlockCompanion('${compId}')">${ICON('ban',16)}حظر</button>
+    <div class="sheet-action-list" style="margin-top:.5rem">
+      <button class="sheet-action" onclick="openCheckinSchedule('${compId}','${esc(name).replace(/'/g,"\\'")}')"><span class="sa-ic">${ICON('alarmClock',18)}</span><span class="sa-txt">جدولة تفقّده<span class="sa-sub">تذكير يذكّرك بالسؤال عنه</span></span></button>
+      <button class="sheet-action" onclick="confirmRemoveCompanion('${compId}')"><span class="sa-ic">${ICON('userMinus',18)}</span><span class="sa-txt">إزالة من الصحبة</span></button>
+      <button class="sheet-action danger" onclick="confirmBlockCompanion('${compId}')"><span class="sa-ic">${ICON('ban',18)}</span><span class="sa-txt">حظر</span></button>
     </div>
     <div class="modal-actions" style="margin-top:.8rem"><button class="m-cancel" onclick="document.getElementById('comp-manage-overlay').remove()">إغلاق</button></div>
   </div>`;
