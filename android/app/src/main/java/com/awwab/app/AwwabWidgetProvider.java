@@ -60,9 +60,9 @@ public class AwwabWidgetProvider extends AppWidgetProvider {
 
             String nextLabel = next != null && !next.isEmpty() ? next : null;
             // بادئة السطر: "ثابت اليوم" لو الأولوية لثابت غير مكتمل،
-            // وإلا "التالي" زي ما هو
-            String fmt = nextIsPin ? context.getString(R.string.widget_pin_format)
-                                   : context.getString(R.string.widget_next_format);
+            // وإلا "التالي" زي ما هو. لازم resource id (int) عشان
+            // getString(int, Object...) يعمل الـformatting صح.
+            int fmt = nextIsPin ? R.string.widget_pin_format : R.string.widget_next_format;
             if (privacyMode && nextLabel != null) {
                 // وضع الخصوصية: اسم العبادة نفسه مايتعرضش. لو ثابت،
                 // نعرض "ثابت اليوم"؛ غير كده "عبادتك التالية"
