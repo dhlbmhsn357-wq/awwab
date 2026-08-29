@@ -265,6 +265,19 @@ button{ -webkit-tap-highlight-color:transparent; }
 .catchup-card .cc-actions button{font-size:11.5px;font-weight:700;border-radius:var(--r-sm);padding:.3rem .65rem;cursor:pointer;border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);}
 .catchup-card .cc-actions button.primary{background:var(--accent);border-color:var(--accent);color:#2A2110;}
 
+/* ثوابت اليوم — compact جدًا، مش cards كبيرة */
+.pins-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.55rem .35rem .35rem;margin-bottom:var(--sp-3);}
+.pins-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);display:flex;align-items:center;gap:.4rem;padding:0 .55rem .35rem;}
+.pins-title svg{width:13px;height:13px;}
+.pin-row{display:flex;align-items:center;gap:.55rem;padding:.45rem .55rem;border-radius:var(--r-sm);cursor:pointer;}
+.pin-row:active{background:var(--surface-2);}
+.pin-row .pin-ic{width:22px;height:22px;border-radius:6px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pin-row .pin-ic svg{width:13px;height:13px;}
+.pin-row .pin-name{flex:1;font-size:var(--fs-caption);color:var(--text-1);font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pin-row .pin-status{font-size:11.5px;font-weight:700;color:var(--text-3);flex-shrink:0;}
+.pin-row.done{opacity:.62;}
+.pin-row.done .pin-status{color:var(--success);}
+
 /* weekly goals compact */
 .weekly-goals-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card);}
 .wg-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);margin-bottom:.5rem;}
@@ -293,6 +306,9 @@ button{ -webkit-tap-highlight-color:transparent; }
 
 /* ---------- Worship card v3 (compact) ---------- */
 .wcard{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.65rem .8rem;margin-bottom:.4rem;transition:all var(--dur-fast) var(--ease);box-shadow:var(--shadow-card);}
+.wcard-flash{animation:wcardFlash 1.4s var(--ease);}
+@keyframes wcardFlash{0%,100%{box-shadow:var(--shadow-card);border-color:var(--border);}25%,60%{box-shadow:0 0 0 2px var(--primary);border-color:var(--primary);}}
+@media(prefers-reduced-motion:reduce){.wcard-flash{animation:none;outline:2px solid var(--primary);}}
 .wcard.completed{border-color:color-mix(in srgb, var(--success) 35%, var(--border));background:var(--success-tint);}
 .wcard.missed{opacity:.7;}
 .wcard-top{display:flex;align-items:center;gap:.65rem;}
@@ -733,6 +749,7 @@ body.has-offline-banner .main-header{top:34px;}
       </div>
 
       <div id="catchup-slot"></div>
+      <div id="pins-slot"></div>
       <div class="reorder-toggle-row">
         <button class="reorder-toggle-btn" id="reorder-toggle-btn" onclick="toggleReorderMode()">
           <span data-icon="gripVertical" data-size="14"></span><span id="reorder-toggle-label">ترتيب اليوم</span>
@@ -992,6 +1009,7 @@ body.has-offline-banner .main-header{top:34px;}
     <div class="sheet-handle"></div>
     <div class="modal-title" id="am-title"></div>
     <div style="display:flex;flex-direction:column;gap:.4rem">
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pin')" id="am-pin-btn"><span data-icon="pin" data-size="16"></span>ثبّت في يومي</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('edit')"><span data-icon="pencil" data-size="16"></span>تعديل</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('duplicate')"><span data-icon="copy" data-size="16"></span>تكرار</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pause')" id="am-pause-btn"><span data-icon="pause" data-size="16"></span>إيقاف مؤقت</button>
@@ -1141,6 +1159,11 @@ async function openLocalDB(userId){
     syncQueue: '++qid, entityType, entityId, createdAt, syncStatus',
     meta: 'key',
   });
+  // v2: ثوابت اليوم (worship_pins). Dexie بيرقّي الـschema من غير أي
+  // فقدان للبيانات الموجودة — الجداول القديمة بتتنقل زي ما هي.
+  db.version(2).stores({
+    worshipPins: 'id, worship_id, scope, pin_date, syncStatus, deleted_at',
+  });
   await db.open();
   return db;
 }
@@ -1191,6 +1214,7 @@ async function processQueueItem(item){
   }
   else if(item.entityType==='daily_note') await SB.upsert('daily_notes', item.payload, 'user_id,date');
   else if(item.entityType==='fellowship_settings') await SB.upsert('fellowship_settings', item.payload, 'user_id');
+  else if(item.entityType==='worship_pin') await SB.upsert('worship_pins', item.payload, 'id'); // إلغاء التثبيت = upsert بـdeleted_at (tombstone)، نفس نمط حذف العبادة
   else return true; // نوع غير معروف — تجاهله بدل ما يعلّق الطابور
   await markLocalSynced(item.entityType, item.entityId);
   return true;
@@ -1202,6 +1226,7 @@ async function markLocalSynced(entityType, entityId){
     else if(entityType==='daily_log') await localDB.dailyLogs.update(entityId, {syncStatus:'synced'});
     else if(entityType==='daily_note') await localDB.dailyNotes.update(entityId, {syncStatus:'synced'});
     else if(entityType==='fellowship_settings') await localDB.fellowshipSettings.update(entityId, {syncStatus:'synced'});
+    else if(entityType==='worship_pin') await localDB.worshipPins.update(entityId, {syncStatus:'synced'});
   } catch(e){}
 }
 
@@ -1272,6 +1297,17 @@ async function pullServerChanges(){
       const local = await localDB.dailyNotes.get(rn.date);
       if(local && local.syncStatus==='pending') continue;
       await localDB.dailyNotes.put({...rn, syncStatus:'synced'});
+    }
+  } catch(e){}
+
+  // ثوابت اليوم — try/catch عشان لو migration 021 لسه ماتشغّلتش على
+  // السيرفر (الجدول مش موجود) التطبيق كله مايقفش، الميزة بس تتعطّل
+  try {
+    const remotePins = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+    for(const rp of remotePins){
+      const local = await localDB.worshipPins.get(rp.id);
+      if(local && local.syncStatus==='pending') continue;
+      await localDB.worshipPins.put({...rp, syncStatus:'synced'});
     }
   } catch(e){}
 
@@ -1497,18 +1533,33 @@ async function collectAndSyncWidgetSnapshot(){
     const applicable = worships.filter(w=>isApplicable(w, todayStr));
     const total = applicable.length;
     const completed = applicable.filter(w=>logByWorship[w.id]?.status==='completed').length;
-    // أول عبادة لسه مسجّلتش، بنفس ترتيب فترات اليوم في شاشة "اليوم"
+    // الأولوية للثوابت غير المكتملة (بند 11/56) — لو فيه ثابت لسه
+    // متسجّلش، هو "التالي" في الودجت؛ غير كده نرجع لمنطق أول عبادة
+    // مجدولة غير مكتملة زي ما هو
     let nextWorshipName = '';
-    for(const sec of DAY_SECTIONS){
-      const items = applicable.filter(w=>w.day_section===sec.key).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-      const pending = items.find(w=>logByWorship[w.id]?.status!=='completed');
-      if(pending){ nextWorshipName = pending.name; break; }
+    let nextIsPin = false;
+    try {
+      const pinnedIds = await pinnedWorshipsForDate(todayStr);
+      for(const wid of pinnedIds){
+        if(logByWorship[wid]?.status!=='completed'){
+          const pw = worships.find(x=>x.id===wid);
+          if(pw){ nextWorshipName = pw.name; nextIsPin = true; break; }
+        }
+      }
+    } catch(e){}
+    if(!nextWorshipName){
+      for(const sec of DAY_SECTIONS){
+        const items = applicable.filter(w=>w.day_section===sec.key).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+        const pending = items.find(w=>logByWorship[w.id]?.status!=='completed');
+        if(pending){ nextWorshipName = pending.name; break; }
+      }
     }
     await WidgetBridge.updateSnapshot({
       date: todayStr,
       completedCount: completed,
       totalCount: total,
       nextWorshipName,
+      nextIsPin,
       privacyMode: isWidgetPrivacyMode(),
     });
   } catch(e){ /* الودجت ميزة إضافية — أي خطأ هنا ميأثرش على التطبيق نفسه */ }
@@ -1871,6 +1922,12 @@ async function preloadLocalData(){
       const fsRes = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
       if(fsRes[0]) await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'});
     } catch(e){}
+    // ثوابت اليوم — try/catch منفصل عشان لو migration 021 لسه ماتشغّلتش
+    // الباقي كله يفضل يتحمّل عادي
+    try {
+      const pinsRes = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&select=*`);
+      for(const p of pinsRes){ await localDB.worshipPins.put({...p, syncStatus:'synced'}); }
+    } catch(e){}
     await localDB.meta.put({key:'lastSyncedAt', value:new Date().toISOString()});
     // علامة "أقدم تاريخ موثوق إن الكاش المحلي كامل بداية منه" —
     // localLogsInRange بتستخدمها عشان تعرف تجيب فجوات قديمة من
@@ -1927,6 +1984,8 @@ const ICON_PATHS = {
   gem: '<path d="M4.5 8.5 8 3.5h8l3.5 5-7.5 12Z"/><path d="M4.5 8.5h15"/><path d="M9 3.5l3 5-3.2 12"/><path d="M15 3.5l-3 5 3.2 12"/>',
   brain: '<path d="M9 4.8A2.8 2.8 0 0 0 6.2 7.6v.5A2.6 2.6 0 0 0 4.5 10.6v.6a2.6 2.6 0 0 0 1.2 2.2 2.8 2.8 0 0 0 2.8 3.3h.5v2.3a1.6 1.6 0 0 0 3.2 0"/><path d="M15 4.8a2.8 2.8 0 0 1 2.8 2.8v.5a2.6 2.6 0 0 1 1.7 2.5v.6a2.6 2.6 0 0 1-1.2 2.2 2.8 2.8 0 0 1-2.8 3.3h-.5v2.3a1.6 1.6 0 0 1-3.2 0V7"/>',
   arrowTrend: '<path d="M4 16.5 10 10l4 4 6.5-7.5"/><path d="M15.5 6.5H21V12"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.7l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1Z"/>',
+  pinOff: '<path d="M3 3l18 18"/><path d="M12 17v5"/><path d="M15 10.8a2 2 0 0 0 1.1 1.7l1.8.9A2 2 0 0 1 19 15.2V16a1 1 0 0 1-1 1H9"/><path d="M9 7v3.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16"/><path d="M8 2h8a2 2 0 0 1 0 4 1 1 0 0 0-1 1"/>',
 };
 function ICON(name, size){
   size = size || 20;
@@ -2973,6 +3032,7 @@ async function loadDay(dateStr){
 
   document.getElementById('daily-notes').value = noteRow?.notes || '';
   renderTimeline(dateStr);
+  await renderDayPins(dateStr);
   renderWeeklyGoals();
   await renderCatchup(dateStr);
   updateDayRing();
@@ -3128,7 +3188,7 @@ async function setBooleanStatus(worshipId, val, dateStr){
   const cur = dayLogsMap[worshipId]?.status;
   const next = cur===val ? 'unrecorded' : val;
   await upsertLog(worshipId, dateStr, {status:next});
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
 }
 
 async function setPrayerState(worshipId, stateKey, dateStr){
@@ -3143,7 +3203,7 @@ async function setPrayerState(worshipId, stateKey, dateStr){
   } else {
     await upsertLog(worshipId, dateStr, {status:'completed', value:s.value});
   }
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
 }
 
 async function stepValue(worshipId, delta, target, dateStr){
@@ -3151,12 +3211,12 @@ async function stepValue(worshipId, delta, target, dateStr){
   const val = Math.max(0, cur+delta);
   const status = target && val>=target ? 'completed' : (val>0 ? 'unrecorded' : 'unrecorded');
   await upsertLog(worshipId, dateStr, {value:val, status});
-  renderTimeline(dateStr); updateDayRing();
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses();
 }
 
 async function setMultiStatus(worshipId, status, value, dateStr){
   await upsertLog(worshipId, dateStr, {status, value});
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
 }
 async function setQuality(worshipId, q, dateStr){
   const cur = dayLogsMap[worshipId]?.quality_rating;
@@ -3653,21 +3713,184 @@ function recurrenceLabel(w){
   return '';
 }
 
+// ════════════════════════════════════════════
+//  ثوابت اليوم (Worship Pins) — Offline-first، بيمرّ بنفس الـSync
+//  Queue زي أي تعديل تاني. إلغاء التثبيت = tombstone (deleted_at).
+// ════════════════════════════════════════════
+const MAX_PINS = 5;
+
+async function getActivePins(){
+  if(!localDB) return [];
+  try { return (await localDB.worshipPins.toArray()).filter(p=>!p.deleted_at); }
+  catch(e){ return []; }
+}
+// هل العبادة مثبّتة وظاهرة في تاريخ معيّن؟ (always لو مجدولة، أو today بنفس التاريخ)
+function pinAppliesToDate(pin, w, dateStr){
+  if(pin.deleted_at) return false;
+  if(pin.scope==='today') return pin.pin_date===dateStr;
+  return w ? isApplicable(w, dateStr) : false; // always
+}
+async function pinnedWorshipsForDate(dateStr){
+  const pins = await getActivePins();
+  const ids = new Set();
+  for(const p of pins){
+    const w = worships.find(x=>x.id===p.worship_id);
+    if(w && pinAppliesToDate(p, w, dateStr)) ids.add(p.worship_id);
+  }
+  return [...ids];
+}
+async function isWorshipPinned(worshipId){
+  const pins = await getActivePins();
+  return pins.some(p=>p.worship_id===worshipId);
+}
+
+async function pinWorship(worshipId, scope){
+  const dateStr = getToday();
+  // الحد الأقصى: بنعدّ العبادات المثبّتة والظاهرة النهاردة
+  const alreadyPinned = await pinnedWorshipsForDate(dateStr);
+  if(!alreadyPinned.includes(worshipId) && alreadyPinned.length>=MAX_PINS){
+    showToast('يمكنك تثبيت حتى 5 عبادات فقط للحفاظ على بساطة يومك',true);
+    return false;
+  }
+  // dedup: لو فيه ثابت من نفس النوع نشط بالفعل، مانعملش تاني
+  const pins = await getActivePins();
+  const dup = pins.find(p=>p.worship_id===worshipId && p.scope===scope && (scope==='always' || p.pin_date===dateStr));
+  if(dup) return true;
+  const id = uuid();
+  const body = {
+    id, user_id: currentUser.id, worship_id: worshipId, scope,
+    pin_date: scope==='today' ? dateStr : null, deleted_at: null,
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+  };
+  await localDB.worshipPins.put({...body, syncStatus:'pending'});
+  await enqueueSync('worship_pin', id, 'create', body);
+  return true;
+}
+
+async function unpinWorship(worshipId){
+  const pins = await getActivePins();
+  const rows = pins.filter(p=>p.worship_id===worshipId);
+  for(const r of rows){
+    const body = {...stripLocalFields(r), deleted_at: new Date().toISOString(), updated_at: new Date().toISOString()};
+    await localDB.worshipPins.put({...body, syncStatus:'pending'});
+    await enqueueSync('worship_pin', r.id, 'update', body);
+  }
+}
+
+let _dayPinnedIds = []; // ثوابت اليوم الظاهرة حاليًا (للـrepaint السريع بدون قراءة DB)
+async function renderDayPins(dateStr){
+  const slot = document.getElementById('pins-slot');
+  if(!slot) return;
+  // ثوابت اليوم بتظهر في "اليوم" الحقيقي بس، مش وأنت بتتصفّح أيام تانية
+  if(dateStr !== getToday()){ slot.innerHTML=''; _dayPinnedIds=[]; return; }
+  const ids = await pinnedWorshipsForDate(dateStr);
+  if(!ids.length){ slot.innerHTML=''; _dayPinnedIds=[]; return; }
+  // بنفس ترتيب فترات اليوم
+  const ordered = worships
+    .filter(w=>ids.includes(w.id))
+    .sort((a,b)=>(DAY_SECTIONS.findIndex(s=>s.key===a.day_section)) - (DAY_SECTIONS.findIndex(s=>s.key===b.day_section)) || (a.sort_order||0)-(b.sort_order||0));
+  _dayPinnedIds = ordered.map(w=>w.id);
+  const rows = ordered.map(w=>pinRowHTML(w)).join('');
+  slot.innerHTML = `<div class="pins-wrap"><div class="pins-title">${ICON('pin',13)}ثوابت اليوم</div>${rows}</div>`;
+}
+function pinRowHTML(w){
+  const done = dayLogsMap[w.id]?.status==='completed';
+  return `<div class="pin-row ${done?'done':''}" data-pin-wid="${w.id}" onclick="focusWorshipCard('${w.id}')">
+    <div class="pin-ic">${ICON(worshipIconName(w),13)}</div>
+    <div class="pin-name">${esc(w.name)}</div>
+    <div class="pin-status">${done ? '✓ تم' : 'لم يُسجّل'}</div>
+  </div>`;
+}
+// تحديث سريع لحالة "تم/لم يُسجّل" في الثوابت بعد تسجيل عبادة، بدون
+// أي قراءة من IndexedDB (بيقرا dayLogsMap اللي في الذاكرة أصلاً)
+function repaintPinStatuses(){
+  if(!_dayPinnedIds.length) return;
+  for(const wid of _dayPinnedIds){
+    const row = document.querySelector(`#pins-slot .pin-row[data-pin-wid="${wid}"]`);
+    if(!row) continue;
+    const done = dayLogsMap[wid]?.status==='completed';
+    row.classList.toggle('done', done);
+    const st = row.querySelector('.pin-status');
+    if(st) st.textContent = done ? '✓ تم' : 'لم يُسجّل';
+  }
+}
+
+// الضغط على ثابت = يودّي للعبادة الأصلية في مكانها (مش نسخة تانية)
+function focusWorshipCard(worshipId){
+  const card = document.querySelector(`#timeline-slot .wcard[data-wid="${worshipId}"]`);
+  if(!card){ return; }
+  card.scrollIntoView({behavior: prefersReducedMotion()?'auto':'smooth', block:'center'});
+  card.classList.add('wcard-flash');
+  setTimeout(()=>card.classList.remove('wcard-flash'), 1400);
+}
+
 function openActionModal(id){
   actionWorshipId = id;
   const w = worships.find(x=>x.id===id);
   document.getElementById('am-title').textContent = w.name;
   document.getElementById('am-pause-btn').innerHTML = ICON(w.is_paused?'play':'pause',16) + (w.is_paused ? 'إعادة تفعيل' : 'إيقاف مؤقت');
   document.getElementById('am-hide-btn').innerHTML = ICON(w.is_hidden?'eye':'eyeOff',16) + (w.is_hidden ? 'إظهار' : 'إخفاء');
+  // زر التثبيت — بيتحدّث حسب حالة العبادة الحالية
+  isWorshipPinned(id).then(pinned=>{
+    const btn = document.getElementById('am-pin-btn');
+    if(btn) btn.innerHTML = ICON(pinned?'pinOff':'pin',16) + (pinned ? 'إلغاء التثبيت' : 'ثبّت في يومي');
+  });
   document.getElementById('action-modal').classList.remove('hidden');
 }
 function closeActionModal(){ document.getElementById('action-modal').classList.add('hidden'); }
+
+// اختيار نوع التثبيت — "اليوم فقط" أو "دائمًا"، بلغة بسيطة بدون أي
+// مصطلحات تقنية
+function openPinScopeSheet(worshipId, name){
+  if(document.getElementById('pin-scope-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='pin-scope-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px">
+      <div class="sheet-handle"></div>
+      <div class="modal-title">تثبيت "${esc(name)}"</div>
+      <p style="font-size:12.5px;color:var(--text-3);line-height:1.6;margin:.2rem 0 .9rem">تظهر في "ثوابت اليوم" أعلى عباداتك عشان متنساهاش.</p>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','today')">
+          <span style="font-weight:700;color:var(--text-1)">اليوم فقط</span>
+          <span style="font-size:11.5px;color:var(--text-3)">تظهر في ثوابت هذا اليوم فقط</span>
+        </button>
+        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','always')">
+          <span style="font-weight:700;color:var(--text-1)">دائمًا</span>
+          <span style="font-size:11.5px;color:var(--text-3)">تظهر كل يوم تكون فيه العبادة مجدولة</span>
+        </button>
+      </div>
+      <div class="modal-actions" style="margin-top:.9rem"><button class="m-cancel" onclick="document.getElementById('pin-scope-overlay').remove()">إلغاء</button></div>
+    </div>`;
+  document.body.appendChild(el);
+  mountIcons(el);
+}
+async function confirmPin(worshipId, scope){
+  document.getElementById('pin-scope-overlay')?.remove();
+  const ok = await pinWorship(worshipId, scope);
+  if(ok){
+    await renderDayPins(viewDate); updateDayRing(); collectAndSyncWidgetSnapshot();
+    showToast(scope==='today' ? 'تم التثبيت لهذا اليوم' : 'تم التثبيت دائمًا');
+  }
+}
 
 async function worshipAction(action){
   const w = worships.find(x=>x.id===actionWorshipId);
   if(!w) return;
   closeActionModal();
   if(action==='edit'){ openWorshipModal(w.id); return; }
+  if(action==='pin'){
+    // لو مثبّتة بالفعل → إلغاء مباشر. لو لأ → اختيار نوع التثبيت
+    if(await isWorshipPinned(w.id)){
+      await unpinWorship(w.id);
+      await renderDayPins(viewDate); updateDayRing(); collectAndSyncWidgetSnapshot();
+      showToast('تم إلغاء التثبيت');
+    } else {
+      openPinScopeSheet(w.id, w.name);
+    }
+    return;
+  }
   showLoading('جاري التنفيذ...');
   try {
     if(action==='duplicate'){
