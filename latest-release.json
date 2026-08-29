@@ -1,11 +1,11 @@
 {
-  "version": "1.2.2",
-  "versionCode": 6,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.2/Awwab-Android-v1.2.2.apk",
-  "fileSize": 4876631,
-  "sha256": "7531043f6711e54f50813fb12fdb0d0ca6dfa6513a7e52f3d2eb71bec81ab658",
-  "releaseNotes": "تحسين صحبتي: طلب الصحبة يظهر كتنبيه واضح تضغط عليه للقبول، وصفحة أوضح تشرح كل شيء، وأزرار عليها أسماء (تشجيع/واتساب/تفقّد). وإصلاحات صغيرة.",
+  "version": "1.2.3",
+  "versionCode": 7,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.3/Awwab-Android-v1.2.3.apk",
+  "fileSize": 4876927,
+  "sha256": "f27b1dd847a6ccabeb276c5af5aa9d626a1cdf6a1b62475ebed03cee196a5820",
+  "releaseNotes": "تصميم أنيق لقوائم الإجراءات (تثبيت، تعديل، جدولة التفقّد، وغيرها) بأيقونات واضحة ومظهر أرقى.",
   "mandatory": false,
-  "releasedAt": "2026-08-29T03:40:34Z",
-  "publishedAt": "2026-08-29T03:40:34Z"
+  "releasedAt": "2026-08-29T04:04:32Z",
+  "publishedAt": "2026-08-29T04:04:32Z"
 }
