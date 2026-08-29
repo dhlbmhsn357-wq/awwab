@@ -278,6 +278,17 @@ button{ -webkit-tap-highlight-color:transparent; }
 .pin-row.done{opacity:.62;}
 .pin-row.done .pin-status{color:var(--success);}
 
+/* مواعيد التذكير */
+.rem-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+.rem-row-main{flex:1;display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .8rem;cursor:pointer;min-width:0;}
+.rem-row-main .rem-time{font-weight:700;color:var(--text-1);font-size:var(--fs-caption);}
+.rem-row-main .rem-days{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rem-del{flex-shrink:0;width:36px;height:36px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface-1);color:var(--danger);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.rem-del svg{width:15px;height:15px;}
+.rem-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.rem-chip{border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);border-radius:99px;min-width:34px;height:34px;padding:0 .7rem;font-size:12px;font-weight:700;cursor:pointer;}
+.rem-chip.on{background:var(--primary);border-color:var(--primary);color:#06251F;}
+
 /* weekly goals compact */
 .weekly-goals-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card);}
 .wg-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);margin-bottom:.5rem;}
@@ -844,18 +855,16 @@ body.has-offline-banner .main-header{top:34px;}
       <!-- إشعار محلي يومي — أندرويد بس (Phase 5)، مخفي بالكامل على
            الويب/PWA عبر renderReminderSettings() -->
       <div class="settings-group" id="reminder-settings-group" style="display:none">
-        <h3>التذكير اليومي</h3>
+        <h3>مواعيد التذكير</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
           <div>
             <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">تذكير بتسجيل عباداتي</div>
-            <div class="sr-desc">إشعار يومي في الوقت اللي تحدده</div>
+            <div class="sr-desc">إشعار في المواعيد اللي تحددها</div>
           </div>
-          <label style="flex-shrink:0"><input type="checkbox" id="reminder-enabled-toggle" onchange="onReminderToggle(this.checked)"></label>
+          <label style="flex-shrink:0"><input type="checkbox" id="reminder-enabled-toggle" onchange="onGeneralReminderToggle(this.checked)"></label>
         </div>
-        <div class="field" id="reminder-time-row" style="margin-top:.75rem;display:none">
-          <label for="reminder-time-input" style="font-size:var(--fs-caption);color:var(--text-3);display:block;margin-bottom:.35rem">وقت التذكير</label>
-          <input type="time" id="reminder-time-input" value="20:00" onchange="onReminderTimeChange(this.value)">
-        </div>
+        <div id="reminder-times-list" style="margin-top:.75rem;display:none"></div>
+        <button class="btn-add" id="reminder-add-btn" style="width:100%;justify-content:center;margin-top:.6rem;display:none" onclick="addGeneralReminder()"><span data-icon="plus" data-size="15"></span>إضافة موعد</button>
         <div class="sr-desc" id="reminder-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
       </div>
 
@@ -985,6 +994,14 @@ body.has-offline-banner .main-header{top:34px;}
         </div>
 
         <div class="field"><label>وقت محدد (اختياري)</label><input id="wm-time" type="time"></div>
+
+        <!-- تذكيرات العبادة — أندرويد نيتف + عبادة موجودة بس (Phase 3) -->
+        <div class="field" id="wm-reminders-row" style="display:none">
+          <label>تذكيرات العبادة</label>
+          <div id="wm-reminders-list"></div>
+          <button type="button" class="btn-add" style="width:100%;justify-content:center;margin-top:.4rem" onclick="addWorshipReminder()"><span data-icon="plus" data-size="15"></span>إضافة موعد</button>
+          <div class="sr-desc" id="wm-reminders-note" style="display:none;margin-top:.4rem;color:var(--warning,#b45309)"></div>
+        </div>
 
         <div class="field-row">
           <div class="field"><label>تاريخ بداية (اختياري)</label><input id="wm-start-date" type="date"></div>
@@ -1464,6 +1481,7 @@ if(IS_NATIVE){
       collectAndSyncWidgetSnapshot(); // اعرض حالة اليوم المحلية فورًا (Local-first) قبل ما ننتظر نتيجة الشبكة
       checkWidgetPinResultOnResume();
       checkForAppUpdate();
+      reminderLifecycleResync(); // أعِد تسليح التذكيرات (يغطّي تغيّر اليوم/إعادة التشغيل)
       (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
         isOnline = !!s.connected;
         updateSyncBadge();
@@ -1511,8 +1529,10 @@ if(IS_NATIVE){
     });
   }
 
-  document.addEventListener('DOMContentLoaded', initDailyReminderFromStorage);
-  if(document.readyState !== 'loading') initDailyReminderFromStorage();
+  // ترحيل الصيغة القديمة + إعادة تسليح كل التذكيرات عند بدء التطبيق
+  const initReminders = ()=>{ migrateOldReminder(); rescheduleAllReminders(); };
+  document.addEventListener('DOMContentLoaded', initReminders);
+  if(document.readyState !== 'loading') initReminders();
 }
 
 // ════════════════════════════════════════════
@@ -1677,110 +1697,411 @@ function routeDeepLink(tab){
 }
 
 // ════════════════════════════════════════════
-//  التذكير اليومي (Local Notifications) — أندرويد بس. تفضيل جهاز
-//  محلي بحت (وقت/تفعيل)، متخزّنش في Supabase — كل جهاز له تذكيره
-//  الخاص، ومفيش داعي يتزامن بين الأجهزة.
+//  مواعيد التذكير (Local Notifications متعددة) — أندرويد نيتف بس.
+//  تفضيلات جهاز محلية بحتة (localStorage)، متتزامنش مع Supabase —
+//  كل جهاز له مواعيده. مفيش أي setTimeout: كل الجدولة عبر
+//  LocalNotifications (نظام أندرويد نفسه بيصحّيها، وبتستمر بعد
+//  إعادة التشغيل عبر BootReceiver بتاع الـplugin).
+//
+//  نوعان:
+//  - تذكير عام (general): "افتح أوّاب وسجّل يومك" — مجدول repeating
+//    (يومي أو أسبوعي على أيام محددة) عشان يشتغل حتى لو التطبيق مفتِحش
+//    لأيام. مفيش مفهوم "إنجاز" له.
+//  - تذكير عبادة (worship): مجدول كـone-shots للأيام القادمة (أفق
+//    REM_HORIZON يوم) عشان نقدر نلغي مواعيد النهاردة بمجرد إنجاز
+//    العبادة، ونعيد التسليح عند فتح التطبيق/رجوعه/بداية يوم جديد.
 // ════════════════════════════════════════════
-const REMINDER_STORAGE_KEY = 'awwab-daily-reminder';
-const REMINDER_NOTIF_ID = 9001;
+const REM_GEN_KEY = 'awwab-reminders-general';    // {enabled, times:[{hour,minute,days}]}
+const REM_WOR_KEY = 'awwab-reminders-worship';    // {[worshipId]: [{hour,minute,days}]}
+const REM_REG_KEY = 'awwab-reminder-registry';    // {general:[ids], worship:[{id,worshipId,fireAt}]}
+const REM_LASTDAY_KEY = 'awwab-reminder-lastday';
+const REM_GEN_CHANNEL = 'daily-reminder';         // نفس القناة القديمة (backward-compatible)
+const REM_WOR_CHANNEL = 'worship-reminder';
+const REM_GEN_ID_BASE = 90000;
+const REM_WOR_ID_BASE = 100000;
+const MAX_REMINDER_TIMES = 5;
+const REM_HORIZON = 7;   // أيام قدّام نجدول فيها تذكيرات العبادات (one-shots)
 
-function loadReminderPref(){
+function remLoad(key, fallback){ try { const r=localStorage.getItem(key); return r?JSON.parse(r):fallback; } catch(e){ return fallback; } }
+function remSave(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+// ترحيل من الصيغة القديمة (وقت واحد) لصيغة المواعيد المتعددة، مرة واحدة
+function migrateOldReminder(){
   try {
-    const raw = localStorage.getItem(REMINDER_STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(localStorage.getItem(REM_GEN_KEY)) return; // اتعمل بالفعل
+    const oldRaw = localStorage.getItem('awwab-daily-reminder');
+    if(!oldRaw) return;
+    const old = JSON.parse(oldRaw);
+    const gen = { enabled: !!old.enabled, times: [] };
+    if(old.enabled) gen.times.push({ hour: old.hour??20, minute: old.minute??0, days:'daily' });
+    remSave(REM_GEN_KEY, gen);
+    localStorage.removeItem('awwab-daily-reminder');
   } catch(e){}
-  return { enabled:false, hour:20, minute:0 };
-}
-function saveReminderPref(pref){
-  try { localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify(pref)); } catch(e){}
 }
 
-async function initDailyReminderFromStorage(){
+function loadGeneralReminders(){ return remLoad(REM_GEN_KEY, { enabled:false, times:[] }); }
+function saveGeneralReminders(v){ remSave(REM_GEN_KEY, v); }
+function loadWorshipReminders(){ return remLoad(REM_WOR_KEY, {}); }
+function saveWorshipReminders(v){ remSave(REM_WOR_KEY, v); }
+function getWorshipReminderTimes(wid){ return (loadWorshipReminders()[wid])||[]; }
+function setWorshipReminderTimes(wid, times){
+  const all = loadWorshipReminders();
+  if(times && times.length) all[wid] = times; else delete all[wid];
+  saveWorshipReminders(all);
+}
+
+async function remPermissionGranted(){
+  if(!IS_NATIVE) return false;
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const p = await LocalNotifications.checkPermissions();
+    return p.display === 'granted';
+  } catch(e){ return false; }
+}
+async function remRequestPermission(){
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const r = await LocalNotifications.requestPermissions();
+    return r.display === 'granted';
+  } catch(e){ return false; }
+}
+async function remEnsureChannels(){
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    await LocalNotifications.createChannel({ id:REM_GEN_CHANNEL, name:'مواعيد التذكير', description:'تذكير بتسجيل عباداتك', importance:4, visibility:1 }).catch(()=>{});
+    await LocalNotifications.createChannel({ id:REM_WOR_CHANNEL, name:'تذكيرات العبادات', description:'تذكير بعبادة معيّنة', importance:4, visibility:1 }).catch(()=>{});
+  } catch(e){}
+}
+
+// أوقات وقوع موعد خلال الأفق: Date math خالص، مفيش setTimeout.
+// days: 'daily' أو مصفوفة أيام (0=أحد..6=سبت، نفس getDay()).
+function reminderOccurrences(hour, minute, days, horizonDays, now){
+  const out = [];
+  now = now || new Date();
+  for(let d=0; d<horizonDays; d++){
+    const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate()+d, hour, minute, 0, 0);
+    if(dt.getTime() <= now.getTime()) continue; // فات
+    if(days!=='daily' && !(Array.isArray(days) && days.includes(dt.getDay()))) continue;
+    out.push(dt);
+  }
+  return out;
+}
+
+// بناء قائمة الإشعارات + سجل الجدولة من التفضيلات الحالية — دالة نقية
+// (مفيش IS_NATIVE gate ولا نداء plugin) عشان تبقى قابلة للاختبار.
+// بتقرا loadGeneralReminders/loadWorshipReminders + worships + dayLogsMap.
+// completedTodayIds: Set اختياري لمعرّفات العبادات المكتملة النهاردة
+// (بيتقرا من localDB في rescheduleAllReminders عشان مايعتمدش على
+// اليوم المعروض حاليًا). لو مش متوفّر، بيرجع لـdayLogsMap+viewDate.
+function buildReminderSchedule(now, completedTodayIds){
+  now = now || new Date();
+  const toSchedule = [];
+  const newReg = { general:[], worship:[] };
+  const today = getToday();
+  const isDoneToday = (wid)=> completedTodayIds
+    ? completedTodayIds.has(wid)
+    : (dayLogsMap[wid]?.status==='completed' && viewDate===today);
+
+  const gen = loadGeneralReminders();
+  if(gen.enabled){
+    gen.times.forEach((t, idx)=>{
+      if(idx>=MAX_REMINDER_TIMES) return;
+      if(t.days==='daily'){
+        const id = REM_GEN_ID_BASE + idx*10;
+        toSchedule.push({ id, title:'أوّاب', body:'افتح أوّاب وسجّل يومك', channelId:REM_GEN_CHANNEL,
+          schedule:{ on:{ hour:t.hour, minute:t.minute }, allowWhileIdle:true } });
+        newReg.general.push(id);
+      } else if(Array.isArray(t.days)){
+        t.days.forEach(dow=>{
+          const id = REM_GEN_ID_BASE + idx*10 + (dow+1);
+          toSchedule.push({ id, title:'أوّاب', body:'افتح أوّاب وسجّل يومك', channelId:REM_GEN_CHANNEL,
+            schedule:{ on:{ weekday:dow+1, hour:t.hour, minute:t.minute }, allowWhileIdle:true } });
+          newReg.general.push(id);
+        });
+      }
+    });
+  }
+
+  let notifId = REM_WOR_ID_BASE;
+  const worAll = loadWorshipReminders();
+  for(const wid of Object.keys(worAll)){
+    const w = worships.find(x=>x.id===wid);
+    if(!w) continue; // العبادة اتحذفت
+    const times = worAll[wid]||[];
+    const completedToday = isDoneToday(wid);
+    times.slice(0, MAX_REMINDER_TIMES).forEach(t=>{
+      reminderOccurrences(t.hour, t.minute, t.days, REM_HORIZON, now).forEach(dt=>{
+        const occDateStr = dstr(dt);
+        if(!isApplicable(w, occDateStr)) return;
+        if(occDateStr===today && completedToday) return; // اتعملت النهاردة
+        const id = notifId++;
+        toSchedule.push({ id, title:'أوّاب', body:`تذكير: ${w.name}`, channelId:REM_WOR_CHANNEL,
+          schedule:{ at: dt, allowWhileIdle:true } });
+        newReg.worship.push({ id, worshipId:wid, fireAt: dt.toISOString() });
+      });
+    });
+  }
+  return { toSchedule, newReg };
+}
+
+let _remRescheduleTimer = null;
+function scheduleReminderResync(){ // debounce لإعادة الجدولة بعد تغييرات متتالية
+  clearTimeout(_remRescheduleTimer);
+  _remRescheduleTimer = setTimeout(()=>{ rescheduleAllReminders(); }, 1200);
+}
+
+// الدالة المركزية: تلغي كل المجدول القديم بتاعنا وتبني من الأول
+// (idempotent تمامًا). آمنة الاستدعاء بأي عدد مرات.
+async function rescheduleAllReminders(){
   if(!IS_NATIVE) return;
-  const pref = loadReminderPref();
-  if(pref.enabled){
-    // إعادة الجدولة كل ما التطبيق يفتح — رخيصة وبتضمن استمرار التذكير
-    // حتى لو النظام مسح الجدولة القديمة لأي سبب (تحديث/إعادة تشغيل)
-    const { LocalNotifications } = window.Capacitor.Plugins;
-    const perm = await LocalNotifications.checkPermissions().catch(()=>({display:'denied'}));
-    if(perm.display === 'granted') scheduleDailyReminder(pref.hour, pref.minute, true);
-  }
-}
-
-async function scheduleDailyReminder(hour, minute, silent){
+  if(!(await remPermissionGranted())) return;
   const { LocalNotifications } = window.Capacitor.Plugins;
-  // إنشاء القناة (Android 8+) — عملية آمنة التكرار، مبتعملش تكرار لو
-  // القناة موجودة بالفعل
-  await LocalNotifications.createChannel({
-    id: 'daily-reminder',
-    name: 'التذكير اليومي',
-    description: 'تذكير يومي بتسجيل عباداتك',
-    importance: 4,
-    visibility: 1,
-  }).catch(()=>{});
-  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
-  await LocalNotifications.schedule({
-    notifications: [{
-      id: REMINDER_NOTIF_ID,
-      title: 'أوّاب',
-      body: 'حان وقت متابعة عباداتك اليوم',
-      schedule: { on: { hour, minute }, allowWhileIdle: true },
-      channelId: 'daily-reminder',
-    }],
-  });
-  if(!silent) showToast('اتفعّل التذكير اليومي');
-}
-async function cancelDailyReminder(){
-  const { LocalNotifications } = window.Capacitor.Plugins;
-  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
-}
+  await remEnsureChannels();
 
-async function onReminderToggle(checked){
-  const pref = loadReminderPref();
-  const noteEl = document.getElementById('reminder-permission-note');
-  const timeRow = document.getElementById('reminder-time-row');
-  if(checked){
-    const { LocalNotifications } = window.Capacitor.Plugins;
-    const res = await LocalNotifications.requestPermissions().catch(()=>({display:'denied'}));
-    if(res.display !== 'granted'){
-      document.getElementById('reminder-enabled-toggle').checked = false;
-      if(noteEl){ noteEl.style.display='block'; noteEl.textContent = 'محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
-      return;
+  // 1) ألغِ كل اللي جدولناه قبل كده
+  const reg = remLoad(REM_REG_KEY, { general:[], worship:[] });
+  const oldIds = [...(reg.general||[]), ...((reg.worship||[]).map(x=>x.id))];
+  if(oldIds.length){ await LocalNotifications.cancel({ notifications: oldIds.map(id=>({id})) }).catch(()=>{}); }
+
+  // اقرأ العبادات المكتملة النهاردة من IndexedDB مباشرة (مش من اليوم
+  // المعروض) عشان تخطّي "اتعملت النهاردة" يبقى صح مهما كان المستخدم
+  // بيتصفّح أي يوم
+  let completedTodayIds = new Set();
+  try {
+    if(localDB){
+      const todayLogs = await localDB.dailyLogs.where('date').equals(getToday()).toArray();
+      todayLogs.forEach(l=>{ if(l.status==='completed') completedTodayIds.add(l.worshipId); });
     }
-    if(noteEl) noteEl.style.display = 'none';
-    if(timeRow) timeRow.style.display = 'block';
-    pref.enabled = true;
-    saveReminderPref(pref);
-    await scheduleDailyReminder(pref.hour, pref.minute);
-  } else {
-    if(timeRow) timeRow.style.display = 'none';
-    pref.enabled = false;
-    saveReminderPref(pref);
-    await cancelDailyReminder();
-    showToast('اتلغى التذكير اليومي');
+  } catch(e){}
+
+  // 2) ابنِ الجدول الجديد (دالة نقية) و 3) جدوله دفعة واحدة
+  const { toSchedule, newReg } = buildReminderSchedule(new Date(), completedTodayIds);
+  if(toSchedule.length){
+    try { await LocalNotifications.schedule({ notifications: toSchedule }); } catch(e){}
   }
-}
-async function onReminderTimeChange(value){
-  const [h,m] = value.split(':').map(Number);
-  const pref = loadReminderPref();
-  pref.hour = h; pref.minute = m;
-  saveReminderPref(pref);
-  if(pref.enabled) await scheduleDailyReminder(h, m);
+  remSave(REM_REG_KEY, newReg);
+  remSave(REM_LASTDAY_KEY, getToday());
 }
 
+// إلغاء تذكيرات عبادة معيّنة المتبقية "النهاردة فقط" بمجرد إنجازها،
+// من غير إعادة جدولة كاملة (سريع وقت الضغط). مواعيد بكرة تفضل زي ما هي.
+async function cancelWorshipRemindersForToday(worshipId){
+  if(!IS_NATIVE) return;
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const reg = remLoad(REM_REG_KEY, { general:[], worship:[] });
+    const now = Date.now();
+    const today = getToday();
+    const toCancel = (reg.worship||[]).filter(x=> x.worshipId===worshipId && dstr(new Date(x.fireAt))===today && new Date(x.fireAt).getTime()>now);
+    if(!toCancel.length) return;
+    await LocalNotifications.cancel({ notifications: toCancel.map(x=>({id:x.id})) }).catch(()=>{});
+    reg.worship = (reg.worship||[]).filter(x=> !toCancel.some(c=>c.id===x.id));
+    remSave(REM_REG_KEY, reg);
+  } catch(e){}
+}
+
+// hook من مسار تسجيل العبادة — يتنادى بعد أي تغيير حالة
+function onWorshipStatusChangedForReminders(worshipId){
+  if(!IS_NATIVE) return;
+  if(viewDate !== getToday()) return; // التسجيل بيخصّ يوم تاني — مايأثرش على تذكيرات النهاردة
+  if(!getWorshipReminderTimes(worshipId).length) return; // العبادة دي مالهاش تذكيرات أصلاً
+  const done = dayLogsMap[worshipId]?.status==='completed';
+  if(done) cancelWorshipRemindersForToday(worshipId);
+  else scheduleReminderResync(); // اترجعت لغير مكتملة — أعِد التسليح
+}
+
+// عند فتح التطبيق/رجوعه من الخلفية: أعِد التسليح لو اليوم اتغيّر، أو
+// دايمًا (رخيص وبيضمن الاستمرارية). بننادي rescheduleAllReminders.
+async function reminderLifecycleResync(){
+  if(!IS_NATIVE) return;
+  if(!(await remPermissionGranted())) return;
+  await rescheduleAllReminders();
+}
+
+// ── UI: التذكير العام ──
 function renderReminderSettings(){
   const group = document.getElementById('reminder-settings-group');
   if(!group) return;
   if(!IS_NATIVE){ group.style.display='none'; return; }
   group.style.display = '';
-  const pref = loadReminderPref();
+  const gen = loadGeneralReminders();
   const toggle = document.getElementById('reminder-enabled-toggle');
-  const timeInput = document.getElementById('reminder-time-input');
-  const timeRow = document.getElementById('reminder-time-row');
-  if(toggle) toggle.checked = !!pref.enabled;
-  if(timeRow) timeRow.style.display = pref.enabled ? 'block' : 'none';
-  if(timeInput) timeInput.value = String(pref.hour).padStart(2,'0')+':'+String(pref.minute).padStart(2,'0');
+  if(toggle) toggle.checked = !!gen.enabled;
+  const list = document.getElementById('reminder-times-list');
+  const addBtn = document.getElementById('reminder-add-btn');
+  if(list) list.style.display = gen.enabled ? 'block' : 'none';
+  if(addBtn) addBtn.style.display = gen.enabled ? 'flex' : 'none';
+  if(list) list.innerHTML = gen.times.map((t,i)=>reminderRowHTML(t, `general:${i}`)).join('') || `<div class="sr-desc">مفيش مواعيد بعد — أضف موعد.</div>`;
 }
+
+function fmtTime12(hour, minute){
+  const am = hour<12; let h = hour%12; if(h===0) h=12;
+  return `${h}:${String(minute).padStart(2,'0')} ${am?'ص':'م'}`;
+}
+function daysSummary(days){
+  if(days==='daily' || !Array.isArray(days) || days.length===7) return 'يوميًا';
+  if(!days.length) return '—';
+  return days.slice().sort((a,b)=>a-b).map(d=>ARABIC_DAYS[d]).join('، ');
+}
+function reminderRowHTML(t, ref){
+  return `<div class="rem-row">
+    <button class="rem-row-main" onclick="openReminderTimeSheet('${ref}')">
+      <span class="rem-time">${fmtTime12(t.hour,t.minute)}</span>
+      <span class="rem-days">${esc(daysSummary(t.days))}</span>
+    </button>
+    <button class="rem-del" onclick="deleteReminderTime('${ref}')" aria-label="حذف">${ICON('trash',15)}</button>
+  </div>`;
+}
+
+async function onGeneralReminderToggle(checked){
+  const gen = loadGeneralReminders();
+  const noteEl = document.getElementById('reminder-permission-note');
+  if(checked){
+    if(!(await remPermissionGranted())){
+      const ok = await remRequestPermission();
+      if(!ok){
+        document.getElementById('reminder-enabled-toggle').checked = false;
+        if(noteEl){ noteEl.style.display='block'; noteEl.textContent='محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
+        return;
+      }
+    }
+    if(noteEl) noteEl.style.display='none';
+    gen.enabled = true;
+    if(!gen.times.length) gen.times.push({ hour:20, minute:0, days:'daily' }); // موعد افتراضي أول تفعيل
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+    await rescheduleAllReminders();
+    showToast('اتفعّلت مواعيد التذكير');
+  } else {
+    gen.enabled = false;
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+    await rescheduleAllReminders();
+    showToast('اتلغت مواعيد التذكير');
+  }
+}
+
+// محرّر موعد واحد (وقت + أيام) — مشترك بين العام وتذكيرات العبادة.
+// ref: "general:<idx>" أو "general:new" أو "<worshipId>:<idx>" أو "<worshipId>:new"
+let _remEditRef = null, _remEditDays = 'daily';
+function openReminderTimeSheet(ref){
+  _remEditRef = ref;
+  const { ctx, idx } = parseRemRef(ref);
+  const existing = idx==='new' ? null : getReminderByRef(ctx, idx);
+  _remEditDays = existing ? (existing.days==='daily' ? 'daily' : existing.days.slice()) : 'daily';
+  const hh = existing ? String(existing.hour).padStart(2,'0') : '20';
+  const mm = existing ? String(existing.minute).padStart(2,'0') : '00';
+  if(document.getElementById('rem-sheet-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay'; el.id='rem-sheet-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px">
+      <div class="sheet-handle"></div>
+      <div class="modal-title">${existing?'تعديل موعد':'موعد جديد'}</div>
+      <div class="field" style="margin-top:.6rem">
+        <label>الوقت</label>
+        <input type="time" id="rem-time-input" value="${hh}:${mm}" style="width:100%">
+      </div>
+      <div style="margin-top:.7rem">
+        <label style="font-size:var(--fs-caption);color:var(--text-3);display:block;margin-bottom:.4rem">الأيام</label>
+        <div id="rem-days-chips" class="rem-chips"></div>
+      </div>
+      <div class="modal-actions" style="margin-top:1rem">
+        <button class="m-cancel" onclick="document.getElementById('rem-sheet-overlay').remove()">إلغاء</button>
+        <button class="m-save" onclick="saveReminderTime()">حفظ</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  renderRemDaysChips();
+}
+function parseRemRef(ref){ const i = ref.lastIndexOf(':'); return { ctx: ref.slice(0,i), idx: ref.slice(i+1) }; }
+function getReminderByRef(ctx, idx){
+  const arr = ctx==='general' ? loadGeneralReminders().times : getWorshipReminderTimes(ctx);
+  return arr[Number(idx)];
+}
+function renderRemDaysChips(){
+  const wrap = document.getElementById('rem-days-chips');
+  if(!wrap) return;
+  const isDaily = _remEditDays==='daily';
+  let html = `<button class="rem-chip ${isDaily?'on':''}" onclick="remSetDaily()">يوميًا</button>`;
+  for(let d=0; d<7; d++){
+    const on = !isDaily && Array.isArray(_remEditDays) && _remEditDays.includes(d);
+    html += `<button class="rem-chip ${on?'on':''}" onclick="remToggleDay(${d})">${ARABIC_DAYS_SHORT[d]}</button>`;
+  }
+  wrap.innerHTML = html;
+}
+function remSetDaily(){ _remEditDays='daily'; renderRemDaysChips(); }
+function remToggleDay(d){
+  if(_remEditDays==='daily') _remEditDays = [];
+  const i = _remEditDays.indexOf(d);
+  if(i>=0) _remEditDays.splice(i,1); else _remEditDays.push(d);
+  if(!_remEditDays.length) _remEditDays='daily'; // مايسمحش بصفر أيام
+  renderRemDaysChips();
+}
+async function saveReminderTime(){
+  const val = document.getElementById('rem-time-input').value || '20:00';
+  const [h,m] = val.split(':').map(Number);
+  const { ctx, idx } = parseRemRef(_remEditRef);
+  const days = (_remEditDays==='daily') ? 'daily' : _remEditDays.slice().sort((a,b)=>a-b);
+  const entry = { hour:h, minute:m, days };
+  if(ctx==='general'){
+    const gen = loadGeneralReminders();
+    if(idx==='new'){
+      if(gen.times.length>=MAX_REMINDER_TIMES){ showToast(`الحد الأقصى ${MAX_REMINDER_TIMES} مواعيد`,true); return; }
+      gen.times.push(entry);
+    } else gen.times[Number(idx)] = entry;
+    saveGeneralReminders(gen);
+  } else {
+    const times = getWorshipReminderTimes(ctx);
+    if(idx==='new'){
+      if(times.length>=MAX_REMINDER_TIMES){ showToast(`الحد الأقصى ${MAX_REMINDER_TIMES} مواعيد`,true); return; }
+      times.push(entry);
+    } else times[Number(idx)] = entry;
+    setWorshipReminderTimes(ctx, times);
+  }
+  document.getElementById('rem-sheet-overlay')?.remove();
+  if(ctx==='general') renderReminderSettings(); else renderWorshipReminders();
+  await rescheduleAllReminders();
+  showToast('اتحفظ الموعد');
+}
+async function deleteReminderTime(ref){
+  const { ctx, idx } = parseRemRef(ref);
+  if(ctx==='general'){
+    const gen = loadGeneralReminders();
+    gen.times.splice(Number(idx),1);
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+  } else {
+    const times = getWorshipReminderTimes(ctx);
+    times.splice(Number(idx),1);
+    setWorshipReminderTimes(ctx, times);
+    renderWorshipReminders();
+  }
+  await rescheduleAllReminders();
+}
+
+// ── UI: تذكيرات العبادة (جوه نافذة تعديل العبادة) ──
+async function renderWorshipReminders(){
+  const row = document.getElementById('wm-reminders-row');
+  if(!row) return;
+  // بتظهر لعبادة موجودة (تعديل) وعلى أندرويد نيتف بس
+  if(!IS_NATIVE || !editingWorshipId){ row.style.display='none'; return; }
+  row.style.display = '';
+  const times = getWorshipReminderTimes(editingWorshipId);
+  const list = document.getElementById('wm-reminders-list');
+  const note = document.getElementById('wm-reminders-note');
+  if(list) list.innerHTML = times.map((t,i)=>reminderRowHTML(t, `${editingWorshipId}:${i}`)).join('') || `<div class="sr-desc">مفيش تذكيرات لهذه العبادة.</div>`;
+  if(note){
+    const granted = await remPermissionGranted();
+    note.style.display = granted ? 'none' : 'block';
+    if(!granted) note.textContent = 'التذكيرات محتاجة إذن الإشعارات — فعّله من "مواعيد التذكير" في الإعدادات.';
+  }
+}
+function addWorshipReminder(){
+  if(!editingWorshipId) return;
+  openReminderTimeSheet(`${editingWorshipId}:new`);
+}
+function addGeneralReminder(){ openReminderTimeSheet('general:new'); }
 
 // ════════════════════════════════════════════
 //  إعدادات الودجت + وضع الخصوصية (Phase 8) — تفضيل جهاز محلي بحت،
@@ -2934,6 +3255,7 @@ async function enterMain(){
   }
   initTourCheck();
   checkForAppUpdate(); // بدون await — فحص خلفي، مايأخّرش فتح التطبيق خالص
+  rescheduleAllReminders(); // دلوقتي worships + dayLogsMap اتحمّلوا، فتذكيرات العبادات تتجدول صح
 }
 
 function switchTab(id,btn){
@@ -3188,7 +3510,7 @@ async function setBooleanStatus(worshipId, val, dateStr){
   const cur = dayLogsMap[worshipId]?.status;
   const next = cur===val ? 'unrecorded' : val;
   await upsertLog(worshipId, dateStr, {status:next});
-  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 
 async function setPrayerState(worshipId, stateKey, dateStr){
@@ -3203,7 +3525,7 @@ async function setPrayerState(worshipId, stateKey, dateStr){
   } else {
     await upsertLog(worshipId, dateStr, {status:'completed', value:s.value});
   }
-  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 
 async function stepValue(worshipId, delta, target, dateStr){
@@ -3211,12 +3533,12 @@ async function stepValue(worshipId, delta, target, dateStr){
   const val = Math.max(0, cur+delta);
   const status = target && val>=target ? 'completed' : (val>0 ? 'unrecorded' : 'unrecorded');
   await upsertLog(worshipId, dateStr, {value:val, status});
-  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses();
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId);
 }
 
 async function setMultiStatus(worshipId, status, value, dateStr){
   await upsertLog(worshipId, dateStr, {status, value});
-  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 async function setQuality(worshipId, q, dateStr){
   const cur = dayLogsMap[worshipId]?.quality_rating;
@@ -3948,6 +4270,7 @@ function openWorshipModal(existingId){
   document.getElementById('wm-end-date').value = w?.end_date || '';
   document.getElementById('wm-advanced').classList.toggle('open', !!w);
   refreshTrackingUI(); refreshRecurrenceUI(); refreshIconUI(); refreshDaysUI();
+  renderWorshipReminders(); // تذكيرات العبادة (تظهر في وضع التعديل + نيتف بس)
   document.getElementById('worship-modal').classList.remove('hidden');
 }
 function closeWorshipModal(){ document.getElementById('worship-modal').classList.add('hidden'); editingWorshipId=null; }
@@ -4050,6 +4373,7 @@ async function saveWorship(){
     await enqueueSync('worship', full.id, editingWorshipId?'update':'create', full);
     await loadWorships();
     renderBuilder();
+    rescheduleAllReminders(); // أيام/جدولة العبادة ممكن تكون اتغيّرت
     closeWorshipModal();
     showToast('تم الحفظ');
   } catch(e){ showToast('حصل خطأ في الحفظ',true); }
@@ -4069,6 +4393,8 @@ async function localDeleteWorship(id){
   const full = {...existing, deleted_at:new Date().toISOString(), updated_at:new Date().toISOString()};
   await localDB.worships.delete(id);
   await enqueueSync('worship', id, 'delete', full);
+  // نظّف تذكيرات العبادة المحذوفة (تفضيل محلي) وأعِد التسليح
+  try { setWorshipReminderTimes(id, []); rescheduleAllReminders(); } catch(e){}
 }
 async function deleteWorshipConfirm(){
   if(!editingWorshipId) return;
