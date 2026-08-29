@@ -100,12 +100,18 @@ try {
   r = await A.api.get(`companion_settings?user_id=eq.${B.id}&select=*`);
   ok('A مايقرأش companion_settings بتاعة B', r.ok && Array.isArray(r.data) && r.data.length===0);
 
-  // 10) A مايقدرش يكتب على companionships مباشرة (مفيش write policy)
-  r = await A.api.rpc('noop_skip', {}).catch(()=>({ok:false}));
-  const wr = await fetch(`${URL}/rest/v1/companionships`, { method:'PATCH',
-    headers:{ apikey:ANON, Authorization:'Bearer '+A.token, 'Content-Type':'application/json' },
-    body: JSON.stringify({ status:'accepted' }) });
-  ok('A مايقدرش يعدّل companionships مباشرة (RLS)', wr.status===403 || wr.status===401 || (wr.ok && (await wr.json()).length===0));
+  // 10) A مايقدرش يكتب على companionships مباشرة (مفيش write policy).
+  //     نقرا الحالة قبل بالـservice_role، نجرّب PATCH محدّد من A،
+  //     ونتأكد إن الحالة ماتغيّرتش (مهما كانت قيمتها الشرعية وقتها).
+  async function srStatus(){ const x = await fetch(`${URL}/rest/v1/companionships?id=eq.${reqId}&select=status`, { headers:{ apikey:SR, Authorization:'Bearer '+SR } }); const j = await x.json(); return j[0]?.status; }
+  const before = await srStatus();
+  const wr = await fetch(`${URL}/rest/v1/companionships?id=eq.${reqId}`, { method:'PATCH',
+    headers:{ apikey:ANON, Authorization:'Bearer '+A.token, 'Content-Type':'application/json', Prefer:'return=representation' },
+    body: JSON.stringify({ status:'blocked', blocked_by:A.id }) });
+  let updatedRows=[]; try { updatedRows = await wr.json(); } catch(e){}
+  const after = await srStatus();
+  const blocked = ((wr.status>=400) || (Array.isArray(updatedRows) && updatedRows.length===0)) && (before===after);
+  ok('A مايقدرش يعدّل companionships مباشرة (RLS write مقفولة)', blocked);
 
   // 11) إزالة: A تزيل B → C فحص إن الوصول اتقفل
   r = await A.api.rpc('remove_companion', { p_id:reqId });
