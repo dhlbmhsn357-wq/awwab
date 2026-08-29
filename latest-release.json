@@ -1,11 +1,11 @@
 {
-  "version": "1.2.0",
-  "versionCode": 4,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.0/Awwab-Android-v1.2.0.apk",
-  "fileSize": 4873871,
-  "sha256": "aea3db4576cac29a217b7e24a6c835c23f5ed5cf90792049179662265f6a8350",
-  "releaseNotes": "ثوابت اليوم: ثبّت عباداتك المهمة أعلى يومك. مواعيد تذكير متعددة بالساعة والدقيقة وأيام محددة. صحبتي: رفقة خاصة للتواصي والتشجيع، بخصوصية كاملة تتحكم فيها.",
+  "version": "1.2.1",
+  "versionCode": 5,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.1/Awwab-Android-v1.2.1.apk",
+  "fileSize": 4875363,
+  "sha256": "70c3d5edd092d7601892c8e4388c3bd88a8644bd20012eea07867348b4aaf0a7",
+  "releaseNotes": "أيقونة تحديث تنبّهك بالإصدارات الجديدة. إصلاح رقم واتساب في صحبتي (اكتبه محلي عادي). تحسين الجولة التعريفية.",
   "mandatory": false,
-  "releasedAt": "2026-08-29T01:51:55Z",
-  "publishedAt": "2026-08-29T01:51:55Z"
+  "releasedAt": "2026-08-29T03:20:21Z",
+  "publishedAt": "2026-08-29T03:20:21Z"
 }
