@@ -310,6 +310,12 @@ button{ -webkit-tap-highlight-color:transparent; }
 .cc-btn.primary{background:var(--primary);border-color:var(--primary);color:#06251F;}
 .cs-toggle{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 0;font-size:var(--fs-caption);color:var(--text-1);font-weight:600;border-bottom:1px solid var(--border);}
 
+/* تلميح سياقي يظهر مرة واحدة */
+.hint-once{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));max-width:420px;margin:0 auto;z-index:595;background:var(--primary);color:#06251F;border-radius:var(--r-md);box-shadow:var(--shadow-elevated);padding:.7rem .9rem;display:flex;align-items:flex-start;gap:.6rem;font-size:12.5px;font-weight:600;line-height:1.5;transform:translateY(20px);opacity:0;transition:transform .3s var(--ease),opacity .3s var(--ease);}
+.hint-once.show{transform:translateY(0);opacity:1;}
+.hint-once svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;}
+.hint-once .hx-close{margin-inline-start:auto;background:none;border:none;color:#06251F;cursor:pointer;opacity:.7;padding:0 .2rem;flex-shrink:0;}
+
 /* weekly goals compact */
 .weekly-goals-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card);}
 .wg-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);margin-bottom:.5rem;}
@@ -2181,9 +2187,10 @@ async function renderWorshipReminders(){
 }
 function addWorshipReminder(){
   if(!editingWorshipId) return;
+  hintOnce('reminder','يمكنك إضافة أكثر من موعد بالساعة والدقيقة.');
   openReminderTimeSheet(`${editingWorshipId}:new`);
 }
-function addGeneralReminder(){ openReminderTimeSheet('general:new'); }
+function addGeneralReminder(){ hintOnce('reminder','يمكنك إضافة أكثر من موعد بالساعة والدقيقة.'); openReminderTimeSheet('general:new'); }
 
 // ════════════════════════════════════════════
 //  إعدادات الودجت + وضع الخصوصية (Phase 8) — تفضيل جهاز محلي بحت،
@@ -4250,6 +4257,7 @@ function closeActionModal(){ document.getElementById('action-modal').classList.a
 // اختيار نوع التثبيت — "اليوم فقط" أو "دائمًا"، بلغة بسيطة بدون أي
 // مصطلحات تقنية
 function openPinScopeSheet(worshipId, name){
+  hintOnce('pin','ثبّت العبادة التي لا تريد نسيانها لتظل أمامك طوال اليوم.');
   if(document.getElementById('pin-scope-overlay')) return;
   const el = document.createElement('div');
   el.className='modal-overlay';
@@ -4585,6 +4593,20 @@ async function companionRPC(fn, args){
 }
 function companionsCacheKey(){ return 'awwab-companions-'+(currentUser?.id||''); }
 
+// تلميح سياقي يظهر مرة واحدة فقط لكل مفتاح (بند 59: مش خطوات جولة
+// إجبارية، بس Highlight سياقي مرة واحدة)
+function hintOnce(key, text){
+  try { if(localStorage.getItem('awwab-hint-'+key)) return; } catch(e){ return; }
+  try { localStorage.setItem('awwab-hint-'+key,'1'); } catch(e){}
+  document.getElementById('hint-once-el')?.remove();
+  const el = document.createElement('div');
+  el.className='hint-once'; el.id='hint-once-el';
+  el.innerHTML = `${ICON('sparkle',16)}<span>${esc(text)}</span><button class="hx-close" aria-label="إغلاق" onclick="this.parentElement.remove()">${ICON('x',14)}</button>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 6500);
+}
+
 function renderRafeqaPanel(){
   if(_rafeqaSub==='sohba') renderSohba(); else renderRafeqa();
 }
@@ -4596,6 +4618,7 @@ function switchRafeqaSub(which){
   document.getElementById('rafeqa-feed-view').style.display = which==='feed' ? '' : 'none';
   document.getElementById('rafeqa-sohba-view').style.display = which==='sohba' ? '' : 'none';
   renderRafeqaPanel();
+  if(which==='sohba') hintOnce('sohba','صحبة خاصة للتواصي والتشجيع، ويمكنك التحكم فيما تشاركه.');
 }
 
 async function renderSohba(){
