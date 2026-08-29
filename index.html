@@ -265,6 +265,57 @@ button{ -webkit-tap-highlight-color:transparent; }
 .catchup-card .cc-actions button{font-size:11.5px;font-weight:700;border-radius:var(--r-sm);padding:.3rem .65rem;cursor:pointer;border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);}
 .catchup-card .cc-actions button.primary{background:var(--accent);border-color:var(--accent);color:#2A2110;}
 
+/* ثوابت اليوم — compact جدًا، مش cards كبيرة */
+.pins-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.55rem .35rem .35rem;margin-bottom:var(--sp-3);}
+.pins-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);display:flex;align-items:center;gap:.4rem;padding:0 .55rem .35rem;}
+.pins-title svg{width:13px;height:13px;}
+.pin-row{display:flex;align-items:center;gap:.55rem;padding:.45rem .55rem;border-radius:var(--r-sm);cursor:pointer;}
+.pin-row:active{background:var(--surface-2);}
+.pin-row .pin-ic{width:22px;height:22px;border-radius:6px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pin-row .pin-ic svg{width:13px;height:13px;}
+.pin-row .pin-name{flex:1;font-size:var(--fs-caption);color:var(--text-1);font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pin-row .pin-status{font-size:11.5px;font-weight:700;color:var(--text-3);flex-shrink:0;}
+.pin-row.done{opacity:.62;}
+.pin-row.done .pin-status{color:var(--success);}
+
+/* مواعيد التذكير */
+.rem-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+.rem-row-main{flex:1;display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .8rem;cursor:pointer;min-width:0;}
+.rem-row-main .rem-time{font-weight:700;color:var(--text-1);font-size:var(--fs-caption);}
+.rem-row-main .rem-days{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rem-del{flex-shrink:0;width:36px;height:36px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface-1);color:var(--danger);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.rem-del svg{width:15px;height:15px;}
+.rem-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.rem-chip{border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);border-radius:99px;min-width:34px;height:34px;padding:0 .7rem;font-size:12px;font-weight:700;cursor:pointer;}
+.rem-chip.on{background:var(--primary);border-color:var(--primary);color:#06251F;}
+
+/* صحبتي */
+.sohba-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+.sohba-count{font-size:var(--fs-card-title);font-weight:800;color:var(--text-1);}
+.sohba-offline-note{display:flex;align-items:center;gap:.4rem;font-size:11.5px;color:var(--text-3);background:var(--surface-2);border-radius:var(--r-sm);padding:.5rem .7rem;margin-bottom:.7rem;}
+.sohba-offline-note svg{width:14px;height:14px;flex-shrink:0;}
+.companion-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .8rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:.6rem;box-shadow:var(--shadow-card);}
+.companion-card .cc-body{flex:1;min-width:0;}
+.companion-card .cc-name{font-size:var(--fs-caption);font-weight:700;color:var(--text-1);line-height:1.4;}
+.companion-card .cc-msg{font-size:11.5px;color:var(--text-3);margin-top:.15rem;}
+.companion-card .cc-encourage{font-size:11.5px;color:var(--primary);margin-top:.25rem;}
+.companion-card .cc-needs{display:flex;align-items:center;gap:.3rem;font-size:11.5px;color:var(--accent);margin-top:.25rem;}
+.companion-card .cc-needs svg{width:12px;height:12px;}
+.companion-card .cc-side{display:flex;gap:.3rem;flex-shrink:0;}
+.cc-icon-btn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.cc-icon-btn.wa{color:#25D366;}
+.cc-icon-btn svg{width:15px;height:15px;}
+.companion-card .cc-actions{display:flex;flex-direction:column;gap:.35rem;flex-shrink:0;}
+.cc-btn{font-size:12px;font-weight:700;border-radius:var(--r-sm);padding:.4rem .8rem;cursor:pointer;border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);white-space:nowrap;}
+.cc-btn.primary{background:var(--primary);border-color:var(--primary);color:#06251F;}
+.cs-toggle{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 0;font-size:var(--fs-caption);color:var(--text-1);font-weight:600;border-bottom:1px solid var(--border);}
+
+/* تلميح سياقي يظهر مرة واحدة */
+.hint-once{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));max-width:420px;margin:0 auto;z-index:595;background:var(--primary);color:#06251F;border-radius:var(--r-md);box-shadow:var(--shadow-elevated);padding:.7rem .9rem;display:flex;align-items:flex-start;gap:.6rem;font-size:12.5px;font-weight:600;line-height:1.5;transform:translateY(20px);opacity:0;transition:transform .3s var(--ease),opacity .3s var(--ease);}
+.hint-once.show{transform:translateY(0);opacity:1;}
+.hint-once svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;}
+.hint-once .hx-close{margin-inline-start:auto;background:none;border:none;color:#06251F;cursor:pointer;opacity:.7;padding:0 .2rem;flex-shrink:0;}
+
 /* weekly goals compact */
 .weekly-goals-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card);}
 .wg-title{font-size:var(--fs-label);font-weight:700;color:var(--text-3);margin-bottom:.5rem;}
@@ -293,6 +344,9 @@ button{ -webkit-tap-highlight-color:transparent; }
 
 /* ---------- Worship card v3 (compact) ---------- */
 .wcard{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.65rem .8rem;margin-bottom:.4rem;transition:all var(--dur-fast) var(--ease);box-shadow:var(--shadow-card);}
+.wcard-flash{animation:wcardFlash 1.4s var(--ease);}
+@keyframes wcardFlash{0%,100%{box-shadow:var(--shadow-card);border-color:var(--border);}25%,60%{box-shadow:0 0 0 2px var(--primary);border-color:var(--primary);}}
+@media(prefers-reduced-motion:reduce){.wcard-flash{animation:none;outline:2px solid var(--primary);}}
 .wcard.completed{border-color:color-mix(in srgb, var(--success) 35%, var(--border));background:var(--success-tint);}
 .wcard.missed{opacity:.7;}
 .wcard-top{display:flex;align-items:center;gap:.65rem;}
@@ -733,6 +787,7 @@ body.has-offline-banner .main-header{top:34px;}
       </div>
 
       <div id="catchup-slot"></div>
+      <div id="pins-slot"></div>
       <div class="reorder-toggle-row">
         <button class="reorder-toggle-btn" id="reorder-toggle-btn" onclick="toggleReorderMode()">
           <span data-icon="gripVertical" data-size="14"></span><span id="reorder-toggle-label">ترتيب اليوم</span>
@@ -775,14 +830,21 @@ body.has-offline-banner .main-header{top:34px;}
       <div id="progress-slot"></div>
     </div>
 
-    <!-- RAFEQA (رفقة أواب) -->
+    <!-- RAFEQA (رفقة أواب) + صحبتي -->
     <div id="panel-rafeqa" class="tab-panel">
       <div class="rafeqa-header">
         <div class="rf-title">رفقة أوّاب</div>
         <div class="rf-sub">نتشجع ولا نتفاخر، ونتواصى على الثبات</div>
       </div>
-      <div class="group-goal-card" id="group-goal-card"></div>
-      <div id="rafeqa-list"></div>
+      <div class="chip-select" id="rafeqa-subtabs" style="margin-bottom:1.1rem">
+        <button class="sel" id="rf-sub-feed" onclick="switchRafeqaSub('feed')">رفقة أوّاب</button>
+        <button id="rf-sub-sohba" onclick="switchRafeqaSub('sohba')">صحبتي</button>
+      </div>
+      <div id="rafeqa-feed-view">
+        <div class="group-goal-card" id="group-goal-card"></div>
+        <div id="rafeqa-list"></div>
+      </div>
+      <div id="rafeqa-sohba-view" style="display:none"></div>
     </div>
 
     <!-- WORSHIPS BUILDER (عباداتي) -->
@@ -827,18 +889,16 @@ body.has-offline-banner .main-header{top:34px;}
       <!-- إشعار محلي يومي — أندرويد بس (Phase 5)، مخفي بالكامل على
            الويب/PWA عبر renderReminderSettings() -->
       <div class="settings-group" id="reminder-settings-group" style="display:none">
-        <h3>التذكير اليومي</h3>
+        <h3>مواعيد التذكير</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem">
           <div>
             <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">تذكير بتسجيل عباداتي</div>
-            <div class="sr-desc">إشعار يومي في الوقت اللي تحدده</div>
+            <div class="sr-desc">إشعار في المواعيد اللي تحددها</div>
           </div>
-          <label style="flex-shrink:0"><input type="checkbox" id="reminder-enabled-toggle" onchange="onReminderToggle(this.checked)"></label>
+          <label style="flex-shrink:0"><input type="checkbox" id="reminder-enabled-toggle" onchange="onGeneralReminderToggle(this.checked)"></label>
         </div>
-        <div class="field" id="reminder-time-row" style="margin-top:.75rem;display:none">
-          <label for="reminder-time-input" style="font-size:var(--fs-caption);color:var(--text-3);display:block;margin-bottom:.35rem">وقت التذكير</label>
-          <input type="time" id="reminder-time-input" value="20:00" onchange="onReminderTimeChange(this.value)">
-        </div>
+        <div id="reminder-times-list" style="margin-top:.75rem;display:none"></div>
+        <button class="btn-add" id="reminder-add-btn" style="width:100%;justify-content:center;margin-top:.6rem;display:none" onclick="addGeneralReminder()"><span data-icon="plus" data-size="15"></span>إضافة موعد</button>
         <div class="sr-desc" id="reminder-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
       </div>
 
@@ -969,6 +1029,14 @@ body.has-offline-banner .main-header{top:34px;}
 
         <div class="field"><label>وقت محدد (اختياري)</label><input id="wm-time" type="time"></div>
 
+        <!-- تذكيرات العبادة — أندرويد نيتف + عبادة موجودة بس (Phase 3) -->
+        <div class="field" id="wm-reminders-row" style="display:none">
+          <label>تذكيرات العبادة</label>
+          <div id="wm-reminders-list"></div>
+          <button type="button" class="btn-add" style="width:100%;justify-content:center;margin-top:.4rem" onclick="addWorshipReminder()"><span data-icon="plus" data-size="15"></span>إضافة موعد</button>
+          <div class="sr-desc" id="wm-reminders-note" style="display:none;margin-top:.4rem;color:var(--warning,#b45309)"></div>
+        </div>
+
         <div class="field-row">
           <div class="field"><label>تاريخ بداية (اختياري)</label><input id="wm-start-date" type="date"></div>
           <div class="field"><label>تاريخ نهاية (اختياري)</label><input id="wm-end-date" type="date"></div>
@@ -992,6 +1060,7 @@ body.has-offline-banner .main-header{top:34px;}
     <div class="sheet-handle"></div>
     <div class="modal-title" id="am-title"></div>
     <div style="display:flex;flex-direction:column;gap:.4rem">
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pin')" id="am-pin-btn"><span data-icon="pin" data-size="16"></span>ثبّت في يومي</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('edit')"><span data-icon="pencil" data-size="16"></span>تعديل</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('duplicate')"><span data-icon="copy" data-size="16"></span>تكرار</button>
       <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="worshipAction('pause')" id="am-pause-btn"><span data-icon="pause" data-size="16"></span>إيقاف مؤقت</button>
@@ -1141,6 +1210,11 @@ async function openLocalDB(userId){
     syncQueue: '++qid, entityType, entityId, createdAt, syncStatus',
     meta: 'key',
   });
+  // v2: ثوابت اليوم (worship_pins). Dexie بيرقّي الـschema من غير أي
+  // فقدان للبيانات الموجودة — الجداول القديمة بتتنقل زي ما هي.
+  db.version(2).stores({
+    worshipPins: 'id, worship_id, scope, pin_date, syncStatus, deleted_at',
+  });
   await db.open();
   return db;
 }
@@ -1191,6 +1265,7 @@ async function processQueueItem(item){
   }
   else if(item.entityType==='daily_note') await SB.upsert('daily_notes', item.payload, 'user_id,date');
   else if(item.entityType==='fellowship_settings') await SB.upsert('fellowship_settings', item.payload, 'user_id');
+  else if(item.entityType==='worship_pin') await SB.upsert('worship_pins', item.payload, 'id'); // إلغاء التثبيت = upsert بـdeleted_at (tombstone)، نفس نمط حذف العبادة
   else return true; // نوع غير معروف — تجاهله بدل ما يعلّق الطابور
   await markLocalSynced(item.entityType, item.entityId);
   return true;
@@ -1202,6 +1277,7 @@ async function markLocalSynced(entityType, entityId){
     else if(entityType==='daily_log') await localDB.dailyLogs.update(entityId, {syncStatus:'synced'});
     else if(entityType==='daily_note') await localDB.dailyNotes.update(entityId, {syncStatus:'synced'});
     else if(entityType==='fellowship_settings') await localDB.fellowshipSettings.update(entityId, {syncStatus:'synced'});
+    else if(entityType==='worship_pin') await localDB.worshipPins.update(entityId, {syncStatus:'synced'});
   } catch(e){}
 }
 
@@ -1272,6 +1348,17 @@ async function pullServerChanges(){
       const local = await localDB.dailyNotes.get(rn.date);
       if(local && local.syncStatus==='pending') continue;
       await localDB.dailyNotes.put({...rn, syncStatus:'synced'});
+    }
+  } catch(e){}
+
+  // ثوابت اليوم — try/catch عشان لو migration 021 لسه ماتشغّلتش على
+  // السيرفر (الجدول مش موجود) التطبيق كله مايقفش، الميزة بس تتعطّل
+  try {
+    const remotePins = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+    for(const rp of remotePins){
+      const local = await localDB.worshipPins.get(rp.id);
+      if(local && local.syncStatus==='pending') continue;
+      await localDB.worshipPins.put({...rp, syncStatus:'synced'});
     }
   } catch(e){}
 
@@ -1428,6 +1515,7 @@ if(IS_NATIVE){
       collectAndSyncWidgetSnapshot(); // اعرض حالة اليوم المحلية فورًا (Local-first) قبل ما ننتظر نتيجة الشبكة
       checkWidgetPinResultOnResume();
       checkForAppUpdate();
+      reminderLifecycleResync(); // أعِد تسليح التذكيرات (يغطّي تغيّر اليوم/إعادة التشغيل)
       (Network ? Network.getStatus() : Promise.resolve({connected:navigator.onLine})).then(s=>{
         isOnline = !!s.connected;
         updateSyncBadge();
@@ -1468,15 +1556,22 @@ if(IS_NATIVE){
   }
 
   if(LocalNotifications){
-    // الضغط على إشعار التذكير اليومي يودّي لتبويب "اليوم" مباشرة —
-    // بيشتغل سواء التطبيق كان شغال في الخلفية أو مقفول تمامًا
-    LocalNotifications.addListener('localNotificationActionPerformed', () => {
-      routeDeepLink('today');
+    // الضغط على إشعار: تفقّد الأصحاب → صحبتي؛ غير كده → "اليوم"
+    LocalNotifications.addListener('localNotificationActionPerformed', (ev) => {
+      const isCheckin = ev?.notification?.extra?.type==='checkin';
+      if(isCheckin){
+        const btn = document.querySelector('.bn-btn[data-tab="rafeqa"]');
+        if(btn && currentUser){ switchTab('rafeqa', btn); _rafeqaSub='sohba'; switchRafeqaSub('sohba'); }
+      } else {
+        routeDeepLink('today');
+      }
     });
   }
 
-  document.addEventListener('DOMContentLoaded', initDailyReminderFromStorage);
-  if(document.readyState !== 'loading') initDailyReminderFromStorage();
+  // ترحيل الصيغة القديمة + إعادة تسليح كل التذكيرات عند بدء التطبيق
+  const initReminders = ()=>{ migrateOldReminder(); rescheduleAllReminders(); };
+  document.addEventListener('DOMContentLoaded', initReminders);
+  if(document.readyState !== 'loading') initReminders();
 }
 
 // ════════════════════════════════════════════
@@ -1497,18 +1592,33 @@ async function collectAndSyncWidgetSnapshot(){
     const applicable = worships.filter(w=>isApplicable(w, todayStr));
     const total = applicable.length;
     const completed = applicable.filter(w=>logByWorship[w.id]?.status==='completed').length;
-    // أول عبادة لسه مسجّلتش، بنفس ترتيب فترات اليوم في شاشة "اليوم"
+    // الأولوية للثوابت غير المكتملة (بند 11/56) — لو فيه ثابت لسه
+    // متسجّلش، هو "التالي" في الودجت؛ غير كده نرجع لمنطق أول عبادة
+    // مجدولة غير مكتملة زي ما هو
     let nextWorshipName = '';
-    for(const sec of DAY_SECTIONS){
-      const items = applicable.filter(w=>w.day_section===sec.key).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-      const pending = items.find(w=>logByWorship[w.id]?.status!=='completed');
-      if(pending){ nextWorshipName = pending.name; break; }
+    let nextIsPin = false;
+    try {
+      const pinnedIds = await pinnedWorshipsForDate(todayStr);
+      for(const wid of pinnedIds){
+        if(logByWorship[wid]?.status!=='completed'){
+          const pw = worships.find(x=>x.id===wid);
+          if(pw){ nextWorshipName = pw.name; nextIsPin = true; break; }
+        }
+      }
+    } catch(e){}
+    if(!nextWorshipName){
+      for(const sec of DAY_SECTIONS){
+        const items = applicable.filter(w=>w.day_section===sec.key).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+        const pending = items.find(w=>logByWorship[w.id]?.status!=='completed');
+        if(pending){ nextWorshipName = pending.name; break; }
+      }
     }
     await WidgetBridge.updateSnapshot({
       date: todayStr,
       completedCount: completed,
       totalCount: total,
       nextWorshipName,
+      nextIsPin,
       privacyMode: isWidgetPrivacyMode(),
     });
   } catch(e){ /* الودجت ميزة إضافية — أي خطأ هنا ميأثرش على التطبيق نفسه */ }
@@ -1626,110 +1736,461 @@ function routeDeepLink(tab){
 }
 
 // ════════════════════════════════════════════
-//  التذكير اليومي (Local Notifications) — أندرويد بس. تفضيل جهاز
-//  محلي بحت (وقت/تفعيل)، متخزّنش في Supabase — كل جهاز له تذكيره
-//  الخاص، ومفيش داعي يتزامن بين الأجهزة.
+//  مواعيد التذكير (Local Notifications متعددة) — أندرويد نيتف بس.
+//  تفضيلات جهاز محلية بحتة (localStorage)، متتزامنش مع Supabase —
+//  كل جهاز له مواعيده. مفيش أي setTimeout: كل الجدولة عبر
+//  LocalNotifications (نظام أندرويد نفسه بيصحّيها، وبتستمر بعد
+//  إعادة التشغيل عبر BootReceiver بتاع الـplugin).
+//
+//  نوعان:
+//  - تذكير عام (general): "افتح أوّاب وسجّل يومك" — مجدول repeating
+//    (يومي أو أسبوعي على أيام محددة) عشان يشتغل حتى لو التطبيق مفتِحش
+//    لأيام. مفيش مفهوم "إنجاز" له.
+//  - تذكير عبادة (worship): مجدول كـone-shots للأيام القادمة (أفق
+//    REM_HORIZON يوم) عشان نقدر نلغي مواعيد النهاردة بمجرد إنجاز
+//    العبادة، ونعيد التسليح عند فتح التطبيق/رجوعه/بداية يوم جديد.
 // ════════════════════════════════════════════
-const REMINDER_STORAGE_KEY = 'awwab-daily-reminder';
-const REMINDER_NOTIF_ID = 9001;
+const REM_GEN_KEY = 'awwab-reminders-general';    // {enabled, times:[{hour,minute,days}]}
+const REM_WOR_KEY = 'awwab-reminders-worship';    // {[worshipId]: [{hour,minute,days}]}
+const REM_REG_KEY = 'awwab-reminder-registry';    // {general:[ids], worship:[{id,worshipId,fireAt}]}
+const REM_LASTDAY_KEY = 'awwab-reminder-lastday';
+const REM_CHK_KEY = 'awwab-checkin-schedules';     // {[compId]:{name,times:[{hour,minute,days}]}}
+const REM_GEN_CHANNEL = 'daily-reminder';         // نفس القناة القديمة (backward-compatible)
+const REM_WOR_CHANNEL = 'worship-reminder';
+const REM_CHK_CHANNEL = 'companion-checkin';
+const REM_GEN_ID_BASE = 90000;
+const REM_WOR_ID_BASE = 100000;
+const REM_CHK_ID_BASE = 200000;
+const MAX_REMINDER_TIMES = 5;
+const REM_HORIZON = 7;   // أيام قدّام نجدول فيها تذكيرات العبادات (one-shots)
 
-function loadReminderPref(){
+function remLoad(key, fallback){ try { const r=localStorage.getItem(key); return r?JSON.parse(r):fallback; } catch(e){ return fallback; } }
+function remSave(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+// ترحيل من الصيغة القديمة (وقت واحد) لصيغة المواعيد المتعددة، مرة واحدة
+function migrateOldReminder(){
   try {
-    const raw = localStorage.getItem(REMINDER_STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(localStorage.getItem(REM_GEN_KEY)) return; // اتعمل بالفعل
+    const oldRaw = localStorage.getItem('awwab-daily-reminder');
+    if(!oldRaw) return;
+    const old = JSON.parse(oldRaw);
+    const gen = { enabled: !!old.enabled, times: [] };
+    if(old.enabled) gen.times.push({ hour: old.hour??20, minute: old.minute??0, days:'daily' });
+    remSave(REM_GEN_KEY, gen);
+    localStorage.removeItem('awwab-daily-reminder');
   } catch(e){}
-  return { enabled:false, hour:20, minute:0 };
-}
-function saveReminderPref(pref){
-  try { localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify(pref)); } catch(e){}
 }
 
-async function initDailyReminderFromStorage(){
+function loadGeneralReminders(){ return remLoad(REM_GEN_KEY, { enabled:false, times:[] }); }
+function saveGeneralReminders(v){ remSave(REM_GEN_KEY, v); }
+function loadWorshipReminders(){ return remLoad(REM_WOR_KEY, {}); }
+function saveWorshipReminders(v){ remSave(REM_WOR_KEY, v); }
+function getWorshipReminderTimes(wid){ return (loadWorshipReminders()[wid])||[]; }
+function setWorshipReminderTimes(wid, times){
+  const all = loadWorshipReminders();
+  if(times && times.length) all[wid] = times; else delete all[wid];
+  saveWorshipReminders(all);
+}
+// جداول تفقّد الأصحاب (Phase 8) — مخزّنة محليًا بمعرّف العلاقة
+function loadCheckinSchedules(){ return remLoad(REM_CHK_KEY, {}); }
+function getCheckinTimes(compId){ return (loadCheckinSchedules()[compId]?.times)||[]; }
+function setCheckinTimes(compId, name, times){
+  const all = loadCheckinSchedules();
+  if(times && times.length) all[compId] = { name, times }; else delete all[compId];
+  remSave(REM_CHK_KEY, all);
+}
+
+async function remPermissionGranted(){
+  if(!IS_NATIVE) return false;
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const p = await LocalNotifications.checkPermissions();
+    return p.display === 'granted';
+  } catch(e){ return false; }
+}
+async function remRequestPermission(){
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const r = await LocalNotifications.requestPermissions();
+    return r.display === 'granted';
+  } catch(e){ return false; }
+}
+async function remEnsureChannels(){
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    await LocalNotifications.createChannel({ id:REM_GEN_CHANNEL, name:'مواعيد التذكير', description:'تذكير بتسجيل عباداتك', importance:4, visibility:1 }).catch(()=>{});
+    await LocalNotifications.createChannel({ id:REM_WOR_CHANNEL, name:'تذكيرات العبادات', description:'تذكير بعبادة معيّنة', importance:4, visibility:1 }).catch(()=>{});
+    await LocalNotifications.createChannel({ id:REM_CHK_CHANNEL, name:'تفقّد الأصحاب', description:'تذكير بتفقّد صحبتك', importance:4, visibility:1 }).catch(()=>{});
+  } catch(e){}
+}
+
+// أوقات وقوع موعد خلال الأفق: Date math خالص، مفيش setTimeout.
+// days: 'daily' أو مصفوفة أيام (0=أحد..6=سبت، نفس getDay()).
+function reminderOccurrences(hour, minute, days, horizonDays, now){
+  const out = [];
+  now = now || new Date();
+  for(let d=0; d<horizonDays; d++){
+    const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate()+d, hour, minute, 0, 0);
+    if(dt.getTime() <= now.getTime()) continue; // فات
+    if(days!=='daily' && !(Array.isArray(days) && days.includes(dt.getDay()))) continue;
+    out.push(dt);
+  }
+  return out;
+}
+
+// بناء قائمة الإشعارات + سجل الجدولة من التفضيلات الحالية — دالة نقية
+// (مفيش IS_NATIVE gate ولا نداء plugin) عشان تبقى قابلة للاختبار.
+// بتقرا loadGeneralReminders/loadWorshipReminders + worships + dayLogsMap.
+// completedTodayIds: Set اختياري لمعرّفات العبادات المكتملة النهاردة
+// (بيتقرا من localDB في rescheduleAllReminders عشان مايعتمدش على
+// اليوم المعروض حاليًا). لو مش متوفّر، بيرجع لـdayLogsMap+viewDate.
+function buildReminderSchedule(now, completedTodayIds){
+  now = now || new Date();
+  const toSchedule = [];
+  const newReg = { general:[], worship:[] };
+  const today = getToday();
+  const isDoneToday = (wid)=> completedTodayIds
+    ? completedTodayIds.has(wid)
+    : (dayLogsMap[wid]?.status==='completed' && viewDate===today);
+
+  const gen = loadGeneralReminders();
+  if(gen.enabled){
+    gen.times.forEach((t, idx)=>{
+      if(idx>=MAX_REMINDER_TIMES) return;
+      if(t.days==='daily'){
+        const id = REM_GEN_ID_BASE + idx*10;
+        toSchedule.push({ id, title:'أوّاب', body:'افتح أوّاب وسجّل يومك', channelId:REM_GEN_CHANNEL,
+          schedule:{ on:{ hour:t.hour, minute:t.minute }, allowWhileIdle:true } });
+        newReg.general.push(id);
+      } else if(Array.isArray(t.days)){
+        t.days.forEach(dow=>{
+          const id = REM_GEN_ID_BASE + idx*10 + (dow+1);
+          toSchedule.push({ id, title:'أوّاب', body:'افتح أوّاب وسجّل يومك', channelId:REM_GEN_CHANNEL,
+            schedule:{ on:{ weekday:dow+1, hour:t.hour, minute:t.minute }, allowWhileIdle:true } });
+          newReg.general.push(id);
+        });
+      }
+    });
+  }
+
+  let notifId = REM_WOR_ID_BASE;
+  const worAll = loadWorshipReminders();
+  for(const wid of Object.keys(worAll)){
+    const w = worships.find(x=>x.id===wid);
+    if(!w) continue; // العبادة اتحذفت
+    const times = worAll[wid]||[];
+    const completedToday = isDoneToday(wid);
+    times.slice(0, MAX_REMINDER_TIMES).forEach(t=>{
+      reminderOccurrences(t.hour, t.minute, t.days, REM_HORIZON, now).forEach(dt=>{
+        const occDateStr = dstr(dt);
+        if(!isApplicable(w, occDateStr)) return;
+        if(occDateStr===today && completedToday) return; // اتعملت النهاردة
+        const id = notifId++;
+        toSchedule.push({ id, title:'أوّاب', body:`تذكير: ${w.name}`, channelId:REM_WOR_CHANNEL,
+          schedule:{ at: dt, allowWhileIdle:true } });
+        newReg.worship.push({ id, worshipId:wid, fireAt: dt.toISOString() });
+      });
+    });
+  }
+
+  // تفقّد الأصحاب — one-shots خلال الأفق. تفضيل محلي بحت، مفيش
+  // "إنجاز"، الضغط يفتح صحبتي. (بند 33-34)
+  newReg.checkin = [];
+  let chkId = REM_CHK_ID_BASE;
+  const chkAll = remLoad(REM_CHK_KEY, {});
+  for(const compId of Object.keys(chkAll)){
+    const entry = chkAll[compId];
+    (entry.times||[]).slice(0, MAX_REMINDER_TIMES).forEach(t=>{
+      reminderOccurrences(t.hour, t.minute, t.days, REM_HORIZON, now).forEach(dt=>{
+        const id = chkId++;
+        toSchedule.push({ id, title:'أوّاب', body:`حان وقت تفقد ${entry.name||'صاحبك'}`, channelId:REM_CHK_CHANNEL,
+          schedule:{ at: dt, allowWhileIdle:true }, extra:{ type:'checkin' } });
+        newReg.checkin.push({ id, compId, fireAt: dt.toISOString() });
+      });
+    });
+  }
+  return { toSchedule, newReg };
+}
+
+let _remRescheduleTimer = null;
+function scheduleReminderResync(){ // debounce لإعادة الجدولة بعد تغييرات متتالية
+  clearTimeout(_remRescheduleTimer);
+  _remRescheduleTimer = setTimeout(()=>{ rescheduleAllReminders(); }, 1200);
+}
+
+// الدالة المركزية: تلغي كل المجدول القديم بتاعنا وتبني من الأول
+// (idempotent تمامًا). آمنة الاستدعاء بأي عدد مرات.
+async function rescheduleAllReminders(){
   if(!IS_NATIVE) return;
-  const pref = loadReminderPref();
-  if(pref.enabled){
-    // إعادة الجدولة كل ما التطبيق يفتح — رخيصة وبتضمن استمرار التذكير
-    // حتى لو النظام مسح الجدولة القديمة لأي سبب (تحديث/إعادة تشغيل)
-    const { LocalNotifications } = window.Capacitor.Plugins;
-    const perm = await LocalNotifications.checkPermissions().catch(()=>({display:'denied'}));
-    if(perm.display === 'granted') scheduleDailyReminder(pref.hour, pref.minute, true);
-  }
-}
-
-async function scheduleDailyReminder(hour, minute, silent){
+  if(!(await remPermissionGranted())) return;
   const { LocalNotifications } = window.Capacitor.Plugins;
-  // إنشاء القناة (Android 8+) — عملية آمنة التكرار، مبتعملش تكرار لو
-  // القناة موجودة بالفعل
-  await LocalNotifications.createChannel({
-    id: 'daily-reminder',
-    name: 'التذكير اليومي',
-    description: 'تذكير يومي بتسجيل عباداتك',
-    importance: 4,
-    visibility: 1,
-  }).catch(()=>{});
-  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
-  await LocalNotifications.schedule({
-    notifications: [{
-      id: REMINDER_NOTIF_ID,
-      title: 'أوّاب',
-      body: 'حان وقت متابعة عباداتك اليوم',
-      schedule: { on: { hour, minute }, allowWhileIdle: true },
-      channelId: 'daily-reminder',
-    }],
-  });
-  if(!silent) showToast('اتفعّل التذكير اليومي');
-}
-async function cancelDailyReminder(){
-  const { LocalNotifications } = window.Capacitor.Plugins;
-  await LocalNotifications.cancel({ notifications:[{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
-}
+  await remEnsureChannels();
 
-async function onReminderToggle(checked){
-  const pref = loadReminderPref();
-  const noteEl = document.getElementById('reminder-permission-note');
-  const timeRow = document.getElementById('reminder-time-row');
-  if(checked){
-    const { LocalNotifications } = window.Capacitor.Plugins;
-    const res = await LocalNotifications.requestPermissions().catch(()=>({display:'denied'}));
-    if(res.display !== 'granted'){
-      document.getElementById('reminder-enabled-toggle').checked = false;
-      if(noteEl){ noteEl.style.display='block'; noteEl.textContent = 'محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
-      return;
+  // 1) ألغِ كل اللي جدولناه قبل كده
+  const reg = remLoad(REM_REG_KEY, { general:[], worship:[], checkin:[] });
+  const oldIds = [...(reg.general||[]), ...((reg.worship||[]).map(x=>x.id)), ...((reg.checkin||[]).map(x=>x.id))];
+  if(oldIds.length){ await LocalNotifications.cancel({ notifications: oldIds.map(id=>({id})) }).catch(()=>{}); }
+
+  // اقرأ العبادات المكتملة النهاردة من IndexedDB مباشرة (مش من اليوم
+  // المعروض) عشان تخطّي "اتعملت النهاردة" يبقى صح مهما كان المستخدم
+  // بيتصفّح أي يوم
+  let completedTodayIds = new Set();
+  try {
+    if(localDB){
+      const todayLogs = await localDB.dailyLogs.where('date').equals(getToday()).toArray();
+      todayLogs.forEach(l=>{ if(l.status==='completed') completedTodayIds.add(l.worshipId); });
     }
-    if(noteEl) noteEl.style.display = 'none';
-    if(timeRow) timeRow.style.display = 'block';
-    pref.enabled = true;
-    saveReminderPref(pref);
-    await scheduleDailyReminder(pref.hour, pref.minute);
-  } else {
-    if(timeRow) timeRow.style.display = 'none';
-    pref.enabled = false;
-    saveReminderPref(pref);
-    await cancelDailyReminder();
-    showToast('اتلغى التذكير اليومي');
+  } catch(e){}
+
+  // 2) ابنِ الجدول الجديد (دالة نقية) و 3) جدوله دفعة واحدة
+  const { toSchedule, newReg } = buildReminderSchedule(new Date(), completedTodayIds);
+  if(toSchedule.length){
+    try { await LocalNotifications.schedule({ notifications: toSchedule }); } catch(e){}
   }
-}
-async function onReminderTimeChange(value){
-  const [h,m] = value.split(':').map(Number);
-  const pref = loadReminderPref();
-  pref.hour = h; pref.minute = m;
-  saveReminderPref(pref);
-  if(pref.enabled) await scheduleDailyReminder(h, m);
+  remSave(REM_REG_KEY, newReg);
+  remSave(REM_LASTDAY_KEY, getToday());
 }
 
+// إلغاء تذكيرات عبادة معيّنة المتبقية "النهاردة فقط" بمجرد إنجازها،
+// من غير إعادة جدولة كاملة (سريع وقت الضغط). مواعيد بكرة تفضل زي ما هي.
+async function cancelWorshipRemindersForToday(worshipId){
+  if(!IS_NATIVE) return;
+  try {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    const reg = remLoad(REM_REG_KEY, { general:[], worship:[] });
+    const now = Date.now();
+    const today = getToday();
+    const toCancel = (reg.worship||[]).filter(x=> x.worshipId===worshipId && dstr(new Date(x.fireAt))===today && new Date(x.fireAt).getTime()>now);
+    if(!toCancel.length) return;
+    await LocalNotifications.cancel({ notifications: toCancel.map(x=>({id:x.id})) }).catch(()=>{});
+    reg.worship = (reg.worship||[]).filter(x=> !toCancel.some(c=>c.id===x.id));
+    remSave(REM_REG_KEY, reg);
+  } catch(e){}
+}
+
+// hook من مسار تسجيل العبادة — يتنادى بعد أي تغيير حالة
+function onWorshipStatusChangedForReminders(worshipId){
+  if(!IS_NATIVE) return;
+  if(viewDate !== getToday()) return; // التسجيل بيخصّ يوم تاني — مايأثرش على تذكيرات النهاردة
+  if(!getWorshipReminderTimes(worshipId).length) return; // العبادة دي مالهاش تذكيرات أصلاً
+  const done = dayLogsMap[worshipId]?.status==='completed';
+  if(done) cancelWorshipRemindersForToday(worshipId);
+  else scheduleReminderResync(); // اترجعت لغير مكتملة — أعِد التسليح
+}
+
+// عند فتح التطبيق/رجوعه من الخلفية: أعِد التسليح لو اليوم اتغيّر، أو
+// دايمًا (رخيص وبيضمن الاستمرارية). بننادي rescheduleAllReminders.
+async function reminderLifecycleResync(){
+  if(!IS_NATIVE) return;
+  if(!(await remPermissionGranted())) return;
+  await rescheduleAllReminders();
+}
+
+// ── UI: التذكير العام ──
 function renderReminderSettings(){
   const group = document.getElementById('reminder-settings-group');
   if(!group) return;
   if(!IS_NATIVE){ group.style.display='none'; return; }
   group.style.display = '';
-  const pref = loadReminderPref();
+  const gen = loadGeneralReminders();
   const toggle = document.getElementById('reminder-enabled-toggle');
-  const timeInput = document.getElementById('reminder-time-input');
-  const timeRow = document.getElementById('reminder-time-row');
-  if(toggle) toggle.checked = !!pref.enabled;
-  if(timeRow) timeRow.style.display = pref.enabled ? 'block' : 'none';
-  if(timeInput) timeInput.value = String(pref.hour).padStart(2,'0')+':'+String(pref.minute).padStart(2,'0');
+  if(toggle) toggle.checked = !!gen.enabled;
+  const list = document.getElementById('reminder-times-list');
+  const addBtn = document.getElementById('reminder-add-btn');
+  if(list) list.style.display = gen.enabled ? 'block' : 'none';
+  if(addBtn) addBtn.style.display = gen.enabled ? 'flex' : 'none';
+  if(list) list.innerHTML = gen.times.map((t,i)=>reminderRowHTML(t, `general:${i}`)).join('') || `<div class="sr-desc">مفيش مواعيد بعد — أضف موعد.</div>`;
 }
+
+function fmtTime12(hour, minute){
+  const am = hour<12; let h = hour%12; if(h===0) h=12;
+  return `${h}:${String(minute).padStart(2,'0')} ${am?'ص':'م'}`;
+}
+function daysSummary(days){
+  if(days==='daily' || !Array.isArray(days) || days.length===7) return 'يوميًا';
+  if(!days.length) return '—';
+  return days.slice().sort((a,b)=>a-b).map(d=>ARABIC_DAYS[d]).join('، ');
+}
+function reminderRowHTML(t, ref){
+  return `<div class="rem-row">
+    <button class="rem-row-main" onclick="openReminderTimeSheet('${ref}')">
+      <span class="rem-time">${fmtTime12(t.hour,t.minute)}</span>
+      <span class="rem-days">${esc(daysSummary(t.days))}</span>
+    </button>
+    <button class="rem-del" onclick="deleteReminderTime('${ref}')" aria-label="حذف">${ICON('trash',15)}</button>
+  </div>`;
+}
+
+async function onGeneralReminderToggle(checked){
+  const gen = loadGeneralReminders();
+  const noteEl = document.getElementById('reminder-permission-note');
+  if(checked){
+    if(!(await remPermissionGranted())){
+      const ok = await remRequestPermission();
+      if(!ok){
+        document.getElementById('reminder-enabled-toggle').checked = false;
+        if(noteEl){ noteEl.style.display='block'; noteEl.textContent='محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
+        return;
+      }
+    }
+    if(noteEl) noteEl.style.display='none';
+    gen.enabled = true;
+    if(!gen.times.length) gen.times.push({ hour:20, minute:0, days:'daily' }); // موعد افتراضي أول تفعيل
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+    await rescheduleAllReminders();
+    showToast('اتفعّلت مواعيد التذكير');
+  } else {
+    gen.enabled = false;
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+    await rescheduleAllReminders();
+    showToast('اتلغت مواعيد التذكير');
+  }
+}
+
+// محرّر موعد واحد (وقت + أيام) — مشترك بين العام وتذكيرات العبادة.
+// ref: "general:<idx>" أو "general:new" أو "<worshipId>:<idx>" أو "<worshipId>:new"
+let _remEditRef = null, _remEditDays = 'daily';
+function openReminderTimeSheet(ref){
+  _remEditRef = ref;
+  const { ctx, idx } = parseRemRef(ref);
+  const existing = idx==='new' ? null : getReminderByRef(ctx, idx);
+  _remEditDays = existing ? (existing.days==='daily' ? 'daily' : existing.days.slice()) : 'daily';
+  const hh = existing ? String(existing.hour).padStart(2,'0') : '20';
+  const mm = existing ? String(existing.minute).padStart(2,'0') : '00';
+  if(document.getElementById('rem-sheet-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay'; el.id='rem-sheet-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px">
+      <div class="sheet-handle"></div>
+      <div class="modal-title">${existing?'تعديل موعد':'موعد جديد'}</div>
+      <div class="field" style="margin-top:.6rem">
+        <label>الوقت</label>
+        <input type="time" id="rem-time-input" value="${hh}:${mm}" style="width:100%">
+      </div>
+      <div style="margin-top:.7rem">
+        <label style="font-size:var(--fs-caption);color:var(--text-3);display:block;margin-bottom:.4rem">الأيام</label>
+        <div id="rem-days-chips" class="rem-chips"></div>
+      </div>
+      <div class="modal-actions" style="margin-top:1rem">
+        <button class="m-cancel" onclick="document.getElementById('rem-sheet-overlay').remove()">إلغاء</button>
+        <button class="m-save" onclick="saveReminderTime()">حفظ</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  renderRemDaysChips();
+}
+function parseRemRef(ref){ const i = ref.lastIndexOf(':'); return { ctx: ref.slice(0,i), idx: ref.slice(i+1) }; }
+function getReminderByRef(ctx, idx){
+  let arr;
+  if(ctx==='general') arr = loadGeneralReminders().times;
+  else if(ctx.startsWith('checkin:')) arr = getCheckinTimes(ctx.slice(8));
+  else arr = getWorshipReminderTimes(ctx);
+  return arr[Number(idx)];
+}
+function renderRemDaysChips(){
+  const wrap = document.getElementById('rem-days-chips');
+  if(!wrap) return;
+  const isDaily = _remEditDays==='daily';
+  let html = `<button class="rem-chip ${isDaily?'on':''}" onclick="remSetDaily()">يوميًا</button>`;
+  for(let d=0; d<7; d++){
+    const on = !isDaily && Array.isArray(_remEditDays) && _remEditDays.includes(d);
+    html += `<button class="rem-chip ${on?'on':''}" onclick="remToggleDay(${d})">${ARABIC_DAYS_SHORT[d]}</button>`;
+  }
+  wrap.innerHTML = html;
+}
+function remSetDaily(){ _remEditDays='daily'; renderRemDaysChips(); }
+function remToggleDay(d){
+  if(_remEditDays==='daily') _remEditDays = [];
+  const i = _remEditDays.indexOf(d);
+  if(i>=0) _remEditDays.splice(i,1); else _remEditDays.push(d);
+  if(!_remEditDays.length) _remEditDays='daily'; // مايسمحش بصفر أيام
+  renderRemDaysChips();
+}
+async function saveReminderTime(){
+  const val = document.getElementById('rem-time-input').value || '20:00';
+  const [h,m] = val.split(':').map(Number);
+  const { ctx, idx } = parseRemRef(_remEditRef);
+  const days = (_remEditDays==='daily') ? 'daily' : _remEditDays.slice().sort((a,b)=>a-b);
+  const entry = { hour:h, minute:m, days };
+  if(ctx==='general'){
+    const gen = loadGeneralReminders();
+    if(idx==='new'){
+      if(gen.times.length>=MAX_REMINDER_TIMES){ showToast(`الحد الأقصى ${MAX_REMINDER_TIMES} مواعيد`,true); return; }
+      gen.times.push(entry);
+    } else gen.times[Number(idx)] = entry;
+    saveGeneralReminders(gen);
+  } else if(ctx.startsWith('checkin:')){
+    const compId = ctx.slice(8);
+    const sched = loadCheckinSchedules()[compId] || { name: _checkinEditName||'صاحبك', times:[] };
+    const times = sched.times.slice();
+    if(idx==='new'){
+      if(times.length>=MAX_REMINDER_TIMES){ showToast(`الحد الأقصى ${MAX_REMINDER_TIMES} مواعيد`,true); return; }
+      times.push(entry);
+    } else times[Number(idx)] = entry;
+    setCheckinTimes(compId, sched.name || _checkinEditName || 'صاحبك', times);
+  } else {
+    const times = getWorshipReminderTimes(ctx);
+    if(idx==='new'){
+      if(times.length>=MAX_REMINDER_TIMES){ showToast(`الحد الأقصى ${MAX_REMINDER_TIMES} مواعيد`,true); return; }
+      times.push(entry);
+    } else times[Number(idx)] = entry;
+    setWorshipReminderTimes(ctx, times);
+  }
+  document.getElementById('rem-sheet-overlay')?.remove();
+  if(ctx==='general') renderReminderSettings();
+  else if(ctx.startsWith('checkin:')) renderCheckinTimes(ctx.slice(8));
+  else renderWorshipReminders();
+  await rescheduleAllReminders();
+  showToast('اتحفظ الموعد');
+}
+async function deleteReminderTime(ref){
+  const { ctx, idx } = parseRemRef(ref);
+  if(ctx==='general'){
+    const gen = loadGeneralReminders();
+    gen.times.splice(Number(idx),1);
+    saveGeneralReminders(gen);
+    renderReminderSettings();
+  } else if(ctx.startsWith('checkin:')){
+    const compId = ctx.slice(8);
+    const sched = loadCheckinSchedules()[compId]; if(!sched) return;
+    const times = sched.times.slice(); times.splice(Number(idx),1);
+    setCheckinTimes(compId, sched.name, times);
+    renderCheckinTimes(compId);
+  } else {
+    const times = getWorshipReminderTimes(ctx);
+    times.splice(Number(idx),1);
+    setWorshipReminderTimes(ctx, times);
+    renderWorshipReminders();
+  }
+  await rescheduleAllReminders();
+}
+
+// ── UI: تذكيرات العبادة (جوه نافذة تعديل العبادة) ──
+async function renderWorshipReminders(){
+  const row = document.getElementById('wm-reminders-row');
+  if(!row) return;
+  // بتظهر لعبادة موجودة (تعديل) وعلى أندرويد نيتف بس
+  if(!IS_NATIVE || !editingWorshipId){ row.style.display='none'; return; }
+  row.style.display = '';
+  const times = getWorshipReminderTimes(editingWorshipId);
+  const list = document.getElementById('wm-reminders-list');
+  const note = document.getElementById('wm-reminders-note');
+  if(list) list.innerHTML = times.map((t,i)=>reminderRowHTML(t, `${editingWorshipId}:${i}`)).join('') || `<div class="sr-desc">مفيش تذكيرات لهذه العبادة.</div>`;
+  if(note){
+    const granted = await remPermissionGranted();
+    note.style.display = granted ? 'none' : 'block';
+    if(!granted) note.textContent = 'التذكيرات محتاجة إذن الإشعارات — فعّله من "مواعيد التذكير" في الإعدادات.';
+  }
+}
+function addWorshipReminder(){
+  if(!editingWorshipId) return;
+  hintOnce('reminder','يمكنك إضافة أكثر من موعد بالساعة والدقيقة.');
+  openReminderTimeSheet(`${editingWorshipId}:new`);
+}
+function addGeneralReminder(){ hintOnce('reminder','يمكنك إضافة أكثر من موعد بالساعة والدقيقة.'); openReminderTimeSheet('general:new'); }
 
 // ════════════════════════════════════════════
 //  إعدادات الودجت + وضع الخصوصية (Phase 8) — تفضيل جهاز محلي بحت،
@@ -1871,6 +2332,12 @@ async function preloadLocalData(){
       const fsRes = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
       if(fsRes[0]) await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'});
     } catch(e){}
+    // ثوابت اليوم — try/catch منفصل عشان لو migration 021 لسه ماتشغّلتش
+    // الباقي كله يفضل يتحمّل عادي
+    try {
+      const pinsRes = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&select=*`);
+      for(const p of pinsRes){ await localDB.worshipPins.put({...p, syncStatus:'synced'}); }
+    } catch(e){}
     await localDB.meta.put({key:'lastSyncedAt', value:new Date().toISOString()});
     // علامة "أقدم تاريخ موثوق إن الكاش المحلي كامل بداية منه" —
     // localLogsInRange بتستخدمها عشان تعرف تجيب فجوات قديمة من
@@ -1927,6 +2394,12 @@ const ICON_PATHS = {
   gem: '<path d="M4.5 8.5 8 3.5h8l3.5 5-7.5 12Z"/><path d="M4.5 8.5h15"/><path d="M9 3.5l3 5-3.2 12"/><path d="M15 3.5l-3 5 3.2 12"/>',
   brain: '<path d="M9 4.8A2.8 2.8 0 0 0 6.2 7.6v.5A2.6 2.6 0 0 0 4.5 10.6v.6a2.6 2.6 0 0 0 1.2 2.2 2.8 2.8 0 0 0 2.8 3.3h.5v2.3a1.6 1.6 0 0 0 3.2 0"/><path d="M15 4.8a2.8 2.8 0 0 1 2.8 2.8v.5a2.6 2.6 0 0 1 1.7 2.5v.6a2.6 2.6 0 0 1-1.2 2.2 2.8 2.8 0 0 1-2.8 3.3h-.5v2.3a1.6 1.6 0 0 1-3.2 0V7"/>',
   arrowTrend: '<path d="M4 16.5 10 10l4 4 6.5-7.5"/><path d="M15.5 6.5H21V12"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.7l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1Z"/>',
+  pinOff: '<path d="M3 3l18 18"/><path d="M12 17v5"/><path d="M15 10.8a2 2 0 0 0 1.1 1.7l1.8.9A2 2 0 0 1 19 15.2V16a1 1 0 0 1-1 1H9"/><path d="M9 7v3.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16"/><path d="M8 2h8a2 2 0 0 1 0 4 1 1 0 0 0-1 1"/>',
+  messageCircle: '<path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3.5 20.5l1.5-5.1A8.5 8.5 0 1 1 21 11.5Z"/>',
+  alarmClock: '<circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.5"/><path d="M5 3 2.5 5.5"/><path d="M19 3l2.5 2.5"/>',
+  userMinus: '<circle cx="9" cy="8" r="3.4"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16.5 11.5h5"/>',
+  ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
 };
 function ICON(name, size){
   size = size || 20;
@@ -2875,6 +3348,7 @@ async function enterMain(){
   }
   initTourCheck();
   checkForAppUpdate(); // بدون await — فحص خلفي، مايأخّرش فتح التطبيق خالص
+  rescheduleAllReminders(); // دلوقتي worships + dayLogsMap اتحمّلوا، فتذكيرات العبادات تتجدول صح
 }
 
 function switchTab(id,btn){
@@ -2891,7 +3365,7 @@ function switchTab(id,btn){
   if(id==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
   if(id==='calendar') renderCalendar();
   if(id==='progress') renderProgress();
-  if(id==='rafeqa') renderRafeqa();
+  if(id==='rafeqa') renderRafeqaPanel();
   if(id==='worships') renderBuilder();
   if(id==='settings') renderSettings();
 }
@@ -2973,6 +3447,7 @@ async function loadDay(dateStr){
 
   document.getElementById('daily-notes').value = noteRow?.notes || '';
   renderTimeline(dateStr);
+  await renderDayPins(dateStr);
   renderWeeklyGoals();
   await renderCatchup(dateStr);
   updateDayRing();
@@ -3128,7 +3603,7 @@ async function setBooleanStatus(worshipId, val, dateStr){
   const cur = dayLogsMap[worshipId]?.status;
   const next = cur===val ? 'unrecorded' : val;
   await upsertLog(worshipId, dateStr, {status:next});
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 
 async function setPrayerState(worshipId, stateKey, dateStr){
@@ -3143,7 +3618,7 @@ async function setPrayerState(worshipId, stateKey, dateStr){
   } else {
     await upsertLog(worshipId, dateStr, {status:'completed', value:s.value});
   }
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 
 async function stepValue(worshipId, delta, target, dateStr){
@@ -3151,12 +3626,12 @@ async function stepValue(worshipId, delta, target, dateStr){
   const val = Math.max(0, cur+delta);
   const status = target && val>=target ? 'completed' : (val>0 ? 'unrecorded' : 'unrecorded');
   await upsertLog(worshipId, dateStr, {value:val, status});
-  renderTimeline(dateStr); updateDayRing();
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId);
 }
 
 async function setMultiStatus(worshipId, status, value, dateStr){
   await upsertLog(worshipId, dateStr, {status, value});
-  renderTimeline(dateStr); updateDayRing(); showToast('تم الحفظ');
+  renderTimeline(dateStr); updateDayRing(); repaintPinStatuses(); onWorshipStatusChangedForReminders(worshipId); showToast('تم الحفظ');
 }
 async function setQuality(worshipId, q, dateStr){
   const cur = dayLogsMap[worshipId]?.quality_rating;
@@ -3653,21 +4128,185 @@ function recurrenceLabel(w){
   return '';
 }
 
+// ════════════════════════════════════════════
+//  ثوابت اليوم (Worship Pins) — Offline-first، بيمرّ بنفس الـSync
+//  Queue زي أي تعديل تاني. إلغاء التثبيت = tombstone (deleted_at).
+// ════════════════════════════════════════════
+const MAX_PINS = 5;
+
+async function getActivePins(){
+  if(!localDB) return [];
+  try { return (await localDB.worshipPins.toArray()).filter(p=>!p.deleted_at); }
+  catch(e){ return []; }
+}
+// هل العبادة مثبّتة وظاهرة في تاريخ معيّن؟ (always لو مجدولة، أو today بنفس التاريخ)
+function pinAppliesToDate(pin, w, dateStr){
+  if(pin.deleted_at) return false;
+  if(pin.scope==='today') return pin.pin_date===dateStr;
+  return w ? isApplicable(w, dateStr) : false; // always
+}
+async function pinnedWorshipsForDate(dateStr){
+  const pins = await getActivePins();
+  const ids = new Set();
+  for(const p of pins){
+    const w = worships.find(x=>x.id===p.worship_id);
+    if(w && pinAppliesToDate(p, w, dateStr)) ids.add(p.worship_id);
+  }
+  return [...ids];
+}
+async function isWorshipPinned(worshipId){
+  const pins = await getActivePins();
+  return pins.some(p=>p.worship_id===worshipId);
+}
+
+async function pinWorship(worshipId, scope){
+  const dateStr = getToday();
+  // الحد الأقصى: بنعدّ العبادات المثبّتة والظاهرة النهاردة
+  const alreadyPinned = await pinnedWorshipsForDate(dateStr);
+  if(!alreadyPinned.includes(worshipId) && alreadyPinned.length>=MAX_PINS){
+    showToast('يمكنك تثبيت حتى 5 عبادات فقط للحفاظ على بساطة يومك',true);
+    return false;
+  }
+  // dedup: لو فيه ثابت من نفس النوع نشط بالفعل، مانعملش تاني
+  const pins = await getActivePins();
+  const dup = pins.find(p=>p.worship_id===worshipId && p.scope===scope && (scope==='always' || p.pin_date===dateStr));
+  if(dup) return true;
+  const id = uuid();
+  const body = {
+    id, user_id: currentUser.id, worship_id: worshipId, scope,
+    pin_date: scope==='today' ? dateStr : null, deleted_at: null,
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+  };
+  await localDB.worshipPins.put({...body, syncStatus:'pending'});
+  await enqueueSync('worship_pin', id, 'create', body);
+  return true;
+}
+
+async function unpinWorship(worshipId){
+  const pins = await getActivePins();
+  const rows = pins.filter(p=>p.worship_id===worshipId);
+  for(const r of rows){
+    const body = {...stripLocalFields(r), deleted_at: new Date().toISOString(), updated_at: new Date().toISOString()};
+    await localDB.worshipPins.put({...body, syncStatus:'pending'});
+    await enqueueSync('worship_pin', r.id, 'update', body);
+  }
+}
+
+let _dayPinnedIds = []; // ثوابت اليوم الظاهرة حاليًا (للـrepaint السريع بدون قراءة DB)
+async function renderDayPins(dateStr){
+  const slot = document.getElementById('pins-slot');
+  if(!slot) return;
+  // ثوابت اليوم بتظهر في "اليوم" الحقيقي بس، مش وأنت بتتصفّح أيام تانية
+  if(dateStr !== getToday()){ slot.innerHTML=''; _dayPinnedIds=[]; return; }
+  const ids = await pinnedWorshipsForDate(dateStr);
+  if(!ids.length){ slot.innerHTML=''; _dayPinnedIds=[]; return; }
+  // بنفس ترتيب فترات اليوم
+  const ordered = worships
+    .filter(w=>ids.includes(w.id))
+    .sort((a,b)=>(DAY_SECTIONS.findIndex(s=>s.key===a.day_section)) - (DAY_SECTIONS.findIndex(s=>s.key===b.day_section)) || (a.sort_order||0)-(b.sort_order||0));
+  _dayPinnedIds = ordered.map(w=>w.id);
+  const rows = ordered.map(w=>pinRowHTML(w)).join('');
+  slot.innerHTML = `<div class="pins-wrap"><div class="pins-title">${ICON('pin',13)}ثوابت اليوم</div>${rows}</div>`;
+}
+function pinRowHTML(w){
+  const done = dayLogsMap[w.id]?.status==='completed';
+  return `<div class="pin-row ${done?'done':''}" data-pin-wid="${w.id}" onclick="focusWorshipCard('${w.id}')">
+    <div class="pin-ic">${ICON(worshipIconName(w),13)}</div>
+    <div class="pin-name">${esc(w.name)}</div>
+    <div class="pin-status">${done ? '✓ تم' : 'لم يُسجّل'}</div>
+  </div>`;
+}
+// تحديث سريع لحالة "تم/لم يُسجّل" في الثوابت بعد تسجيل عبادة، بدون
+// أي قراءة من IndexedDB (بيقرا dayLogsMap اللي في الذاكرة أصلاً)
+function repaintPinStatuses(){
+  if(!_dayPinnedIds.length) return;
+  for(const wid of _dayPinnedIds){
+    const row = document.querySelector(`#pins-slot .pin-row[data-pin-wid="${wid}"]`);
+    if(!row) continue;
+    const done = dayLogsMap[wid]?.status==='completed';
+    row.classList.toggle('done', done);
+    const st = row.querySelector('.pin-status');
+    if(st) st.textContent = done ? '✓ تم' : 'لم يُسجّل';
+  }
+}
+
+// الضغط على ثابت = يودّي للعبادة الأصلية في مكانها (مش نسخة تانية)
+function focusWorshipCard(worshipId){
+  const card = document.querySelector(`#timeline-slot .wcard[data-wid="${worshipId}"]`);
+  if(!card){ return; }
+  card.scrollIntoView({behavior: prefersReducedMotion()?'auto':'smooth', block:'center'});
+  card.classList.add('wcard-flash');
+  setTimeout(()=>card.classList.remove('wcard-flash'), 1400);
+}
+
 function openActionModal(id){
   actionWorshipId = id;
   const w = worships.find(x=>x.id===id);
   document.getElementById('am-title').textContent = w.name;
   document.getElementById('am-pause-btn').innerHTML = ICON(w.is_paused?'play':'pause',16) + (w.is_paused ? 'إعادة تفعيل' : 'إيقاف مؤقت');
   document.getElementById('am-hide-btn').innerHTML = ICON(w.is_hidden?'eye':'eyeOff',16) + (w.is_hidden ? 'إظهار' : 'إخفاء');
+  // زر التثبيت — بيتحدّث حسب حالة العبادة الحالية
+  isWorshipPinned(id).then(pinned=>{
+    const btn = document.getElementById('am-pin-btn');
+    if(btn) btn.innerHTML = ICON(pinned?'pinOff':'pin',16) + (pinned ? 'إلغاء التثبيت' : 'ثبّت في يومي');
+  });
   document.getElementById('action-modal').classList.remove('hidden');
 }
 function closeActionModal(){ document.getElementById('action-modal').classList.add('hidden'); }
+
+// اختيار نوع التثبيت — "اليوم فقط" أو "دائمًا"، بلغة بسيطة بدون أي
+// مصطلحات تقنية
+function openPinScopeSheet(worshipId, name){
+  hintOnce('pin','ثبّت العبادة التي لا تريد نسيانها لتظل أمامك طوال اليوم.');
+  if(document.getElementById('pin-scope-overlay')) return;
+  const el = document.createElement('div');
+  el.className='modal-overlay';
+  el.id='pin-scope-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:360px">
+      <div class="sheet-handle"></div>
+      <div class="modal-title">تثبيت "${esc(name)}"</div>
+      <p style="font-size:12.5px;color:var(--text-3);line-height:1.6;margin:.2rem 0 .9rem">تظهر في "ثوابت اليوم" أعلى عباداتك عشان متنساهاش.</p>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','today')">
+          <span style="font-weight:700;color:var(--text-1)">اليوم فقط</span>
+          <span style="font-size:11.5px;color:var(--text-3)">تظهر في ثوابت هذا اليوم فقط</span>
+        </button>
+        <button class="m-cancel" style="justify-content:flex-start;text-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;padding:.7rem 1rem;height:auto" onclick="confirmPin('${worshipId}','always')">
+          <span style="font-weight:700;color:var(--text-1)">دائمًا</span>
+          <span style="font-size:11.5px;color:var(--text-3)">تظهر كل يوم تكون فيه العبادة مجدولة</span>
+        </button>
+      </div>
+      <div class="modal-actions" style="margin-top:.9rem"><button class="m-cancel" onclick="document.getElementById('pin-scope-overlay').remove()">إلغاء</button></div>
+    </div>`;
+  document.body.appendChild(el);
+  mountIcons(el);
+}
+async function confirmPin(worshipId, scope){
+  document.getElementById('pin-scope-overlay')?.remove();
+  const ok = await pinWorship(worshipId, scope);
+  if(ok){
+    await renderDayPins(viewDate); updateDayRing(); collectAndSyncWidgetSnapshot();
+    showToast(scope==='today' ? 'تم التثبيت لهذا اليوم' : 'تم التثبيت دائمًا');
+  }
+}
 
 async function worshipAction(action){
   const w = worships.find(x=>x.id===actionWorshipId);
   if(!w) return;
   closeActionModal();
   if(action==='edit'){ openWorshipModal(w.id); return; }
+  if(action==='pin'){
+    // لو مثبّتة بالفعل → إلغاء مباشر. لو لأ → اختيار نوع التثبيت
+    if(await isWorshipPinned(w.id)){
+      await unpinWorship(w.id);
+      await renderDayPins(viewDate); updateDayRing(); collectAndSyncWidgetSnapshot();
+      showToast('تم إلغاء التثبيت');
+    } else {
+      openPinScopeSheet(w.id, w.name);
+    }
+    return;
+  }
   showLoading('جاري التنفيذ...');
   try {
     if(action==='duplicate'){
@@ -3725,6 +4364,7 @@ function openWorshipModal(existingId){
   document.getElementById('wm-end-date').value = w?.end_date || '';
   document.getElementById('wm-advanced').classList.toggle('open', !!w);
   refreshTrackingUI(); refreshRecurrenceUI(); refreshIconUI(); refreshDaysUI();
+  renderWorshipReminders(); // تذكيرات العبادة (تظهر في وضع التعديل + نيتف بس)
   document.getElementById('worship-modal').classList.remove('hidden');
 }
 function closeWorshipModal(){ document.getElementById('worship-modal').classList.add('hidden'); editingWorshipId=null; }
@@ -3827,6 +4467,7 @@ async function saveWorship(){
     await enqueueSync('worship', full.id, editingWorshipId?'update':'create', full);
     await loadWorships();
     renderBuilder();
+    rescheduleAllReminders(); // أيام/جدولة العبادة ممكن تكون اتغيّرت
     closeWorshipModal();
     showToast('تم الحفظ');
   } catch(e){ showToast('حصل خطأ في الحفظ',true); }
@@ -3846,6 +4487,8 @@ async function localDeleteWorship(id){
   const full = {...existing, deleted_at:new Date().toISOString(), updated_at:new Date().toISOString()};
   await localDB.worships.delete(id);
   await enqueueSync('worship', id, 'delete', full);
+  // نظّف تذكيرات العبادة المحذوفة (تفضيل محلي) وأعِد التسليح
+  try { setWorshipReminderTimes(id, []); rescheduleAllReminders(); } catch(e){}
 }
 async function deleteWorshipConfirm(){
   if(!editingWorshipId) return;
@@ -3909,10 +4552,11 @@ async function renderRafeqa(){
     if(!cards.length){ list.innerHTML = `<div class="empty-day-hint"><div class="eh-icon">${ICON('heartHandshake',22)}</div>لسه معدش رفقاء في المجموعة</div>`; return; }
     list.innerHTML = cards.map((c,i)=>{
       const av = AVATAR_COLORS[i%AVATAR_COLORS.length];
-      return `<div class="rafeqa-card">
+      // الضغط على المستخدم يفتح خيارات (طلب صحبة / تشجيع) — بند 14
+      return `<div class="rafeqa-card" onclick="openRafeqaUserSheet('${c.id}','${esc(c.name).replace(/'/g,"\\'")}')" style="cursor:pointer">
         <div class="rf-avatar" style="background:${av}">${c.name[0]}</div>
         <div class="rf-info"><div class="rf-status">${esc(c.text)}</div><div class="rf-hint">${esc(c.name)}</div></div>
-        <button class="btn-encourage" onclick="sendEncouragement('${c.id}',this)">${ICON('heart',13)}شجّعه</button>
+        <button class="btn-encourage" onclick="event.stopPropagation();sendEncouragement('${c.id}',this)">${ICON('heart',13)}شجّعه</button>
       </div>`;
     }).join('');
   } catch(e){ list.innerHTML = '<div class="empty-day-hint">تعذّر تحميل رفقة أواب</div>'; }
@@ -3933,6 +4577,377 @@ async function checkNewEncouragements(){
       localStorage.setItem('awwab-enc-seen-'+currentUser.id, rows[0].created_at);
     }
   } catch(e){}
+}
+
+// ════════════════════════════════════════════
+//  صحبتي (Companionship) — مساحة تفقد خاصة صغيرة (مش شبكة اجتماعية،
+//  مفيش feed/chat/followers). الحد 5 أشخاص مقبولين. كل التعديلات
+//  الحساسة عبر RPCs مؤمّنة (مش بتتعمل أوفلاين — بند 62)؛ العرض
+//  بيتكاش عشان يشتغل أوفلاين للقراءة بس.
+// ════════════════════════════════════════════
+let _rafeqaSub = 'feed';
+async function companionRPC(fn, args){
+  const { data, error } = await sbAuth.rpc(fn, args||{});
+  if(error) throw error;
+  return data;
+}
+function companionsCacheKey(){ return 'awwab-companions-'+(currentUser?.id||''); }
+
+// تلميح سياقي يظهر مرة واحدة فقط لكل مفتاح (بند 59: مش خطوات جولة
+// إجبارية، بس Highlight سياقي مرة واحدة)
+function hintOnce(key, text){
+  try { if(localStorage.getItem('awwab-hint-'+key)) return; } catch(e){ return; }
+  try { localStorage.setItem('awwab-hint-'+key,'1'); } catch(e){}
+  document.getElementById('hint-once-el')?.remove();
+  const el = document.createElement('div');
+  el.className='hint-once'; el.id='hint-once-el';
+  el.innerHTML = `${ICON('sparkle',16)}<span>${esc(text)}</span><button class="hx-close" aria-label="إغلاق" onclick="this.parentElement.remove()">${ICON('x',14)}</button>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 6500);
+}
+
+function renderRafeqaPanel(){
+  if(_rafeqaSub==='sohba') renderSohba(); else renderRafeqa();
+}
+function switchRafeqaSub(which){
+  _rafeqaSub = which;
+  const fb=document.getElementById('rf-sub-feed'), sb=document.getElementById('rf-sub-sohba');
+  if(fb) fb.classList.toggle('sel', which==='feed');
+  if(sb) sb.classList.toggle('sel', which==='sohba');
+  document.getElementById('rafeqa-feed-view').style.display = which==='feed' ? '' : 'none';
+  document.getElementById('rafeqa-sohba-view').style.display = which==='sohba' ? '' : 'none';
+  renderRafeqaPanel();
+  if(which==='sohba') hintOnce('sohba','صحبة خاصة للتواصي والتشجيع، ويمكنك التحكم فيما تشاركه.');
+}
+
+async function renderSohba(){
+  const view = document.getElementById('rafeqa-sohba-view');
+  if(!view) return;
+  if(!isOnline){
+    const cached = JSON.parse(localStorage.getItem(companionsCacheKey())||'null');
+    view.innerHTML = sohbaHTML(cached?.companions||[], [], true);
+    mountIcons(view);
+    return;
+  }
+  view.innerHTML = `<div class="empty-day-hint">جاري التحميل...</div>`;
+  try {
+    const [companions, requests] = await Promise.all([
+      companionRPC('get_my_companions'),
+      companionRPC('get_companion_requests'),
+    ]);
+    localStorage.setItem(companionsCacheKey(), JSON.stringify({companions, at:Date.now()}));
+    view.innerHTML = sohbaHTML(companions, requests, false);
+    mountIcons(view);
+  } catch(e){
+    // غالبًا migration 022/023 لسه ماتشغّلتش على السيرفر
+    view.innerHTML = `<div class="empty-day-hint"><div class="eh-icon">${ICON('heartHandshake',22)}</div>تعذّر تحميل صحبتي<br><span class="sr-desc">جرّب تاني بعد شوية</span></div>`;
+    mountIcons(view);
+  }
+}
+
+function sohbaHTML(companions, requests, offline){
+  const incoming = requests.filter(r=>r.direction==='incoming');
+  const outgoing = requests.filter(r=>r.direction==='outgoing');
+  let html = `<div class="sohba-top">
+    <div class="sohba-count">صحبتي · ${companions.length}/5</div>
+    <button class="icon-btn subtle" onclick="openCompanionSettings()" aria-label="إعدادات المشاركة" title="إعدادات المشاركة">${ICON('settings',17)}</button>
+  </div>
+  <div class="sr-desc" style="margin-bottom:.7rem">رفقة خاصة للتواصي والتشجيع على الثبات.</div>`;
+
+  if(offline){
+    html += `<div class="sohba-offline-note">${ICON('circleAlert',14)} أنت غير متصل — العرض من آخر نسخة محفوظة، والإجراءات تحتاج اتصالًا.</div>`;
+  }
+
+  // "أحتاج تفقدًا"
+  if(!offline){
+    html += `<button class="btn-add" style="width:100%;justify-content:center;margin-bottom:.9rem" onclick="openNeedCheckinSheet()">${ICON('heartHandshake',15)}أحتاج بعض التشجيع اليوم</button>`;
+  }
+
+  // طلبات واردة
+  if(incoming.length){
+    html += `<div class="section-label">طلبات صحبة</div>`;
+    html += incoming.map(r=>`<div class="companion-card">
+      <div class="cc-body">
+        <div class="cc-name">${esc(r.other_name)} يدعوك لصحبة تفقد خاصة</div>
+        ${r.invite_message?`<div class="cc-msg">${esc(r.invite_message)}</div>`:''}
+      </div>
+      <div class="cc-actions">
+        <button class="cc-btn primary" onclick="respondCompanion('${r.id}',true)">قبول</button>
+        <button class="cc-btn" onclick="respondCompanion('${r.id}',false)">اعتذار</button>
+      </div>
+    </div>`).join('');
+  }
+
+  // صحبتي المقبولين
+  if(companions.length){
+    html += `<div class="section-label" style="margin-top:1rem">أصحابي</div>`;
+    html += companions.map((c,i)=>companionCardHTML(c,i)).join('');
+  } else if(!incoming.length){
+    html += `<div class="empty-day-hint"><div class="eh-icon">${ICON('heartHandshake',22)}</div>لسه مفيش صحبة<br><span class="sr-desc">اضغط على أي شخص في "رفقة أوّاب" وابعتله طلب صحبة</span></div>`;
+  }
+
+  // طلبات صادرة (بانتظار الرد)
+  if(outgoing.length){
+    html += `<div class="section-label" style="margin-top:1rem">طلبات مُرسَلة</div>`;
+    html += outgoing.map(r=>`<div class="companion-card">
+      <div class="cc-body"><div class="cc-name">${esc(r.other_name)}</div><div class="cc-msg">بانتظار الرد…</div></div>
+      <div class="cc-actions"><button class="cc-btn" onclick="cancelCompanionReq('${r.id}')">إلغاء الطلب</button></div>
+    </div>`).join('');
+  }
+  return html;
+}
+
+function companionCardHTML(c, i){
+  const av = AVATAR_COLORS[i%AVATAR_COLORS.length];
+  const lines = [];
+  if(c.today_pct!=null) lines.push(`اليوم: ${c.today_pct}%`);
+  if(c.active_last7!=null) lines.push(fellowshipStreakText(c.active_last7, c.active_prev7));
+  const enc = (c.encourage_names||[]).filter(Boolean);
+  const summary = lines.length ? lines.join(' · ') : 'ثابت معك على الطريق';
+  let html = `<div class="companion-card">
+    <div class="rf-avatar" style="background:${av};flex-shrink:0">${(c.display_name||'؟')[0]}</div>
+    <div class="cc-body">
+      <div class="cc-name">${esc(c.display_name||'')}</div>
+      <div class="cc-msg">${esc(summary)}</div>
+      ${enc.length?`<div class="cc-encourage">يحتاج تشجيعًا في: ${esc(enc.join('، '))}</div>`:''}
+      ${c.needs_checkin?`<div class="cc-needs">${ICON('heartHandshake',12)} ${esc(c.needs_checkin_note||'يحتاج بعض التشجيع اليوم')}</div>`:''}
+    </div>
+    <div class="cc-side">
+      <button class="cc-icon-btn" onclick="encourageCompanion('${c.user_id}',this)" title="شجّعه">${ICON('heart',15)}</button>
+      ${c.whatsapp?`<button class="cc-icon-btn wa" onclick="openCompanionWhatsapp('${c.user_id}')" title="واتساب">${ICON('messageCircle',15)}</button>`:''}
+      <button class="cc-icon-btn" onclick="openCompanionManage('${c.comp_id}','${esc(c.display_name||'').replace(/'/g,"\\'")}')" title="إدارة">${ICON('moreVertical',15)}</button>
+    </div>
+  </div>`;
+  return html;
+}
+
+// ── إجراءات (كلها online-only، مش بتتأكد إلا بعد رد السيرفر — بند 62) ──
+function requireOnline(){ if(!isOnline){ showToast('هذا الإجراء يحتاج اتصالًا بالإنترنت',true); return false; } return true; }
+
+function openRafeqaUserSheet(userId, name){
+  if(document.getElementById('rf-user-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='rf-user-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">${esc(name)}</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="openSendRequestSheet('${userId}','${esc(name).replace(/'/g,"\\'")}')">${ICON('heartHandshake',16)}طلب صحبة للتفقد</button>
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="document.getElementById('rf-user-overlay').remove();sendEncouragementById('${userId}')">${ICON('heart',16)}شجّعه</button>
+    </div>
+    <div class="modal-actions" style="margin-top:.8rem"><button class="m-cancel" onclick="document.getElementById('rf-user-overlay').remove()">إغلاق</button></div>
+  </div>`;
+  document.body.appendChild(el); mountIcons(el);
+}
+function openSendRequestSheet(userId, name){
+  document.getElementById('rf-user-overlay')?.remove();
+  if(document.getElementById('send-req-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='send-req-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">دعوة إلى صحبة للتفقد</div>
+    <div class="field" style="margin-top:.6rem">
+      <label>رسالة الدعوة</label>
+      <textarea id="send-req-msg" class="notes-textarea" style="min-height:70px">أحب أن نكون صحبة للتفقد والتشجيع على الثبات في أوّاب.</textarea>
+    </div>
+    <div class="modal-actions" style="margin-top:.6rem">
+      <button class="m-cancel" onclick="document.getElementById('send-req-overlay').remove()">إلغاء</button>
+      <button class="m-save" onclick="doSendCompanionRequest('${userId}')">إرسال الطلب</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+async function doSendCompanionRequest(userId){
+  if(!requireOnline()) return;
+  const msg = document.getElementById('send-req-msg')?.value || '';
+  try {
+    await companionRPC('send_companion_request', { p_target:userId, p_message:msg });
+    document.getElementById('send-req-overlay')?.remove();
+    showToast('اتبعت الدعوة');
+  } catch(e){ showToast(companionErr(e),true); }
+}
+async function respondCompanion(compId, accept){
+  if(!requireOnline()) return;
+  try { await companionRPC('respond_companion_request', { p_id:compId, p_accept:accept });
+    showToast(accept?'أصبحتما صحبة':'تم الاعتذار'); renderSohba();
+  } catch(e){ showToast(companionErr(e),true); }
+}
+async function cancelCompanionReq(compId){
+  if(!requireOnline()) return;
+  try { await companionRPC('cancel_companion_request', { p_id:compId }); showToast('اتلغى الطلب'); renderSohba(); }
+  catch(e){ showToast(companionErr(e),true); }
+}
+function openCompanionManage(compId, name){
+  if(document.getElementById('comp-manage-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='comp-manage-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">${esc(name)}</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="openCheckinSchedule('${compId}','${esc(name).replace(/'/g,"\\'")}')">${ICON('alarmClock',16)}جدولة تفقده</button>
+      <button class="m-cancel" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="confirmRemoveCompanion('${compId}')">${ICON('userMinus',16)}إزالة من الصحبة</button>
+      <button class="m-danger" style="justify-content:flex-start;display:flex;align-items:center;gap:.6rem;padding:0 1rem" onclick="confirmBlockCompanion('${compId}')">${ICON('ban',16)}حظر</button>
+    </div>
+    <div class="modal-actions" style="margin-top:.8rem"><button class="m-cancel" onclick="document.getElementById('comp-manage-overlay').remove()">إغلاق</button></div>
+  </div>`;
+  document.body.appendChild(el); mountIcons(el);
+}
+async function confirmRemoveCompanion(compId){
+  document.getElementById('comp-manage-overlay')?.remove();
+  if(!requireOnline()) return;
+  if(!confirm('متأكد من إزالة هذا الشخص من صحبتك؟')) return;
+  try { await companionRPC('remove_companion', { p_id:compId }); setCheckinTimes(compId,'',[]); rescheduleAllReminders(); showToast('تمت الإزالة'); renderSohba(); }
+  catch(e){ showToast(companionErr(e),true); }
+}
+async function confirmBlockCompanion(compId){
+  document.getElementById('comp-manage-overlay')?.remove();
+  if(!requireOnline()) return;
+  if(!confirm('حظر هذا الشخص؟ لن يستطيع إرسال طلبات أو رؤية بياناتك.')) return;
+  try { await companionRPC('block_companion', { p_id:compId }); setCheckinTimes(compId,'',[]); rescheduleAllReminders(); showToast('تم الحظر'); renderSohba(); }
+  catch(e){ showToast(companionErr(e),true); }
+}
+// ── جدولة تفقّد صاحب (Phase 8) — تذكيرات محلية بحتة، بمعرّف العلاقة ──
+let _checkinEditName = '';
+function openCheckinSchedule(compId, name){
+  document.getElementById('comp-manage-overlay')?.remove();
+  _checkinEditName = name;
+  if(document.getElementById('checkin-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='checkin-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">تذكير بتفقّد ${esc(name)}</div>
+    <div class="sr-desc" style="margin:.2rem 0 .7rem">${IS_NATIVE?'أضف مواعيد تذكّرك بتفقّده والتشجيع عليه.':'التذكيرات تعمل على تطبيق أندرويد فقط.'}</div>
+    <div id="checkin-times-list"></div>
+    <button class="btn-add" style="width:100%;justify-content:center;margin-top:.5rem" onclick="openReminderTimeSheet('checkin:${compId}:new')"><span data-icon="plus" data-size="15"></span>إضافة موعد</button>
+    <div class="modal-actions" style="margin-top:.8rem"><button class="m-cancel" onclick="document.getElementById('checkin-overlay').remove()">تمام</button></div>
+  </div>`;
+  document.body.appendChild(el); mountIcons(el);
+  renderCheckinTimes(compId);
+}
+function renderCheckinTimes(compId){
+  const list = document.getElementById('checkin-times-list');
+  if(!list) return;
+  const times = getCheckinTimes(compId);
+  list.innerHTML = times.map((t,i)=>reminderRowHTML(t, `checkin:${compId}:${i}`)).join('') || `<div class="sr-desc">مفيش مواعيد بعد.</div>`;
+  mountIcons(list);
+}
+
+async function encourageCompanion(userId, btn){
+  if(!requireOnline()) return;
+  if(btn){ btn.disabled=true; btn.innerHTML = ICON('circleCheck',15); }
+  try { await SB.post('encouragements', {to_user_id:userId, from_user_id:currentUser.id}); }
+  catch(e){ showToast('تعذّر الإرسال',true); if(btn){ btn.disabled=false; btn.innerHTML=ICON('heart',15); } }
+}
+async function sendEncouragementById(userId){
+  if(!requireOnline()) return;
+  try { await SB.post('encouragements', {to_user_id:userId, from_user_id:currentUser.id}); showToast('تم إرسال التشجيع'); }
+  catch(e){ showToast('تعذّر الإرسال',true); }
+}
+function companionErr(e){
+  const m = (e && (e.message||e.hint||'')) + '';
+  if(m.includes('الحد الأقصى')) return 'وصلت الحد الأقصى (5 أشخاص)';
+  if(m.includes('بالفعل')) return 'يوجد طلب أو علاقة بالفعل مع هذا الشخص';
+  return 'تعذّر تنفيذ الإجراء';
+}
+
+// ── واتساب: رسالة جاهزة قابلة للتعديل، ومفيش تخزين للمحادثة (بند 30-32) ──
+function openCompanionWhatsapp(userId){
+  const comp = ((JSON.parse(localStorage.getItem(companionsCacheKey())||'{}').companions)||[]).find(x=>x.user_id===userId);
+  if(!comp || !comp.whatsapp){ showToast('لا يوجد رقم واتساب',true); return; }
+  const enc = (comp.encourage_names||[]).filter(Boolean);
+  const base = enc.length
+    ? `السلام عليكم يا ${comp.display_name}، حبيت أطمن عليك وأشجعك في ${enc[0]}، ربنا يعينك ويثبتك.`
+    : `السلام عليكم يا ${comp.display_name}، عامل إيه؟ حبيت أتفقدك وأشجعك على الاستمرار، ربنا يعينك ويثبتك.`;
+  if(document.getElementById('wa-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='wa-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">رسالة واتساب</div>
+    <div class="field" style="margin-top:.6rem"><label>الرسالة (تقدر تعدّلها)</label>
+      <textarea id="wa-msg" class="notes-textarea" style="min-height:90px">${esc(base)}</textarea></div>
+    <div class="modal-actions" style="margin-top:.5rem">
+      <button class="m-cancel" onclick="document.getElementById('wa-overlay').remove()">إلغاء</button>
+      <button class="m-save" onclick="sendCompanionWhatsapp('${esc(comp.whatsapp).replace(/'/g,"")}')">فتح واتساب</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function sendCompanionWhatsapp(number){
+  const msg = document.getElementById('wa-msg')?.value || '';
+  const clean = String(number).replace(/[^0-9]/g,'');
+  document.getElementById('wa-overlay')?.remove();
+  const url = `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ── "أحتاج تفقدًا" ──
+async function openNeedCheckinSheet(){
+  if(document.getElementById('need-checkin-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='need-checkin-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">أحتاج بعض التشجيع اليوم</div>
+    <p style="font-size:12.5px;color:var(--text-3);line-height:1.6;margin:.2rem 0 .7rem">هيظهر لصحبتك إنك محتاج تشجيع، من غير أي تفاصيل. تقدر تضيف ملاحظة قصيرة اختيارية.</p>
+    <div class="field"><textarea id="need-checkin-note" class="notes-textarea" style="min-height:60px" placeholder="ملاحظة قصيرة (اختياري)"></textarea></div>
+    <div class="modal-actions" style="margin-top:.5rem">
+      <button class="m-cancel" onclick="setNeedCheckin(false)">إلغاء الطلب</button>
+      <button class="m-save" onclick="setNeedCheckin(true)">أرسل لصحبتي</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+async function setNeedCheckin(on){
+  if(!requireOnline()){ return; }
+  const note = document.getElementById('need-checkin-note')?.value || '';
+  try {
+    await companionRPC('set_needs_checkin', { p_on:on, p_note:note });
+    document.getElementById('need-checkin-overlay')?.remove();
+    showToast(on?'اتبعت لصحبتك':'اتلغى الطلب');
+  } catch(e){ showToast('تعذّر التنفيذ',true); }
+}
+
+// ── إعدادات المشاركة داخل صحبتي ──
+async function openCompanionSettings(){
+  if(!requireOnline()) return;
+  let cs = { share_today_pct:false, share_weekly:false, encourage_worship_ids:[], whatsapp:'' };
+  try { const rows = await SB.get(`companion_settings?user_id=eq.${currentUser.id}&select=*`); if(rows[0]) cs = rows[0]; } catch(e){}
+  const encSet = new Set(cs.encourage_worship_ids||[]);
+  const activeWorships = worships.filter(w=>!w.is_hidden && !w.deleted_at);
+  if(document.getElementById('cs-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='cs-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:380px;max-height:85vh;overflow:auto">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">إعدادات المشاركة مع صحبتي</div>
+    <p style="font-size:12px;color:var(--text-3);margin:.2rem 0 .8rem">الافتراضي: الأكثر خصوصية. تشارك فقط ما تختاره.</p>
+    <label class="cs-toggle"><span>أشارك نسبة اليوم</span><input type="checkbox" id="cs-today" ${cs.share_today_pct?'checked':''}></label>
+    <label class="cs-toggle"><span>أشارك الملخص الأسبوعي</span><input type="checkbox" id="cs-weekly" ${cs.share_weekly?'checked':''}></label>
+    <div class="section-label" style="margin-top:.8rem">أحتاج تشجيعًا في</div>
+    <div class="sr-desc" style="margin-bottom:.4rem">هذه العبادات فقط تظهر أسماؤها لصحبتي.</div>
+    <div id="cs-worships" class="rem-chips">${activeWorships.map(w=>`<button type="button" class="rem-chip ${encSet.has(w.id)?'on':''}" data-wid="${w.id}" onclick="this.classList.toggle('on')">${esc(w.name)}</button>`).join('') || '<span class="sr-desc">لا توجد عبادات</span>'}</div>
+    <div class="field" style="margin-top:.8rem"><label>رقم واتساب (اختياري، لا يظهر لأحد نصًا)</label><input id="cs-whatsapp" type="tel" placeholder="مثال: 201001234567" value="${esc(cs.whatsapp||'')}"></div>
+    <div class="modal-actions" style="margin-top:.7rem">
+      <button class="m-cancel" onclick="document.getElementById('cs-overlay').remove()">إلغاء</button>
+      <button class="m-save" onclick="saveCompanionSettings()">حفظ</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+async function saveCompanionSettings(){
+  if(!requireOnline()) return;
+  const ids = [...document.querySelectorAll('#cs-worships .rem-chip.on')].map(b=>b.dataset.wid);
+  const body = {
+    user_id: currentUser.id,
+    share_today_pct: document.getElementById('cs-today').checked,
+    share_weekly: document.getElementById('cs-weekly').checked,
+    encourage_worship_ids: ids,
+    whatsapp: (document.getElementById('cs-whatsapp').value||'').trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    await SB.upsert('companion_settings', body, 'user_id');
+    document.getElementById('cs-overlay')?.remove();
+    showToast('اتحفظت إعدادات المشاركة');
+  } catch(e){ showToast('تعذّر الحفظ',true); }
 }
 
 // ════════════════════════════════════════════

@@ -8,7 +8,9 @@
     <!-- ودجت الشاشة الرئيسية (Phase 7، إعادة تصميم Phase 3) -->
     <string name="widget_summary_format">%1$d / %2$d اليوم</string>
     <string name="widget_next_format">التالي: %1$s</string>
-    <string name="widget_next_generic">العبادة التالية</string>
+    <string name="widget_next_generic">عبادتك التالية</string>
+    <string name="widget_pin_format">ثابت اليوم: %1$s</string>
+    <string name="widget_pin_generic">ثابت اليوم</string>
     <string name="widget_all_done">خلّصت عباداتك اليوم</string>
     <string name="widget_no_data">افتح التطبيق لعرض عباداتك</string>
     <string name="widget_open_hint">افتح التطبيق للمتابعة</string>
