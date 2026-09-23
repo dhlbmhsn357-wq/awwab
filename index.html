@@ -327,6 +327,10 @@ button{ -webkit-tap-highlight-color:transparent; }
 .hint-once .hx-close{margin-inline-start:auto;background:none;border:none;color:#06251F;cursor:pointer;opacity:.7;padding:0 .2rem;flex-shrink:0;}
 
 /* أيقونة التحديث في الهيدر */
+/* أيقونة الدعم في الهيدر: نفس حجم/أسلوب زر الإعدادات. النقطة الصغيرة
+   تظهر فقط عند استحقاق تذكير — هادئة وثابتة (بلا رقم/اهتزاز/pulse). */
+.support-icon-btn{position:relative;}
+.support-icon-btn.has-dot::after{content:'';position:absolute;top:6px;inset-inline-end:6px;width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--surface-1);}
 .update-icon-btn{position:relative;color:var(--primary);}
 .update-icon-btn::after{content:'';position:absolute;top:5px;inset-inline-end:5px;width:7px;height:7px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--surface-1);animation:updatePulse 1.8s ease-in-out infinite;}
 @keyframes updatePulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.25);opacity:.7;}}
@@ -833,6 +837,7 @@ body.has-offline-banner .main-header{top:34px;}
     <div class="header-brand"><span class="brand-mark"></span>أوّاب</div>
     <div class="header-user">
       <button class="icon-btn update-icon-btn" id="update-icon-btn" style="display:none" onclick="openUpdateFromIcon()" aria-label="تحديث متاح" title="تحديث متاح"><span data-icon="downloadCloud" data-size="18"></span></button>
+      <button class="icon-btn subtle support-icon-btn" id="support-icon-btn" onclick="openSupportPage()" aria-label="ادعم أوّاب" title="ادعم أوّاب"><span data-icon="heartHandshake" data-size="18"></span></button>
       <button class="icon-btn subtle" onclick="openSettingsPanel()" aria-label="الإعدادات" title="الإعدادات"><span data-icon="settings" data-size="18"></span></button>
       <div class="user-avatar" id="hdr-avatar"></div>
       <span id="hdr-name" style="display:none"></span>
@@ -1838,6 +1843,7 @@ function supDeferReminder(days){
 function supOptOut(){
   supSet('awwab-support-optout','1');
   document.getElementById('support-slot')?.replaceChildren();
+  updateSupportDot();
   const row = document.getElementById('support-optout-row');
   if(row) row.innerHTML = `<span class="so-optout-done">${ICON('check',14)} لن نذكّرك بالدعم مرة أخرى</span>`;
   showToast('تم — لن نذكّرك بالدعم مرة أخرى');
@@ -1848,6 +1854,7 @@ function openSupportPage(){
   supMarkSeen();
   supDeferReminder(30);
   document.getElementById('support-slot')?.replaceChildren();
+  updateSupportDot();
   const el = document.createElement('div');
   el.className = 'modal-overlay';
   el.id = 'support-overlay';
@@ -1924,51 +1931,59 @@ async function copySupportNumber(){
     // اعتبار المستخدم داعمًا ماليًا — إحنا مش عارفين ده فعلًا)
     supMarkSeen();
     supDeferReminder(60);
+    updateSupportDot();
     showToast('تم نسخ رقم InstaPay', false, 'copy');
   }
   else showToast('تعذّر النسخ، انسخ الرقم يدويًا', true);
 }
 
-// كارت الدعم في صفحة اليوم — تعريف مرة (لو لسه ماشافش) أو تذكير هادئ
-// كل ~30 يوم. مايظهرش أبدًا لو المستخدم عمل opt-out. مفيش Popup/Modal.
+// كارت الدعم في صفحة اليوم — تعريف أول مرة فقط (لو المستخدم لسه
+// ماعرفش الميزة). التذكير الدوري بعد كده بقى عبر النقطة الصغيرة على
+// أيقونة الدعم في الهيدر — مش تكرار الكارت. مايظهرش لو عمل opt-out.
 function renderSupportSlot(){
   const slot = document.getElementById('support-slot');
   if(!slot) return;
   slot.replaceChildren();
+  updateSupportDot();
   // بس على "اليوم" الحقيقي — مايظهرش وإنت بتتصفّح أيام قديمة/قادمة
   if(typeof getToday==='function' && viewDate && viewDate!==getToday()) return;
   if(supIsOptedOut()) return;
   const seen = supGet('awwab-support-seen')==='1';
   if(!seen){
-    slot.innerHTML = supportCardHTML('دعمك يساعدنا في تغطية تكاليف التشغيل الشهرية واستمرار تطوير التطبيق.', false);
-    mountIcons(slot);
-    return;
-  }
-  const next = parseInt(supGet('awwab-support-next-reminder')||'0',10) || 0;
-  if(next && Date.now() >= next){
-    // نستهلك دورة التذكير دي فورًا (نأجّل 30 يوم) عشان مايتكررش نفس
-    // اليوم ولا كل مرة يفتح فيها اليوم
-    supSet('awwab-support-next-reminder', String(Date.now() + 30*DAY_MS));
-    slot.innerHTML = supportCardHTML('يساعد الدعم الشهري على استمرار أوّاب وتغطية تكاليف تشغيله.', true);
-    mountIcons(slot);
-  }
-}
-function supportCardHTML(text, dismissable){
-  return `<div class="support-today-card">
-    <div class="stc-ic"><span data-icon="heartHandshake" data-size="18"></span></div>
-    <div class="stc-body">
-      <div class="stc-title">ساهم في استمرار أوّاب</div>
-      <div class="stc-text">${text}</div>
-      <div class="stc-actions">
-        <button class="stc-cta" onclick="openSupportPage()">اعرف أكثر</button>
-        ${dismissable ? `<button class="stc-later" onclick="dismissSupportCard()">ليس الآن</button>` : ''}
+    slot.innerHTML = `<div class="support-today-card">
+      <div class="stc-ic"><span data-icon="heartHandshake" data-size="18"></span></div>
+      <div class="stc-body">
+        <div class="stc-title">ساهم في استمرار أوّاب</div>
+        <div class="stc-text">دعمك يساعدنا في تغطية تكاليف التشغيل الشهرية واستمرار تطوير التطبيق.</div>
+        <div class="stc-actions">
+          <button class="stc-cta" onclick="openSupportPage()">اعرف أكثر</button>
+          <button class="stc-later" onclick="dismissSupportCard()">ليس الآن</button>
+        </div>
       </div>
-    </div>
-  </div>`;
+    </div>`;
+    mountIcons(slot);
+  }
 }
 function dismissSupportCard(){
-  // "ليس الآن" — بس يقفل الكارت؛ التذكير القادم أصلًا اتأجّل 30 يوم
+  // "ليس الآن" على كارت التعريف = اعتبره عرف الميزة (يختفي الكارت،
+  // ويتحوّل للوصول الهادئ عبر الأيقونة)، وأجّل أي تذكير 30 يوم
+  supMarkSeen();
+  supDeferReminder(30);
   document.getElementById('support-slot')?.replaceChildren();
+  updateSupportDot();
+}
+// النقطة الصغيرة على أيقونة الدعم: تظهر فقط لو المستخدم عرف الميزة
+// (seen) ومش عامل opt-out وعدّى وقت التذكير القادم. مفيش رقم/اهتزاز.
+function supportReminderDue(){
+  if(supIsOptedOut()) return false;
+  if(supGet('awwab-support-seen')!=='1') return false;
+  const next = parseInt(supGet('awwab-support-next-reminder')||'0',10) || 0;
+  return next>0 && Date.now() >= next;
+}
+function updateSupportDot(){
+  const btn = document.getElementById('support-icon-btn');
+  if(!btn) return;
+  btn.classList.toggle('has-dot', supportReminderDue());
 }
 
 function showUpdateSheet(release){
@@ -3638,6 +3653,7 @@ async function enterMain(){
   document.getElementById('hdr-avatar').textContent=currentUser.display_name[0];
   document.getElementById('settings-username').textContent=currentUser.display_name;
   document.getElementById('admin-settings-group').style.display = currentUser.role==='admin' ? '' : 'none';
+  updateSupportDot();
   viewDate = getToday();
   // navigator.onLine بس على الويب — على أندرويد النيتف isOnline
   // أصلاً بيتحدّث من Network plugin (أدق)، ماينفعش نكتبه فوقه هنا
