@@ -467,6 +467,29 @@ button{ -webkit-tap-highlight-color:transparent; }
 .sheet-action .sa-chev{color:var(--text-3);flex-shrink:0;}
 .sheet-action .sa-chev svg{width:16px;height:16px;}
 
+/* ادعم أوّاب — صفحة دعم اختياري ثابتة (بلا Backend/تتبّع/بيانات مالية) */
+.support-head{text-align:center;padding:.2rem 0 .1rem;}
+.support-badge{width:52px;height:52px;border-radius:16px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-3);}
+.support-badge svg{width:26px;height:26px;}
+.support-head .support-title{font-size:var(--fs-title);font-weight:800;color:var(--text-1);}
+.support-head p{font-size:13px;line-height:1.75;color:var(--text-2);margin:.55rem 0 0;}
+.support-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-4);margin-top:var(--sp-5);}
+.support-card .sc-label{font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+.support-num-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
+.support-num{flex:1 1 auto;font-size:clamp(17px,5.5vw,21px);font-weight:800;letter-spacing:.5px;color:var(--text-1);direction:ltr;text-align:start;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.support-copy-btn{flex:0 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;height:42px;padding:0 1rem;border:none;border-radius:var(--r-sm);background:var(--primary);color:#06251F;font-size:13.5px;font-weight:700;cursor:pointer;transition:filter var(--dur-fast);}
+.support-copy-btn:hover{filter:brightness(1.05);}
+.support-copy-btn:active{transform:scale(.97);}
+.support-copy-btn svg{width:16px;height:16px;}
+.support-uses-title{font-size:13px;font-weight:700;color:var(--text-1);margin:var(--sp-5) 0 .7rem;}
+.support-use{display:flex;align-items:center;gap:.7rem;padding:.15rem 0;font-size:13px;color:var(--text-2);line-height:1.6;}
+.support-use .su-ic{width:30px;height:30px;border-radius:9px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.support-use .su-ic svg{width:16px;height:16px;}
+.support-notice{margin-top:var(--sp-4);background:var(--primary-tint);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem .85rem;font-size:12px;line-height:1.7;color:var(--text-2);}
+.support-optional{margin-top:var(--sp-5);text-align:center;}
+.support-optional .so-1{font-size:12.5px;color:var(--text-3);line-height:1.7;}
+.support-optional .so-2{font-size:13px;color:var(--text-2);line-height:1.8;margin-top:.5rem;font-weight:600;}
+
 /* forms */
 .field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem var(--sp-4);color:var(--text-1);font-size:var(--fs-body);outline:none;min-height:46px;}
 .field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint);}
@@ -965,6 +988,14 @@ body.has-offline-banner .main-header{top:34px;}
           </div>
           <button class="btn-add" style="flex-shrink:0" onclick="replayTour()">إعادة الجولة</button>
         </div>
+      </div>
+
+      <!-- ادعم أوّاب — دعم اختياري بالكامل، محتوى ثابت، بلا Backend
+           ولا تتبّع ولا بيانات مالية (بند: البساطة قبل كل شيء) -->
+      <div class="settings-group">
+        <h3>ادعم أوّاب</h3>
+        <div class="sr-desc" style="margin-bottom:.75rem">ساهم في تكاليف التشغيل والتطوير إن أحببت.</div>
+        <button class="btn-add" style="width:100%;justify-content:center;gap:.45rem" onclick="openSupportPage()"><span data-icon="heartHandshake" data-size="16"></span>ادعم أوّاب</button>
       </div>
 
       <div class="settings-group">
@@ -1749,6 +1780,82 @@ function applyWebUpdate(){
   location.reload();
 }
 
+// ════════════════════════════════════════════
+//  ادعم أوّاب — دعم اختياري بالكامل. محتوى ثابت 100%: مفيش Backend
+//  ولا endpoint جديد، مفيش تتبّع، مفيش جدول تبرعات، مفيش تخزين لأي
+//  بيانات مالية. الرقم متاح Offline لأنه ثابت في الكود. النسخ يشتغل
+//  Offline. الصفحة مابتلمسش Auth/Sync/Supabase خالص.
+// ════════════════════════════════════════════
+const SUPPORT_INSTAPAY = '01559858007';
+function openSupportPage(){
+  if(document.getElementById('support-overlay')) return;
+  const el = document.createElement('div');
+  el.className = 'modal-overlay';
+  el.id = 'support-overlay';
+  el.onclick = (e)=>{ if(e.target===el) closeSupportPage(); };
+  el.innerHTML = `
+    <div class="modal-sheet" style="max-width:440px">
+      <div class="sheet-handle"></div>
+      <div class="support-head">
+        <div class="support-badge"><span data-icon="heartHandshake" data-size="26"></span></div>
+        <div class="support-title">ساهم في استمرار أوّاب</div>
+        <p>أوّاب متاح للجميع دون مقابل، لكن تشغيله واستمراره له تكاليف مثل الاستضافة والخدمات التقنية والتطوير.</p>
+        <p>إذا أحببت المشاركة، يمكنك المساهمة بأي مبلغ يناسبك للمساعدة في استمرار أوّاب ودعم مشروعات تقنية نافعة أخرى.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="sc-label"><span data-icon="heart" data-size="14"></span>الدعم عبر InstaPay</div>
+        <div class="support-num-row">
+          <div class="support-num" id="support-num" aria-label="رقم إنستا باي">${SUPPORT_INSTAPAY}</div>
+          <button class="support-copy-btn" onclick="copySupportNumber()" aria-label="نسخ رقم إنستا باي"><span data-icon="copy" data-size="16"></span>نسخ الرقم</button>
+        </div>
+      </div>
+
+      <div class="support-uses-title">يُستخدم الدعم في</div>
+      <div class="support-use"><span class="su-ic" data-icon="server" data-size="16"></span><span>تكاليف تشغيل واستضافة أوّاب.</span></div>
+      <div class="support-use"><span class="su-ic" data-icon="wrench" data-size="16"></span><span>تطوير وصيانة التطبيق.</span></div>
+      <div class="support-use"><span class="su-ic" data-icon="sparkle" data-size="16"></span><span>دعم مشروعات تقنية نافعة أخرى عند وجود فائض.</span></div>
+
+      <div class="support-notice">الأولوية لتغطية تكاليف تشغيل أوّاب وتطويره، وما يزيد يمكن توجيهه لدعم مشروعات تقنية نافعة أخرى.</div>
+
+      <div class="support-optional">
+        <div class="so-1">المساهمة اختيارية تمامًا، ولا تؤثر على أي ميزة داخل أوّاب.</div>
+        <div class="so-2">جزاكم الله خيرًا، ونسأل الله أن يجعل ذلك في ميزان حسناتكم.</div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:var(--sp-5)">
+        <button class="m-cancel" onclick="closeSupportPage()">رجوع</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  mountIcons(el);
+}
+function closeSupportPage(){ document.getElementById('support-overlay')?.remove(); }
+async function copySupportNumber(){
+  let ok = false;
+  try {
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(SUPPORT_INSTAPAY);
+      ok = true;
+    }
+  } catch(e){}
+  if(!ok){
+    // بديل يشتغل Offline وفي WebViews قديمة بدون Clipboard API
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = SUPPORT_INSTAPAY;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch(e){}
+  }
+  if(ok) showToast('تم نسخ رقم InstaPay', false, 'copy');
+  else showToast('تعذّر النسخ، انسخ الرقم يدويًا', true);
+}
+
 function showUpdateSheet(release){
   if(document.getElementById('update-sheet-overlay')) return;
   const el = document.createElement('div');
@@ -2488,6 +2595,8 @@ const ICON_PATHS = {
   userMinus: '<circle cx="9" cy="8" r="3.4"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16.5 11.5h5"/>',
   ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
   downloadCloud: '<path d="M7 18a4.5 4.5 0 0 1-.5-8.97 5.5 5.5 0 0 1 10.9 1.17A4 4 0 0 1 17 18"/><path d="M12 12v6"/><path d="M9 15.5 12 18.5l3-3"/>',
+  server: '<rect x="3.5" y="4" width="17" height="7" rx="2"/><rect x="3.5" y="13" width="17" height="7" rx="2"/><path d="M7 7.5h.01"/><path d="M7 16.5h.01"/>',
+  wrench: '<path d="M14.5 6.5a3.7 3.7 0 0 0 4.9 4.9L21 13l-8 8-2-2 8-8-1.6-1.6a3.7 3.7 0 0 0-4.9-4.9L14.5 6.5Z"/><path d="M9.5 9.5 4 15l2 2 5.5-5.5"/>',
 };
 function ICON(name, size){
   size = size || 20;
