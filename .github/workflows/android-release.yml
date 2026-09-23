@@ -45,8 +45,20 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      # نفس تثبيت android-build.yml: نثبّت command-line tools بنسخة
+      # محددة بدل الاعتماد على نسخة الـrunner المتغيرة (اللي بقت تفشل
+      # بـ"wrong version in preinstalled sdkmanager")، ونقبل التراخيص
+      # + نجيب نفس مكوّنات SDK المطلوبة (compile/target = 36،
+      # build-tools 36.0.0) بشكل non-interactive.
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '11076708'
+          accept-android-sdk-licenses: true
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - name: Accept remaining Android SDK licenses (non-interactive)
+        run: yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
       - name: Install dependencies
         run: npm install
