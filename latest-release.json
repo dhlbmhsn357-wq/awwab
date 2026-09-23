@@ -1,11 +1,11 @@
 {
-  "version": "1.2.3",
-  "versionCode": 7,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.3/Awwab-Android-v1.2.3.apk",
-  "fileSize": 4876927,
-  "sha256": "f27b1dd847a6ccabeb276c5af5aa9d626a1cdf6a1b62475ebed03cee196a5820",
-  "releaseNotes": "تصميم أنيق لقوائم الإجراءات (تثبيت، تعديل، جدولة التفقّد، وغيرها) بأيقونات واضحة ومظهر أرقى.",
+  "version": "1.2.4",
+  "versionCode": 8,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.4/Awwab-Android-v1.2.4.apk",
+  "fileSize": 4878939,
+  "sha256": "9665ec7f59e3744433f3985821171f08552eed61467b76ff06e07665aeb149f0",
+  "releaseNotes": "إضافة صفحة «ادعم أوّاب» — دعم اختياري عبر InstaPay داخل الإعدادات، مع تحسينات ثبات.",
   "mandatory": false,
-  "releasedAt": "2026-08-29T04:04:32Z",
-  "publishedAt": "2026-08-29T04:04:32Z"
+  "releasedAt": "2026-09-23T12:15:33Z",
+  "publishedAt": "2026-09-23T12:15:33Z"
 }
