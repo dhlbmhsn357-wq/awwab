@@ -1,11 +1,11 @@
 {
-  "version": "1.2.4",
-  "versionCode": 8,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.4/Awwab-Android-v1.2.4.apk",
-  "fileSize": 4878939,
-  "sha256": "9665ec7f59e3744433f3985821171f08552eed61467b76ff06e07665aeb149f0",
-  "releaseNotes": "إضافة صفحة «ادعم أوّاب» — دعم اختياري عبر InstaPay داخل الإعدادات، مع تحسينات ثبات.",
+  "version": "1.2.5",
+  "versionCode": 9,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.5/Awwab-Android-v1.2.5.apk",
+  "fileSize": 4881547,
+  "sha256": "787449834b4d8d4bc7f0f60d313bb855751866f38663f7aa35dfa742b3bcdf75",
+  "releaseNotes": "أيقونة دعم سريعة في صفحة اليوم مع تذكير هادئ، وإحصاءات للمشرف، وتحسينات.",
   "mandatory": false,
-  "releasedAt": "2026-09-23T12:15:33Z",
-  "publishedAt": "2026-09-23T12:15:33Z"
+  "releasedAt": "2026-09-23T18:24:19Z",
+  "publishedAt": "2026-09-23T18:24:19Z"
 }
