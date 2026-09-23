@@ -489,6 +489,30 @@ button{ -webkit-tap-highlight-color:transparent; }
 .support-optional{margin-top:var(--sp-5);text-align:center;}
 .support-optional .so-1{font-size:12.5px;color:var(--text-3);line-height:1.7;}
 .support-optional .so-2{font-size:13px;color:var(--text-2);line-height:1.8;margin-top:.5rem;font-weight:600;}
+.support-monthly-note{margin-top:.7rem;font-size:12px;color:var(--primary);font-weight:600;}
+.support-optout-row{margin-top:var(--sp-4);text-align:center;}
+.so-optout-btn{background:none;border:none;color:var(--text-3);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.3rem;}
+.so-optout-btn:hover{color:var(--text-2);}
+.so-optout-done{display:inline-flex;align-items:center;gap:.35rem;font-size:12.5px;color:var(--text-3);}
+.so-optout-done svg{width:14px;height:14px;color:var(--success);}
+/* كارت الدعم في صفحة اليوم — هادئ، صغير، غير مسيطر */
+.support-today-card{display:flex;gap:.7rem;align-items:flex-start;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:.8rem .9rem;margin-bottom:var(--sp-3);}
+.support-today-card .stc-ic{width:34px;height:34px;border-radius:10px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.support-today-card .stc-ic svg{width:18px;height:18px;}
+.support-today-card .stc-body{flex:1;min-width:0;}
+.support-today-card .stc-title{font-size:var(--fs-card-title);font-weight:700;color:var(--text-1);}
+.support-today-card .stc-text{font-size:12.5px;color:var(--text-2);line-height:1.6;margin-top:.2rem;}
+.support-today-card .stc-actions{display:flex;gap:.5rem;margin-top:.6rem;flex-wrap:wrap;}
+.support-today-card .stc-cta{background:var(--primary-tint);color:var(--primary);border:none;border-radius:var(--r-sm);font-size:12.5px;font-weight:700;padding:.42rem .9rem;cursor:pointer;}
+.support-today-card .stc-cta:active{transform:scale(.97);}
+.support-today-card .stc-later{background:none;border:none;color:var(--text-3);font-size:12.5px;font-weight:600;padding:.42rem .6rem;cursor:pointer;}
+/* إحصاءات المشرف */
+.astat-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--border);}
+.astat-row:last-child{border-bottom:none;}
+.astat-label{font-size:var(--fs-card-title);color:var(--text-2);}
+.astat-val{font-size:19px;font-weight:800;color:var(--text-1);font-variant-numeric:tabular-nums;direction:ltr;}
+.astat-skel{width:56px;height:20px;border-radius:6px;background:linear-gradient(90deg,var(--surface-2),var(--surface-3),var(--surface-2));background-size:200% 100%;animation:astat-shimmer 1.2s infinite;}
+@keyframes astat-shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
 
 /* forms */
 .field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem var(--sp-4);color:var(--text-1);font-size:var(--fs-body);outline:none;min-height:46px;}
@@ -842,6 +866,7 @@ body.has-offline-banner .main-header{top:34px;}
 
       <div id="catchup-slot"></div>
       <div id="pins-slot"></div>
+      <div id="support-slot"></div>
       <div class="reorder-toggle-row">
         <button class="reorder-toggle-btn" id="reorder-toggle-btn" onclick="toggleReorderMode()">
           <span data-icon="gripVertical" data-size="14"></span><span id="reorder-toggle-label">ترتيب اليوم</span>
@@ -929,6 +954,22 @@ body.has-offline-banner .main-header{top:34px;}
         <div class="settings-radio" id="privacy-radio"></div>
       </div>
 
+      <!-- ادعم أوّاب — دعم اختياري بالكامل، محتوى ثابت، بلا Backend
+           ولا تتبّع ولا بيانات مالية. مكان مستقل واضح قبل الأقسام
+           الإدارية/الحساب (مش أول عنصر ولا مدفون في الآخر). -->
+      <div class="settings-group">
+        <h3>ادعم أوّاب</h3>
+        <div class="sr-desc" style="margin-bottom:.75rem">ساهم في تكاليف التشغيل الشهرية وتطوير التطبيق إن أحببت.</div>
+        <button class="btn-add" style="width:100%;justify-content:center;gap:.45rem" onclick="openSupportPage()"><span data-icon="heartHandshake" data-size="16"></span>ادعم أوّاب</button>
+      </div>
+
+      <!-- إحصاءات أوّاب — للمشرف فقط (Counts مجمّعة عبر RPC آمنة،
+           مفيش أي بيانات شخصية). renderAdminStats() بيظهرها للمشرف. -->
+      <div class="settings-group" id="admin-stats-group" style="display:none">
+        <h3>إحصاءات أوّاب</h3>
+        <div id="admin-stats-body"></div>
+      </div>
+
       <div class="settings-group" id="admin-settings-group" style="display:none">
         <h3>إدارة المجموعة</h3>
         <div class="members-list" id="members-list"></div>
@@ -988,14 +1029,6 @@ body.has-offline-banner .main-header{top:34px;}
           </div>
           <button class="btn-add" style="flex-shrink:0" onclick="replayTour()">إعادة الجولة</button>
         </div>
-      </div>
-
-      <!-- ادعم أوّاب — دعم اختياري بالكامل، محتوى ثابت، بلا Backend
-           ولا تتبّع ولا بيانات مالية (بند: البساطة قبل كل شيء) -->
-      <div class="settings-group">
-        <h3>ادعم أوّاب</h3>
-        <div class="sr-desc" style="margin-bottom:.75rem">ساهم في تكاليف التشغيل والتطوير إن أحببت.</div>
-        <button class="btn-add" style="width:100%;justify-content:center;gap:.45rem" onclick="openSupportPage()"><span data-icon="heartHandshake" data-size="16"></span>ادعم أوّاب</button>
       </div>
 
       <div class="settings-group">
@@ -1432,7 +1465,7 @@ function refreshCurrentViewFromLocal(){
   if(!currentUser) return;
   loadWorships().then(()=>{
     const route = getCurrentRoute ? getCurrentRoute() : 'today';
-    if(route==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
+    if(route==='today'){ renderTimeline(viewDate); renderSupportSlot(); renderWeeklyGoals(); updateDayRing(); }
     else if(route==='calendar' && typeof renderCalendar==='function') renderCalendar();
     else if(route==='progress' && typeof renderProgress==='function') renderProgress();
     else if(route==='worships' && typeof renderBuilder==='function') renderBuilder();
@@ -1787,8 +1820,34 @@ function applyWebUpdate(){
 //  Offline. الصفحة مابتلمسش Auth/Sync/Supabase خالص.
 // ════════════════════════════════════════════
 const SUPPORT_INSTAPAY = '01559858007';
+const DAY_MS = 86400000;
+// تفضيلات UI محلية فقط للدعم (مفيش Sync/Backend/بيانات مالية):
+//  awwab-support-seen          = '1' لما المستخدم يفتح صفحة الدعم/يعرف الميزة
+//  awwab-support-next-reminder = timestamp (ms) لأقرب وقت مسموح فيه بتذكير
+//  awwab-support-optout        = '1' لو اختار "لا تذكّرني" (يُحترم نهائيًا)
+function supGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function supSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+function supIsOptedOut(){ return supGet('awwab-support-optout')==='1'; }
+function supMarkSeen(){ if(supGet('awwab-support-seen')!=='1') supSet('awwab-support-seen','1'); }
+// أي تفاعل بيأجّل التذكير القادم؛ فتح الصفحة = 30 يوم، نسخ الرقم = 60 يوم
+function supDeferReminder(days){
+  const next = Date.now() + days*DAY_MS;
+  const cur = parseInt(supGet('awwab-support-next-reminder')||'0',10) || 0;
+  supSet('awwab-support-next-reminder', String(Math.max(cur, next)));
+}
+function supOptOut(){
+  supSet('awwab-support-optout','1');
+  document.getElementById('support-slot')?.replaceChildren();
+  const row = document.getElementById('support-optout-row');
+  if(row) row.innerHTML = `<span class="so-optout-done">${ICON('check',14)} لن نذكّرك بالدعم مرة أخرى</span>`;
+  showToast('تم — لن نذكّرك بالدعم مرة أخرى');
+}
 function openSupportPage(){
   if(document.getElementById('support-overlay')) return;
+  // فتح الصفحة = عرف الميزة + أجّل أي تذكير 30 يوم، وامسح كارت اليوم
+  supMarkSeen();
+  supDeferReminder(30);
+  document.getElementById('support-slot')?.replaceChildren();
   const el = document.createElement('div');
   el.className = 'modal-overlay';
   el.id = 'support-overlay';
@@ -1799,8 +1858,9 @@ function openSupportPage(){
       <div class="support-head">
         <div class="support-badge"><span data-icon="heartHandshake" data-size="26"></span></div>
         <div class="support-title">ساهم في استمرار أوّاب</div>
-        <p>أوّاب متاح للجميع دون مقابل، لكن تشغيله واستمراره له تكاليف مثل الاستضافة والخدمات التقنية والتطوير.</p>
-        <p>إذا أحببت المشاركة، يمكنك المساهمة بأي مبلغ يناسبك للمساعدة في استمرار أوّاب ودعم مشروعات تقنية نافعة أخرى.</p>
+        <p>أوّاب متاح للجميع دون مقابل، لكن تشغيله واستمراره له تكاليف شهرية ثابتة مثل الاستضافة والخدمات التقنية والصيانة والتطوير.</p>
+        <p>إذا استطعت، فالمساهمة الشهرية — ولو بمبلغ بسيط — تساعدنا على استمرار أوّاب وتطويره.</p>
+        <p>ليس مطلوبًا مبلغ محدد، ويمكنك المساهمة بما يناسبك.</p>
       </div>
 
       <div class="support-card">
@@ -1809,6 +1869,7 @@ function openSupportPage(){
           <div class="support-num" id="support-num" aria-label="رقم إنستا باي">${SUPPORT_INSTAPAY}</div>
           <button class="support-copy-btn" onclick="copySupportNumber()" aria-label="نسخ رقم إنستا باي"><span data-icon="copy" data-size="16"></span>نسخ الرقم</button>
         </div>
+        <div class="support-monthly-note">يمكنك جعل دعمك شهريًا بما يناسبك.</div>
       </div>
 
       <div class="support-uses-title">يُستخدم الدعم في</div>
@@ -1823,7 +1884,13 @@ function openSupportPage(){
         <div class="so-2">جزاكم الله خيرًا، ونسأل الله أن يجعل ذلك في ميزان حسناتكم.</div>
       </div>
 
-      <div class="modal-actions" style="margin-top:var(--sp-5)">
+      <div class="support-optout-row" id="support-optout-row">
+        ${supIsOptedOut()
+          ? `<span class="so-optout-done">${ICON('check',14)} لن نذكّرك بالدعم مرة أخرى</span>`
+          : `<button class="so-optout-btn" onclick="supOptOut()">لا تذكّرني بالدعم مرة أخرى</button>`}
+      </div>
+
+      <div class="modal-actions" style="margin-top:var(--sp-4)">
         <button class="m-cancel" onclick="closeSupportPage()">رجوع</button>
       </div>
     </div>`;
@@ -1852,8 +1919,56 @@ async function copySupportNumber(){
       document.body.removeChild(ta);
     } catch(e){}
   }
-  if(ok) showToast('تم نسخ رقم InstaPay', false, 'copy');
+  if(ok){
+    // نسخ الرقم = تفاعل أقوى؛ نأجّل التذكير 60 يوم (بلا تسجيل مبلغ ولا
+    // اعتبار المستخدم داعمًا ماليًا — إحنا مش عارفين ده فعلًا)
+    supMarkSeen();
+    supDeferReminder(60);
+    showToast('تم نسخ رقم InstaPay', false, 'copy');
+  }
   else showToast('تعذّر النسخ، انسخ الرقم يدويًا', true);
+}
+
+// كارت الدعم في صفحة اليوم — تعريف مرة (لو لسه ماشافش) أو تذكير هادئ
+// كل ~30 يوم. مايظهرش أبدًا لو المستخدم عمل opt-out. مفيش Popup/Modal.
+function renderSupportSlot(){
+  const slot = document.getElementById('support-slot');
+  if(!slot) return;
+  slot.replaceChildren();
+  // بس على "اليوم" الحقيقي — مايظهرش وإنت بتتصفّح أيام قديمة/قادمة
+  if(typeof getToday==='function' && viewDate && viewDate!==getToday()) return;
+  if(supIsOptedOut()) return;
+  const seen = supGet('awwab-support-seen')==='1';
+  if(!seen){
+    slot.innerHTML = supportCardHTML('دعمك يساعدنا في تغطية تكاليف التشغيل الشهرية واستمرار تطوير التطبيق.', false);
+    mountIcons(slot);
+    return;
+  }
+  const next = parseInt(supGet('awwab-support-next-reminder')||'0',10) || 0;
+  if(next && Date.now() >= next){
+    // نستهلك دورة التذكير دي فورًا (نأجّل 30 يوم) عشان مايتكررش نفس
+    // اليوم ولا كل مرة يفتح فيها اليوم
+    supSet('awwab-support-next-reminder', String(Date.now() + 30*DAY_MS));
+    slot.innerHTML = supportCardHTML('يساعد الدعم الشهري على استمرار أوّاب وتغطية تكاليف تشغيله.', true);
+    mountIcons(slot);
+  }
+}
+function supportCardHTML(text, dismissable){
+  return `<div class="support-today-card">
+    <div class="stc-ic"><span data-icon="heartHandshake" data-size="18"></span></div>
+    <div class="stc-body">
+      <div class="stc-title">ساهم في استمرار أوّاب</div>
+      <div class="stc-text">${text}</div>
+      <div class="stc-actions">
+        <button class="stc-cta" onclick="openSupportPage()">اعرف أكثر</button>
+        ${dismissable ? `<button class="stc-later" onclick="dismissSupportCard()">ليس الآن</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+function dismissSupportCard(){
+  // "ليس الآن" — بس يقفل الكارت؛ التذكير القادم أصلًا اتأجّل 30 يوم
+  document.getElementById('support-slot')?.replaceChildren();
 }
 
 function showUpdateSheet(release){
@@ -3560,7 +3675,7 @@ function switchTab(id,btn){
   // paint behind after a display:none/block toggle until the next paint trigger
   void panel.offsetHeight;
   window.scrollTo(0,0);
-  if(id==='today'){ renderTimeline(viewDate); renderWeeklyGoals(); updateDayRing(); }
+  if(id==='today'){ renderTimeline(viewDate); renderSupportSlot(); renderWeeklyGoals(); updateDayRing(); }
   if(id==='calendar') renderCalendar();
   if(id==='progress') renderProgress();
   if(id==='rafeqa') renderRafeqaPanel();
@@ -3646,6 +3761,7 @@ async function loadDay(dateStr){
   document.getElementById('daily-notes').value = noteRow?.notes || '';
   renderTimeline(dateStr);
   await renderDayPins(dateStr);
+  renderSupportSlot();
   renderWeeklyGoals();
   await renderCatchup(dateStr);
   updateDayRing();
@@ -5284,7 +5400,7 @@ function renderSettings(){
       </label>`).join('') + (s.share_level==='selected' ? `
       <div class="field" style="margin-top:.5rem"><input type="text" id="selected-text-input" placeholder="مثال: ختمت جزء عم هذا الأسبوع" value="${esc(s.selected_text||'')}" onchange="saveSelectedText(this.value)"></div>` : '');
   });
-  if(currentUser.role==='admin') renderAdmin();
+  if(currentUser.role==='admin'){ renderAdminStats(); renderAdmin(); }
 }
 async function loadMyFellowshipSettings(){
   if(localDB){
@@ -5310,6 +5426,38 @@ async function savePrivacy(level){
 async function saveSelectedText(text){
   await localSaveFellowshipSettings({share_level:'selected', selected_text: text});
   showToast('تم الحفظ');
+}
+
+// إحصاءات المشرف — Counts مجمّعة فقط عبر RPC آمنة (get_admin_stats،
+// SECURITY DEFINER + is_admin() جوّاها). أونلاين فقط؛ لو فشل الطلب
+// مانكسرش صفحة الإعدادات — بنعرض رسالة خطأ لطيفة بلا أرقام وهمية.
+function adminStatRow(label, value){
+  return `<div class="astat-row"><span class="astat-label">${label}</span><span class="astat-val">${value}</span></div>`;
+}
+async function renderAdminStats(){
+  const group = document.getElementById('admin-stats-group');
+  const body = document.getElementById('admin-stats-body');
+  if(!group || !body) return;
+  group.style.display = '';
+  if(!isOnline){
+    body.innerHTML = `<div class="sr-desc">الإحصاءات تحتاج اتصال بالإنترنت</div>`;
+    return;
+  }
+  // Skeleton بسيط أثناء التحميل
+  body.innerHTML = `<div class="astat-row"><span class="astat-label">إجمالي المستخدمين</span><span class="astat-skel"></span></div>
+    <div class="astat-row"><span class="astat-label">نشط آخر 30 يومًا</span><span class="astat-skel"></span></div>
+    <div class="astat-row"><span class="astat-label">نشط آخر 7 أيام</span><span class="astat-skel"></span></div>`;
+  try {
+    const { data, error } = await sbAuth.rpc('get_admin_stats');
+    if(error) throw error;
+    const fmt = n => (typeof n==='number' ? n.toLocaleString('en-US') : '—');
+    body.innerHTML =
+      adminStatRow('إجمالي المستخدمين', fmt(data.totalUsers)) +
+      adminStatRow('نشط آخر 30 يومًا', fmt(data.active30d)) +
+      adminStatRow('نشط آخر 7 أيام', fmt(data.active7d));
+  } catch(e){
+    body.innerHTML = `<div class="sr-desc">تعذّر تحميل الإحصاءات</div>`;
+  }
 }
 
 // Pagination بدل تحميل كل الأعضاء دفعة واحدة — 30 مستخدم دلوقتي مش
