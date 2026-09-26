@@ -24,11 +24,19 @@ const rnd = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 let pass = 0, fail = 0;
 const ok = (c, m) => { console.log(`${c ? 'PASS' : 'FAIL'} — ${m}`); c ? pass++ : fail++; };
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 async function signup() {
-  const email = `probe_${rnd()}@awwab-audit.local`, password = `Aud!t_${rnd()}`;
-  const r = await fetch(`${SB_URL}/auth/v1/signup`, { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-  const j = await r.json();
-  return { token: j.access_token, id: j.user?.id, email };
+  // Supabase بيعمل rate-limit على التسجيل؛ نجرّب مع backoff عشان الاختبار
+  // مايفشلش لأسباب بنية الاختبار (مش المنتج)
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const email = `probe_${rnd()}@awwab-audit.local`, password = `Aud!t_${rnd()}`;
+    const r = await fetch(`${SB_URL}/auth/v1/signup`, { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const j = await r.json();
+    if (j.access_token) return { token: j.access_token, id: j.user?.id, email };
+    console.log(`  (signup rate-limited, backing off ${(attempt + 1) * 20}s…)`);
+    await sleep((attempt + 1) * 20000);
+  }
+  throw new Error('signup rate-limited repeatedly — انتظر ثم أعد المحاولة');
 }
 async function createProfile(u, name) {
   // إنشاء صف profile للمستخدم (زي ما بيعمل التطبيق بعد التسجيل) — trigger
@@ -45,7 +53,7 @@ async function rpc(tok, fn, args) {
 
 (async () => {
   console.log('== companions+ security matrix ==\n');
-  const A = await signup(); const B = await signup(); const C = await signup();
+  const A = await signup(); await sleep(1500); const B = await signup(); await sleep(1500); const C = await signup();
   if (!A.token || !B.token || !C.token) { console.error('signup فشل (تأكد signups مفعّلة)'); process.exit(1); }
   const pB = await createProfile(B, 'باء اختبار');
   const pA = await createProfile(A, 'ألف اختبار');
