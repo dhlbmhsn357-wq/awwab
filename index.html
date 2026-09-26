@@ -526,6 +526,10 @@ button{ -webkit-tap-highlight-color:transparent; }
 .id-search-empty{display:flex;align-items:center;gap:.4rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem .85rem;font-size:12.5px;color:var(--text-2);margin-bottom:.6rem;}
 .id-search-empty svg{color:var(--text-3);flex-shrink:0;}
 .id-result{margin-bottom:.6rem;}
+.id-self-card{background:var(--primary-tint);border:1px solid var(--border);border-radius:var(--r-md);padding:.8rem .9rem;margin-bottom:.6rem;}
+.id-self-card .isc-top{display:flex;align-items:center;gap:.4rem;font-size:var(--fs-card-title);font-weight:700;color:var(--primary);}
+.id-self-card .isc-top svg{flex-shrink:0;}
+.id-self-card .isc-body{font-size:12.5px;color:var(--text-2);line-height:1.6;margin-top:.35rem;}
 .id-rel{font-size:12px;font-weight:600;color:var(--text-3);display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap;}
 .id-rel.ok{color:var(--success);}
 .id-rel svg{width:14px;height:14px;}
@@ -3424,6 +3428,13 @@ initAndroidAppBannerCheck();
 let tourActive=false, tourIndex=0, tourManualReplay=false, tourPreviewGuard=false;
 let tourKeyHandler=null;
 
+// إصدار الجولة: نرفعه مع كل تحديث ميزات مهم عشان الجولة الجديدة تظهر
+// مرة واحدة لكل المستخدمين (جدد وقدامى) حتى لو خلّصوا جولة قديمة.
+// التخزين محلي (localStorage) — بلا أي تغيير في قاعدة البيانات.
+const TOUR_VERSION = 2; // companions_plus_release
+function tourVersionSeen(){ try { return parseInt(localStorage.getItem('awwab-tour-version')||'0',10)||0; } catch(e){ return 0; } }
+function markTourVersionSeen(){ try { localStorage.setItem('awwab-tour-version', String(TOUR_VERSION)); } catch(e){} }
+
 function prefersReducedMotion(){
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -3453,48 +3464,38 @@ function waitForTarget(getTarget, timeoutMs){
   });
 }
 
+// جولة «ما الجديد» — تركّز على ميزات حزمة صحبتي+ الأخيرة، بترتيب منطقي.
+// كل خطوة تشير لعنصر حقيقي؛ خطوات نيتف-only بتتخطى تلقائيًا على الويب.
 const TOUR_STEPS = [
-  { route:'today', title:'هذا يومك', body:'تابع من هنا عبادات اليوم وما أنجزته منها.',
-    getTarget:()=>document.querySelector('.day-hero') },
-  { route:'today', title:'سجّل صلاتك بدقة', body:'يمكنك تحديد: تكبيرة، جماعة، منفرد، أو فاتت.',
-    getTarget:()=>document.querySelector('.wcard .prayer-seg')?.closest('.wcard'),
-    skipIf:()=>!document.querySelector('.wcard .prayer-seg') },
-  { route:'today', title:'سجّل عباداتك بسهولة', body:'اضغط على حالة العبادة لتسجيل إنجازها أو تعديل تسجيلها.',
-    getTarget:()=>{
-      const cards=[...document.querySelectorAll('#timeline-slot .wcard')];
-      return cards.find(c=>!c.querySelector('.prayer-seg')) || null;
-    },
-    skipIf:()=>{
-      const cards=[...document.querySelectorAll('#timeline-slot .wcard')];
-      return !cards.some(c=>!c.querySelector('.prayer-seg'));
-    } },
-  { route:'today', title:'لم تُكمل تسجيل أمس؟', body:'يمكنك الرجوع واستكماله دون أن يُغلق يومك السابق.',
-    getTarget:()=>document.querySelector('#catchup-slot .catchup-card'),
-    skipIf:()=>!document.querySelector('#catchup-slot .catchup-card') },
-  { route:'today', title:'رتّب يومك كما يناسبك', body:'غيّر ترتيب العبادات، أو انقل عبادة من فترة لفترة تانية.',
-    getTarget:()=>document.getElementById('reorder-toggle-btn') },
-  { route:'worships', title:'أضف عبادتك', body:'أنشئ أي عبادة جديدة وحدد أيامها وموضعها في يومك.',
-    getTarget:()=>document.querySelector('.builder-add-btn') },
-  { route:'worships', title:'تحكم كامل في عبادتك', body:'يمكنك تحديد الأيام، الوقت، مكانها داخل اليوم، وطريقة متابعتها.',
-    onEnter:()=>{ tourPreviewGuard=true; openWorshipModal(); },
-    onExit:()=>{ closeWorshipModal(); tourPreviewGuard=false; },
-    getTarget:()=>document.querySelector('#worship-modal .modal-sheet') },
-  { route:'calendar', title:'راجع أيامك', body:'اضغط على أي يوم لفتح سجله ومراجعة أو استكمال تسجيلاته.',
-    getTarget:()=>document.getElementById('calendar-grid') },
-  { route:'progress', title:'تابع تقدمك الحقيقي', body:'راجع أداءك الأسبوعي والشهري والعبادات التي تحتاج اهتمامًا.',
-    getTarget:()=>document.querySelector('#progress-slot .report-summary') },
-  { route:'rafeqa', title:'رفقة للتشجيع', body:'هذه المساحة للتشجيع على الثبات، وليست للمقارنة أو التفاخر.',
-    getTarget:()=>document.querySelector('.rafeqa-header') },
-  { route:'settings', title:'ثبّت أوّاب على جهازك', body:'لو المتصفح ما عرضش دعوة تثبيت تلقائية، تقدر تثبّته يدويًا من هنا في أي وقت — أو من قائمة النقاط التلاتة (⋮) في المتصفح مباشرة.',
-    getTarget:()=>document.getElementById('install-settings-group'),
-    skipIf:()=>isStandaloneMode() || IS_NATIVE || isAndroidUA() },
-  { route:'settings', title:'أضف ودجت أوّاب', body:'ودجت تعرض تقدم يومك والعبادة التالية على شاشتك الرئيسية دون فتح التطبيق. اضغط "إضافة الودجت" وسيطلب منك أندرويد إضافتها مباشرة.',
-    getTarget:()=>document.getElementById('widget-add-btn'),
-    actionLabel:'إضافة الودجت', onAction:()=>onAddWidgetClick(),
+  // 1) معرّف أوّاب — الإعدادات/حسابي
+  { route:'settings', title:'معرّف أوّاب', body:'لكل مستخدم معرّف رقمي خاص به. انسخه وشاركه مع من تحب أن يضيفك في رفقة أوّاب.',
+    getTarget:()=>document.getElementById('my-id-card'),
+    skipIf:()=>{ const c=document.getElementById('my-id-card'); return !c || c.style.display==='none'; } },
+  // 2) البحث بالمعرّف — رفقة أوّاب (تبويب رفقة)
+  { route:'rafeqa', title:'ابحث بالمعرّف', body:'ابحث عن صاحبك بمعرّفه الرقمي ثم أرسل له طلب صحبة. لا يمكنك إضافة نفسك، لكن يمكنك مشاركة معرّفك مع غيرك.',
+    onEnter:()=>{ try{ if(typeof switchRafeqaSub==='function') switchRafeqaSub('feed'); }catch(e){} },
+    getTarget:()=>document.getElementById('id-search-input') },
+  // 3) صحبتي
+  { route:'rafeqa', title:'صحبتي', body:'هنا ترى أصحابك وحالتهم المختصرة — الالتزام أو الاستمرارية أو الحاجة إلى تفقّد — بحسب ما يختارون مشاركته.',
+    onEnter:()=>{ try{ if(typeof switchRafeqaSub==='function') switchRafeqaSub('sohba'); }catch(e){} },
+    getTarget:()=>document.getElementById('rafeqa-subtabs') },
+  // 4) الخصوصية
+  { route:'settings', title:'خصوصيتك بيدك', body:'أنت تتحكم فيما يراه أصحابك عنك: لا شيء، نسبة الالتزام، حالة الاستمرارية، أو إنجاز تختاره بنفسك.',
+    getTarget:()=>document.getElementById('privacy-radio')?.closest('.settings-group') },
+  // 5) ثوابت اليوم — صفحة اليوم
+  { route:'today', title:'ثوابت اليوم', body:'من قائمة (⋮) على أي عبادة يمكنك تثبيتها كـ«ثابت اليوم» لتبقى أمامك في بداية يومك.',
+    getTarget:()=>document.querySelector('#pins-slot .pin-row') || document.querySelector('#timeline-slot .wcard') || document.querySelector('.day-hero') },
+  // 6) التذكيرات المتعددة — نيتف فقط
+  { route:'settings', title:'تذكيرات متعددة', body:'أضف أكثر من وقت لتذكيرك بتسجيل عباداتك، مع تحديد الساعة والأيام المناسبة.',
+    getTarget:()=>document.getElementById('reminder-settings-group'),
     skipIf:()=>!IS_NATIVE },
-  { route:'settings', title:'استخدم أوّاب كتطبيق على هاتفك', body:'يمكنك تحميل نسخة أوّاب للأندرويد لتجربة أسرع ووصول أسهل، مع دعم ميزات مثل الودجت والإشعارات بشكل أفضل.',
-    getTarget:()=>document.getElementById('android-app-settings-group'),
-    skipIf:()=>IS_NATIVE || !isAndroidUA() },
+  // 7) تذكيرات السنن — نيتف فقط
+  { route:'settings', title:'تذكيرات السنن', body:'فعّل تذكيرات صيام الاثنين والخميس والأيام البيض — إشعارات محلية على جهازك تعمل بدون إنترنت.',
+    getTarget:()=>document.getElementById('sunnah-settings-group'),
+    skipIf:()=>!IS_NATIVE },
+  // 8) الدعم — أيقونة الهيدر
+  { route:'today', title:'ادعم أوّاب', body:'إن أحببت المساهمة في استمرار أوّاب، ستجد صفحة «ادعم أوّاب» من هذه الأيقونة (وأيضًا في الإعدادات).',
+    getTarget:()=>document.getElementById('support-icon-btn') || document.querySelector('.header-user') },
 ];
 
 async function tourGoToStep(index){
@@ -3588,6 +3589,7 @@ async function tourSkipAll(){
   closeTourOverlayEls();
   if(tourKeyHandler){ document.removeEventListener('keydown', tourKeyHandler); tourKeyHandler=null; }
   tourActive=false;
+  markTourVersionSeen();
   if(!tourManualReplay && currentUser){
     await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
     currentUser.onboarding_tour_status='skipped';
@@ -3619,6 +3621,7 @@ function showTourEndSheet(){
 }
 async function tourEndSheetClose(){
   document.getElementById('tour-end-overlay')?.remove();
+  markTourVersionSeen();
   if(!tourManualReplay && currentUser){
     await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'completed', onboarding_tour_completed_at:new Date().toISOString()}).catch(()=>{});
     currentUser.onboarding_tour_status='completed';
@@ -3639,6 +3642,7 @@ async function startTour(){
 }
 async function skipWelcome(){
   document.getElementById('tour-welcome-overlay')?.remove();
+  markTourVersionSeen();
   if(currentUser){
     await SB.patch(`profiles?id=eq.${currentUser.id}`, {onboarding_tour_status:'skipped'}).catch(()=>{});
     currentUser.onboarding_tour_status='skipped';
@@ -3651,9 +3655,9 @@ function showWelcomeSheet(){
   el.innerHTML = `
     <div class="modal-sheet" style="max-width:360px;text-align:center">
       <div class="tour-welcome-icon"><img src="/icon-192.png" alt="أواب"></div>
-      <div class="modal-title">أهلًا بك في أوّاب</div>
-      <p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-bottom:.3rem">جولة قصيرة ستعرّفك على أهم ما تحتاجه لتنظيم عباداتك ومتابعتها بسهولة.</p>
-      <p style="font-size:11.5px;color:var(--text-3);margin-bottom:.5rem">لن تستغرق سوى دقائق قليلة</p>
+      <div class="modal-title">جديد في أوّاب</div>
+      <p style="font-size:12.5px;color:var(--text-3);line-height:1.7;margin-bottom:.3rem">أضفنا ميزات تساعدك على المتابعة والتواصي على الثبات بصورة أوضح — جولة سريعة تعرّفك عليها وأماكنها.</p>
+      <p style="font-size:11.5px;color:var(--text-3);margin-bottom:.5rem">لن تستغرق سوى دقيقة</p>
       <div class="modal-actions">
         <button class="m-cancel" onclick="skipWelcome()">تخطي الآن</button>
         <button class="m-save" onclick="startTour()">ابدأ الجولة</button>
@@ -3697,8 +3701,10 @@ function initTourCheck(){
   const status = currentUser.onboarding_tour_status; // NULL/undefined عند المستخدمين القدامى = not_started
   setTimeout(()=>{
     if(document.getElementById('install-banner') || document.getElementById('tour-welcome-overlay') || document.getElementById('tour-resume-overlay')) return;
-    if(!status || status==='not_started') showWelcomeSheet();
-    else if(status==='in_progress') showResumePrompt();
+    // جولة الإصدار الجديد: تظهر مرة واحدة لكل من لم يشاهد هذا الإصدار
+    // بعد — سواء مستخدم جديد أو قديم خلّص الجولة القديمة.
+    if(tourVersionSeen() < TOUR_VERSION){ showWelcomeSheet(); return; }
+    if(status==='in_progress') showResumePrompt();
   }, 2300);
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -5227,6 +5233,20 @@ async function searchByPublicId(){
   if(!input || !box) return;
   const digits = (input.value||'').replace(/[^0-9]/g,'');
   if(!digits){ box.innerHTML=''; showToast('اكتب معرّف أوّاب الرقمي', true); return; }
+  // فحص سريع على مستوى الواجهة: لو بيبحث عن معرّفه هو — رسالة لطيفة
+  // بدل "لم يتم العثور" المربكة (بلا نداء سيرفر، بلا كشف أي بيانات)
+  if(currentUser?.public_numeric_id && digits === String(currentUser.public_numeric_id)){
+    box.innerHTML = `<div class="id-self-card">
+      <div class="isc-top">${ICON('circleAlert',15)}<span>هذا هو معرّفك أنت</span></div>
+      <div class="isc-body">لا يمكنك إضافة نفسك إلى الصحبة، لكن يمكنك نسخ معرّفك ومشاركته مع من تريد أن يضيفك.</div>
+      <div class="id-card" style="margin:.6rem 0 0">
+        <div class="id-card-info"><div class="id-card-label">معرّف أوّاب</div><div class="id-card-value">${esc(String(currentUser.public_numeric_id))}</div></div>
+        <button class="id-copy-btn" onclick="copyMyPublicId()"><span data-icon="copy" data-size="15"></span>نسخ المعرّف</button>
+      </div>
+    </div>`;
+    mountIcons(box);
+    return;
+  }
   if(!requireOnline()) return;
   box.innerHTML = `<div class="empty-day-hint" style="padding:1rem">جاري البحث...</div>`;
   try {
