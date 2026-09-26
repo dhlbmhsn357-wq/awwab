@@ -1470,22 +1470,29 @@ async function markLocalSynced(entityType, entityId){
 // 5 دقايق للأبد من غير ما حد يلاحظ أو يقدر يتصرف فيه
 const MAX_SYNC_RETRIES = 15;
 
+// Observability خفيفة للتطوير فقط (مايشتغلش في production ولا يسجّل أي
+// بيانات خاصة/توكن/محتوى عبادات): فعّلها بـlocalStorage awwab-sync-debug=1
+function syncLog(evt, data){
+  try { if(localStorage.getItem('awwab-sync-debug')==='1') console.log('[sync]', evt, data||''); } catch(e){}
+}
+
 async function syncPendingChanges(){
   if(isSyncing || !isOnline || !currentUser || !localDB) return;
   isSyncing = true;
   updateSyncStatusUI('syncing');
-  let pushedAny = false, hadFailure = false;
+  let pushedAny = false, hadFailure = false, pushOk = 0, pushFail = 0;
   try {
     const queue = await localDB.syncQueue.orderBy('createdAt').toArray();
+    syncLog('start', { pending: queue.filter(i=>!i.permanentlyFailed).length });
     for(const item of queue){
       if(item.permanentlyFailed) continue;
       if(item.lastAttemptAt && (Date.now()-item.lastAttemptAt) < backoffDelay(item.retryCount||0)) continue;
       try {
         await processQueueItem(item);
         await localDB.syncQueue.delete(item.qid);
-        pushedAny = true;
+        pushedAny = true; pushOk++;
       } catch(e){
-        hadFailure = true;
+        hadFailure = true; pushFail++;
         const retryCount = (item.retryCount||0)+1;
         const stuck = retryCount >= MAX_SYNC_RETRIES;
         await localDB.syncQueue.update(item.qid, {
@@ -1495,7 +1502,9 @@ async function syncPendingChanges(){
         });
       }
     }
+    syncLog('push_done', { ok: pushOk, fail: pushFail });
     await pullServerChanges();
+    syncLog('reconcile_done');
     updateSyncStatusUI(hadFailure ? 'error' : (pushedAny ? 'success' : 'idle'));
   } catch(e){
     updateSyncStatusUI('error');
@@ -1505,30 +1514,61 @@ async function syncPendingChanges(){
   }
 }
 
+// إصلاح لمرة واحدة للمستخدمين الحاليين: المؤشر القديم كان مشتقًا من
+// ساعة الجهاز، فلو كانت متقدّمة عن السيرفر يبقى المؤشر "في المستقبل"
+// وبيتخطّى تغييرات الويب. هنا نخفّضه لأحدث updated_at حقيقي (وقت سيرفر)
+// موجود فعليًا في IndexedDB عشان تُعاد مزامنة أي تغييرات فاتت — بلا مسح
+// أي بيانات (upsert idempotent). يتنفّذ مرة واحدة فقط بعلامة cursorRepairV2.
+async function repairSyncCursorOnce(){
+  try {
+    if(!localDB) return;
+    const done = await localDB.meta.get('cursorRepairV2');
+    if(done?.value) return;
+    const cur = (await localDB.meta.get('lastSyncedAt'))?.value || '1970-01-01T00:00:00Z';
+    let localMax = '1970-01-01T00:00:00Z';
+    const scan = async (table)=>{ try { await localDB[table].each(r=>{ if(r && r.updated_at && r.updated_at>localMax) localMax=r.updated_at; }); } catch(e){} };
+    await scan('worships'); await scan('dailyLogs'); await scan('dailyNotes'); await scan('worshipPins');
+    if(cur > localMax) await localDB.meta.put({key:'lastSyncedAt', value: localMax});
+    await localDB.meta.put({key:'cursorRepairV2', value: true});
+    syncLog('cursor_repair', { lowered: cur>localMax });
+  } catch(e){}
+}
+
+// Root-cause fix: المؤشر (lastSyncedAt) لازم يكون مشتقًا من وقت السيرفر
+// (أعلى updated_at في الصفوف اللي رجّعها السيرفر فعلًا)، مش من ساعة
+// الجهاز. الاعتماد على ساعة الجهاز كان بيخلّي أي فرق بينها وبين ساعة
+// السيرفر (device clock ahead) يخلّي Android يتخطّى تغييرات الويب.
+// نستخدم gte + upsert-by-id (idempotent) عشان مانفوّتش صفوف على حدود
+// نفس الـtimestamp؛ إعادة سحب صف الحد رخيصة وآمنة.
 async function pullServerChanges(){
   if(!currentUser) return;
   const metaRow = await localDB.meta.get('lastSyncedAt');
   const lastSync = metaRow?.value || '1970-01-01T00:00:00Z';
-  const nowIso = new Date().toISOString();
+  let maxSeen = lastSync, pullCount = 0;
+  const bump = (ts)=>{ if(ts && ts > maxSeen) maxSeen = ts; };
+  const q = (t)=>`${t}?user_id=eq.${currentUser.id}&updated_at=gte.${encodeURIComponent(lastSync)}&select=*`;
 
-  const remoteWorships = await SB.get(`worships?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+  const remoteWorships = await SB.get(q('worships'));
   for(const rw of remoteWorships){
+    bump(rw.updated_at); pullCount++;
     const local = await localDB.worships.get(rw.id);
     if(local && local.syncStatus==='pending') continue; // متعديلش فوق تعديل محلي لسه مزامنش
     if(rw.deleted_at){ await localDB.worships.delete(rw.id); continue; }
     await localDB.worships.put({...rw, syncStatus:'synced'});
   }
 
-  const remoteLogs = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+  const remoteLogs = await SB.get(q('daily_worship_logs'));
   for(const rl of remoteLogs){
+    bump(rl.updated_at); pullCount++;
     const local = await localDB.dailyLogs.get(rl.id);
     if(local && local.syncStatus==='pending') continue;
     await localDB.dailyLogs.put({...rl, worshipId:rl.worship_id, syncStatus:'synced'});
   }
 
   try {
-    const remoteNotes = await SB.get(`daily_notes?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+    const remoteNotes = await SB.get(q('daily_notes'));
     for(const rn of remoteNotes){
+      bump(rn.updated_at); pullCount++;
       const local = await localDB.dailyNotes.get(rn.date);
       if(local && local.syncStatus==='pending') continue;
       await localDB.dailyNotes.put({...rn, syncStatus:'synced'});
@@ -1538,15 +1578,19 @@ async function pullServerChanges(){
   // ثوابت اليوم — try/catch عشان لو migration 021 لسه ماتشغّلتش على
   // السيرفر (الجدول مش موجود) التطبيق كله مايقفش، الميزة بس تتعطّل
   try {
-    const remotePins = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&updated_at=gt.${encodeURIComponent(lastSync)}&select=*`);
+    const remotePins = await SB.get(q('worship_pins'));
     for(const rp of remotePins){
+      bump(rp.updated_at); pullCount++;
       const local = await localDB.worshipPins.get(rp.id);
       if(local && local.syncStatus==='pending') continue;
+      if(rp.deleted_at){ await localDB.worshipPins.delete(rp.id); continue; }
       await localDB.worshipPins.put({...rp, syncStatus:'synced'});
     }
   } catch(e){}
 
-  await localDB.meta.put({key:'lastSyncedAt', value: nowIso});
+  // نحفظ المؤشر فقط لو تقدّم فعليًا (monotonic، بلا الاعتماد على ساعة الجهاز)
+  if(maxSeen && maxSeen > lastSync) await localDB.meta.put({key:'lastSyncedAt', value: maxSeen});
+  syncLog('pull', { pullCount, advanced: maxSeen>lastSync });
   refreshCurrentViewFromLocal();
 }
 
@@ -2886,27 +2930,31 @@ async function preloadLocalData(){
   // حاجة متخزنة محليًا" و"أقدم حاجة لسه خام على السيرفر قبل ما
   // تتلخّص") عشان تجربة الأوفلاين تبقى جاهزة فورًا
   try {
+    // مؤشر مشتق من وقت السيرفر (أعلى updated_at في كل ما نحمّله) بدل
+    // ساعة الجهاز — نفس فلسفة pullServerChanges (تفادي clock skew)
+    let maxSeen = '1970-01-01T00:00:00Z';
+    const bump = (ts)=>{ if(ts && ts > maxSeen) maxSeen = ts; };
     const [worshipsRes, notesRes] = await Promise.all([
       SB.get(`worships?user_id=eq.${currentUser.id}&select=*`),
       SB.get(`daily_notes?user_id=eq.${currentUser.id}&select=*`).catch(()=>[]),
     ]);
     await localDB.worships.clear();
-    for(const w of worshipsRes){ if(!w.deleted_at) await localDB.worships.put({...w, syncStatus:'synced'}); }
-    for(const n of notesRes){ await localDB.dailyNotes.put({...n, syncStatus:'synced'}); }
+    for(const w of worshipsRes){ bump(w.updated_at); if(!w.deleted_at) await localDB.worships.put({...w, syncStatus:'synced'}); }
+    for(const n of notesRes){ bump(n.updated_at); await localDB.dailyNotes.put({...n, syncStatus:'synced'}); }
     const since = addDays(getToday(), -90);
     const logsRes = await SB.get(`daily_worship_logs?user_id=eq.${currentUser.id}&date=gte.${since}&select=*`);
-    for(const l of logsRes){ await localDB.dailyLogs.put({...l, worshipId:l.worship_id, syncStatus:'synced'}); }
+    for(const l of logsRes){ bump(l.updated_at); await localDB.dailyLogs.put({...l, worshipId:l.worship_id, syncStatus:'synced'}); }
     try {
       const fsRes = await SB.get(`fellowship_settings?user_id=eq.${currentUser.id}&select=*`);
-      if(fsRes[0]) await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'});
+      if(fsRes[0]){ bump(fsRes[0].updated_at); await localDB.fellowshipSettings.put({...fsRes[0], entityId:currentUser.id, syncStatus:'synced'}); }
     } catch(e){}
     // ثوابت اليوم — try/catch منفصل عشان لو migration 021 لسه ماتشغّلتش
     // الباقي كله يفضل يتحمّل عادي
     try {
       const pinsRes = await SB.get(`worship_pins?user_id=eq.${currentUser.id}&select=*`);
-      for(const p of pinsRes){ await localDB.worshipPins.put({...p, syncStatus:'synced'}); }
+      for(const p of pinsRes){ bump(p.updated_at); await localDB.worshipPins.put({...p, syncStatus:'synced'}); }
     } catch(e){}
-    await localDB.meta.put({key:'lastSyncedAt', value:new Date().toISOString()});
+    await localDB.meta.put({key:'lastSyncedAt', value: maxSeen});
     // علامة "أقدم تاريخ موثوق إن الكاش المحلي كامل بداية منه" —
     // localLogsInRange بتستخدمها عشان تعرف تجيب فجوات قديمة من
     // السيرفر لو حد فتح تقويم أقدم من كده
@@ -3906,7 +3954,7 @@ async function enterMain(){
   updateSyncBadge();
   if(isOnline && localDB){
     const meta = await localDB.meta.get('lastSyncedAt');
-    if(!meta){ await preloadLocalData(); } else { await syncPendingChanges(); }
+    if(!meta){ await preloadLocalData(); } else { await repairSyncCursorOnce(); await syncPendingChanges(); }
   }
   await loadWorships();
   await loadDay(viewDate);
