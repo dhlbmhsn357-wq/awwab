@@ -517,6 +517,33 @@ button{ -webkit-tap-highlight-color:transparent; }
 .astat-val{font-size:19px;font-weight:800;color:var(--text-1);font-variant-numeric:tabular-nums;direction:ltr;}
 .astat-skel{width:56px;height:20px;border-radius:6px;background:linear-gradient(90deg,var(--surface-2),var(--surface-3),var(--surface-2));background-size:200% 100%;animation:astat-shimmer 1.2s infinite;}
 @keyframes astat-shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
+/* بحث بمعرّف أوّاب */
+.id-search{display:flex;gap:.5rem;margin-bottom:.6rem;}
+.id-search input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .8rem;color:var(--text-1);font-size:var(--fs-body);outline:none;direction:rtl;}
+.id-search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint);}
+.id-search-btn{flex-shrink:0;width:44px;border:none;border-radius:var(--r-sm);background:var(--primary);color:#06251F;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.id-search-btn:active{transform:scale(.96);}
+.id-search-empty{display:flex;align-items:center;gap:.4rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem .85rem;font-size:12.5px;color:var(--text-2);margin-bottom:.6rem;}
+.id-search-empty svg{color:var(--text-3);flex-shrink:0;}
+.id-result{margin-bottom:.6rem;}
+.id-rel{font-size:12px;font-weight:600;color:var(--text-3);display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap;}
+.id-rel.ok{color:var(--success);}
+.id-rel svg{width:14px;height:14px;}
+/* معرّف أوّاب في الحساب */
+.id-card{display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .9rem;margin-bottom:.9rem;flex-wrap:wrap;}
+.id-card-label{font-size:12px;color:var(--text-3);font-weight:600;}
+.id-card-value{font-size:19px;font-weight:800;color:var(--text-1);letter-spacing:1px;font-variant-numeric:tabular-nums;direction:ltr;}
+.id-copy-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:.4rem;height:38px;padding:0 .9rem;border:none;border-radius:var(--r-sm);background:var(--primary);color:#06251F;font-size:12.5px;font-weight:700;cursor:pointer;}
+.id-copy-btn:active{transform:scale(.97);}
+.id-copy-btn svg{width:15px;height:15px;}
+/* موجز صحبتي + إشارة الحالة */
+.sohba-summary{display:flex;align-items:center;gap:.5rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:.6rem .85rem;margin-bottom:.9rem;font-size:12.5px;color:var(--text-2);font-weight:600;}
+.sohba-summary svg{color:var(--primary);flex-shrink:0;}
+.cc-signal{display:flex;align-items:center;gap:.35rem;font-size:12px;color:var(--warning);margin-top:.3rem;}
+.cc-signal svg{flex-shrink:0;}
+/* صفوف تذكيرات السنن */
+.sunnah-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.sunnah-row input[type=time]{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem .7rem;color:var(--text-1);}
 
 /* forms */
 .field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem var(--sp-4);color:var(--text-1);font-size:var(--fs-body);outline:none;min-height:46px;}
@@ -925,6 +952,12 @@ body.has-offline-banner .main-header{top:34px;}
         <button id="rf-sub-sohba" onclick="switchRafeqaSub('sohba')">صحبتي</button>
       </div>
       <div id="rafeqa-feed-view">
+        <!-- بحث بمعرّف أوّاب (exact-match فقط، عبر RPC آمنة بـrate limit) -->
+        <div class="id-search">
+          <input id="id-search-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="9" placeholder="ابحث بمعرّف أوّاب" aria-label="ابحث بمعرّف أوّاب" onkeydown="if(event.key==='Enter')searchByPublicId()">
+          <button class="id-search-btn" onclick="searchByPublicId()" aria-label="بحث"><span data-icon="users" data-size="16"></span></button>
+        </div>
+        <div id="id-search-result"></div>
         <div class="group-goal-card" id="group-goal-card"></div>
         <div id="rafeqa-list"></div>
       </div>
@@ -1002,6 +1035,44 @@ body.has-offline-banner .main-header{top:34px;}
         <div class="sr-desc" id="reminder-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
       </div>
 
+      <!-- تذكيرات السنن — أندرويد بس، مخفي على الويب/PWA عبر
+           renderSunnahReminderSettings(). إشعارات محلية فقط (لا Push). -->
+      <div class="settings-group" id="sunnah-settings-group" style="display:none">
+        <h3>تذكيرات السنن</h3>
+        <div class="sr-desc" style="margin-bottom:.7rem">تذكير هادئ بالسنن — إشعار محلي على جهازك فقط، ويعمل بدون إنترنت.</div>
+
+        <div class="sunnah-row">
+          <div>
+            <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">صيام الاثنين والخميس</div>
+            <div class="sr-desc">تذكير مساء اليوم السابق</div>
+          </div>
+          <label style="flex-shrink:0"><input type="checkbox" id="sunnah-mt-toggle" onchange="onSunnahToggle('mondayThursday',this.checked)"></label>
+        </div>
+        <div id="sunnah-mt-time" style="display:none;margin:.5rem 0 .2rem"></div>
+
+        <div class="sunnah-row" style="margin-top:.9rem;border-top:1px solid var(--border);padding-top:.9rem">
+          <div>
+            <div style="font-size:var(--fs-card-title);font-weight:600;color:var(--text-1)">الأيام البيض (13، 14، 15)</div>
+            <div class="sr-desc">تذكير مساء يوم 12 هجريًا</div>
+          </div>
+          <label style="flex-shrink:0"><input type="checkbox" id="sunnah-wd-toggle" onchange="onSunnahToggle('whiteDays',this.checked)"></label>
+        </div>
+        <div id="sunnah-wd-extra" style="display:none;margin-top:.5rem">
+          <div id="sunnah-wd-time" style="margin-bottom:.5rem"></div>
+          <label class="cs-toggle"><span>ذكّرني صباح كل يوم من الأيام البيض</span><input type="checkbox" id="sunnah-wd-morning" onchange="onSunnahMorningToggle(this.checked)"></label>
+          <div class="field" style="margin-top:.6rem">
+            <label>تصحيح التاريخ الهجري (لو بداية الشهر مختلفة عندك)</label>
+            <select id="sunnah-hijri-offset" onchange="onHijriOffsetChange(this.value)">
+              <option value="-1">−1 يوم</option>
+              <option value="0">بدون تعديل</option>
+              <option value="1">+1 يوم</option>
+            </select>
+          </div>
+          <div class="sr-desc" id="sunnah-hijri-preview" style="margin-top:.4rem"></div>
+        </div>
+        <div class="sr-desc" id="sunnah-permission-note" style="display:none;margin-top:.6rem;color:var(--warning,#b45309)"></div>
+      </div>
+
       <!-- ودجت الشاشة الرئيسية — أندرويد بس (Phase 8)، مخفي بالكامل
            على الويب/PWA عبر renderWidgetSettings() -->
       <div class="settings-group" id="widget-settings-group" style="display:none">
@@ -1039,6 +1110,15 @@ body.has-offline-banner .main-header{top:34px;}
       <div class="settings-group">
         <h3>حسابي</h3>
         <div style="font-size:var(--fs-caption);color:var(--text-3);margin-bottom:.9rem">الاسم: <span id="settings-username" style="color:var(--text-1);font-weight:600"></span></div>
+        <!-- معرّف أوّاب العام (رقمي) — يشاركه المستخدم مع من يعرفه ليجده
+             في «رفقة أوّاب». لا يُعرض UUID الداخلي أبدًا. -->
+        <div class="id-card" id="my-id-card" style="display:none">
+          <div class="id-card-info">
+            <div class="id-card-label">معرّف أوّاب</div>
+            <div class="id-card-value" id="my-public-id">—</div>
+          </div>
+          <button class="id-copy-btn" onclick="copyMyPublicId()" aria-label="نسخ المعرّف"><span data-icon="copy" data-size="15"></span>نسخ المعرّف</button>
+        </div>
         <button class="btn-logout" style="width:100%;height:44px;justify-content:center;gap:.4rem" onclick="doLogout()"><span data-icon="logOut" data-size="16"></span>تسجيل الخروج</button>
       </div>
     </div>
@@ -2088,6 +2168,70 @@ const REM_CHK_ID_BASE = 200000;
 const MAX_REMINDER_TIMES = 5;
 const REM_HORIZON = 7;   // أيام قدّام نجدول فيها تذكيرات العبادات (one-shots)
 
+// ── تذكيرات السنن (الاثنين/الخميس + الأيام البيض) ──
+const REM_SUN_KEY = 'awwab-reminders-sunnah';
+const REM_SUN_CHANNEL = 'sunnah-fasting';
+const REM_SUN_ID_BASE = 300000;   // منفصل تمامًا عن باقي الـIDs (تفادي collisions)
+const REM_SUN_HORIZON = 46;       // أيام قدّام للأيام البيض (one-shots) — تغطّي دورة كاملة
+function sunnahDefaults(){ return {
+  mondayThursday:{ enabled:false, hour:20, minute:0 },
+  whiteDays:{ enabled:false, hour:20, minute:0, morning:false, morningHour:7, morningMinute:0 },
+  hijriOffset:0
+}; }
+function loadSunnah(){ const d=sunnahDefaults(); const v=remLoad(REM_SUN_KEY,d); return {
+  mondayThursday:{...d.mondayThursday,...(v.mondayThursday||{})},
+  whiteDays:{...d.whiteDays,...(v.whiteDays||{})},
+  hijriOffset: (typeof v.hijriOffset==='number')?v.hijriOffset:0
+}; }
+function saveSunnah(v){ remSave(REM_SUN_KEY, v); }
+
+// اليوم الهجري (أم القرى) لتاريخ ميلادي — عبر Intl (متاح في WebView
+// الحديث/كروم). مفيش ادّعاء قطعية: المستخدم عنده تعديل ±1 يوم.
+function umalquraDay(date){
+  try { return parseInt(new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura',{day:'numeric'}).format(date),10) || null; }
+  catch(e){ return null; }
+}
+// اليوم الهجري "المُشاهَد" عند المستخدم = يوم أم القرى + الإزاحة
+function observedHijriDay(date, offset){
+  const d = umalquraDay(date); if(d==null) return null; return d + (offset||0);
+}
+// مناسبات تذكيرات السنن خلال الأفق — Date math خالص، مفيش setTimeout
+function sunnahOccurrences(now, sun){
+  const out = []; // {id, body, at, kind}
+  now = now || new Date();
+  // (1) الاثنين/الخميس: تذكير مساء اليوم السابق (الأحد/الأربعاء) — أسبوعي
+  if(sun.mondayThursday?.enabled){
+    const t = sun.mondayThursday;
+    // weekday في Capacitor: 1=الأحد .. 7=السبت (زي general: dow+1)
+    out.push({ weekly:{ weekday:1, hour:t.hour, minute:t.minute }, id:REM_SUN_ID_BASE+1,
+      body:'غدًا الاثنين، إن أحببت أن تصوم فاستعد من الليلة 🌿' });
+    out.push({ weekly:{ weekday:4, hour:t.hour, minute:t.minute }, id:REM_SUN_ID_BASE+2,
+      body:'غدًا الخميس، إن أحببت أن تصوم فاستعد من الليلة 🌿' });
+  }
+  // (2) الأيام البيض: one-shots خلال الأفق
+  if(sun.whiteDays?.enabled){
+    const off = sun.hijriOffset||0;
+    const w = sun.whiteDays;
+    let oneId = REM_SUN_ID_BASE + 10;
+    for(let i=0;i<REM_SUN_HORIZON;i++){
+      const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i);
+      const uq = umalquraDay(day); if(uq==null) break; // Intl مش متاح — تجاهل بأمان
+      const observed = uq + off;
+      // مساء 12 هجريًا (تذكير قبل بدء الأيام البيض)
+      if(observed===12){
+        const at = new Date(day.getFullYear(),day.getMonth(),day.getDate(), w.hour, w.minute,0,0);
+        if(at.getTime()>now.getTime()) out.push({ at, id:oneId++, body:'غدًا أول الأيام البيض (13 هجريًا)، إن أحببت صيامها فاستعد من الليلة 🌿' });
+      }
+      // صباح 13/14/15 (اختياري)
+      if(w.morning && (observed===13||observed===14||observed===15)){
+        const at = new Date(day.getFullYear(),day.getMonth(),day.getDate(), w.morningHour, w.morningMinute,0,0);
+        if(at.getTime()>now.getTime()) out.push({ at, id:oneId++, body:`اليوم ${observed} من الأيام البيض — تقبّل الله صيامك إن صمت 🌿` });
+      }
+    }
+  }
+  return out;
+}
+
 function remLoad(key, fallback){ try { const r=localStorage.getItem(key); return r?JSON.parse(r):fallback; } catch(e){ return fallback; } }
 function remSave(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
 
@@ -2145,6 +2289,7 @@ async function remEnsureChannels(){
     await LocalNotifications.createChannel({ id:REM_GEN_CHANNEL, name:'مواعيد التذكير', description:'تذكير بتسجيل عباداتك', importance:4, visibility:1 }).catch(()=>{});
     await LocalNotifications.createChannel({ id:REM_WOR_CHANNEL, name:'تذكيرات العبادات', description:'تذكير بعبادة معيّنة', importance:4, visibility:1 }).catch(()=>{});
     await LocalNotifications.createChannel({ id:REM_CHK_CHANNEL, name:'تفقّد الأصحاب', description:'تذكير بتفقّد صحبتك', importance:4, visibility:1 }).catch(()=>{});
+    await LocalNotifications.createChannel({ id:REM_SUN_CHANNEL, name:'تذكيرات السنن', description:'صيام الاثنين والخميس والأيام البيض', importance:4, visibility:1 }).catch(()=>{});
   } catch(e){}
 }
 
@@ -2233,6 +2378,21 @@ function buildReminderSchedule(now, completedTodayIds){
       });
     });
   }
+
+  // تذكيرات السنن (الاثنين/الخميس أسبوعي + الأيام البيض one-shots)
+  newReg.sunnah = [];
+  const sun = loadSunnah();
+  sunnahOccurrences(now, sun).forEach(o=>{
+    if(o.weekly){
+      toSchedule.push({ id:o.id, title:'أوّاب', body:o.body, channelId:REM_SUN_CHANNEL,
+        schedule:{ on:{ weekday:o.weekly.weekday, hour:o.weekly.hour, minute:o.weekly.minute }, allowWhileIdle:true }, extra:{ type:'sunnah' } });
+      newReg.sunnah.push({ id:o.id });
+    } else if(o.at){
+      toSchedule.push({ id:o.id, title:'أوّاب', body:o.body, channelId:REM_SUN_CHANNEL,
+        schedule:{ at:o.at, allowWhileIdle:true }, extra:{ type:'sunnah' } });
+      newReg.sunnah.push({ id:o.id, fireAt:o.at.toISOString() });
+    }
+  });
   return { toSchedule, newReg };
 }
 
@@ -2251,8 +2411,8 @@ async function rescheduleAllReminders(){
   await remEnsureChannels();
 
   // 1) ألغِ كل اللي جدولناه قبل كده
-  const reg = remLoad(REM_REG_KEY, { general:[], worship:[], checkin:[] });
-  const oldIds = [...(reg.general||[]), ...((reg.worship||[]).map(x=>x.id)), ...((reg.checkin||[]).map(x=>x.id))];
+  const reg = remLoad(REM_REG_KEY, { general:[], worship:[], checkin:[], sunnah:[] });
+  const oldIds = [...(reg.general||[]), ...((reg.worship||[]).map(x=>x.id)), ...((reg.checkin||[]).map(x=>x.id)), ...((reg.sunnah||[]).map(x=>x.id))];
   if(oldIds.length){ await LocalNotifications.cancel({ notifications: oldIds.map(id=>({id})) }).catch(()=>{}); }
 
   // اقرأ العبادات المكتملة النهاردة من IndexedDB مباشرة (مش من اليوم
@@ -2371,6 +2531,86 @@ async function onGeneralReminderToggle(checked){
     await rescheduleAllReminders();
     showToast('اتلغت مواعيد التذكير');
   }
+}
+
+// ── UI: تذكيرات السنن (أندرويد فقط، زي مواعيد التذكير) ──
+function renderSunnahReminderSettings(){
+  const group = document.getElementById('sunnah-settings-group');
+  if(!group) return;
+  if(!IS_NATIVE){ group.style.display='none'; return; }
+  group.style.display='';
+  const sun = loadSunnah();
+  const mt = document.getElementById('sunnah-mt-toggle'); if(mt) mt.checked = !!sun.mondayThursday.enabled;
+  const wd = document.getElementById('sunnah-wd-toggle'); if(wd) wd.checked = !!sun.whiteDays.enabled;
+  const mtTime = document.getElementById('sunnah-mt-time');
+  if(mtTime){ mtTime.style.display = sun.mondayThursday.enabled?'block':'none';
+    mtTime.innerHTML = sunnahTimeRow('mt', sun.mondayThursday.hour, sun.mondayThursday.minute, 'وقت التذكير مساءً'); }
+  const wdExtra = document.getElementById('sunnah-wd-extra');
+  if(wdExtra) wdExtra.style.display = sun.whiteDays.enabled?'block':'none';
+  const wdTime = document.getElementById('sunnah-wd-time');
+  if(wdTime) wdTime.innerHTML = sunnahTimeRow('wd', sun.whiteDays.hour, sun.whiteDays.minute, 'وقت تذكير مساء يوم 12 هجريًا');
+  const morn = document.getElementById('sunnah-wd-morning'); if(morn) morn.checked = !!sun.whiteDays.morning;
+  const off = document.getElementById('sunnah-hijri-offset'); if(off) off.value = String(sun.hijriOffset||0);
+  updateHijriPreview();
+}
+function sunnahTimeRow(kind, hour, minute, label){
+  const val = String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+  return `<label class="sr-desc" style="display:block;margin-bottom:.3rem">${label}</label>
+    <input type="time" value="${val}" onchange="onSunnahTimeChange('${kind}',this.value)" style="max-width:160px">`;
+}
+function updateHijriPreview(){
+  const el = document.getElementById('sunnah-hijri-preview'); if(!el) return;
+  const sun = loadSunnah(); const off = sun.hijriOffset||0;
+  const now = new Date(); let found = null;
+  for(let i=0;i<REM_SUN_HORIZON;i++){
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i);
+    const obs = observedHijriDay(day, off);
+    if(obs===13){ found = { date:day, inDays:i }; break; }
+    if(obs==null){ el.textContent=''; return; }
+  }
+  if(found){ el.textContent = `الأيام البيض القادمة تبدأ ${found.date.toLocaleDateString('ar-EG',{day:'numeric',month:'long'})} تقريبًا (بعد ${found.inDays} يوم).`; }
+  else el.textContent='';
+}
+async function onSunnahToggle(which, checked){
+  const sun = loadSunnah();
+  const noteEl = document.getElementById('sunnah-permission-note');
+  const toggleId = which==='mondayThursday' ? 'sunnah-mt-toggle' : 'sunnah-wd-toggle';
+  if(checked){
+    if(!(await remPermissionGranted())){
+      const ok = await remRequestPermission();
+      if(!ok){
+        const t=document.getElementById(toggleId); if(t) t.checked=false;
+        if(noteEl){ noteEl.style.display='block'; noteEl.textContent='محتاجين إذن الإشعارات عشان التذكير يشتغل — فعّله من إعدادات النظام لهذا التطبيق.'; }
+        return;
+      }
+    }
+    if(noteEl) noteEl.style.display='none';
+    sun[which].enabled = true;
+  } else {
+    sun[which].enabled = false;
+  }
+  saveSunnah(sun);
+  renderSunnahReminderSettings();
+  await rescheduleAllReminders();
+  showToast(checked?'اتفعّل التذكير':'اتلغى التذكير');
+}
+function onSunnahTimeChange(kind, val){
+  const m = /^(\d{1,2}):(\d{2})$/.exec(val||''); if(!m) return;
+  const sun = loadSunnah();
+  const h = Math.min(23,parseInt(m[1],10)), mn = Math.min(59,parseInt(m[2],10));
+  if(kind==='mt'){ sun.mondayThursday.hour=h; sun.mondayThursday.minute=mn; }
+  else { sun.whiteDays.hour=h; sun.whiteDays.minute=mn; }
+  saveSunnah(sun);
+  scheduleReminderResync();
+}
+async function onSunnahMorningToggle(checked){
+  const sun = loadSunnah(); sun.whiteDays.morning = !!checked; saveSunnah(sun);
+  await rescheduleAllReminders();
+}
+async function onHijriOffsetChange(val){
+  const sun = loadSunnah(); sun.hijriOffset = parseInt(val,10)||0; saveSunnah(sun);
+  updateHijriPreview();
+  await rescheduleAllReminders();
 }
 
 // محرّر موعد واحد (وقت + أيام) — مشترك بين العام وتذكيرات العبادة.
@@ -4965,6 +5205,59 @@ async function companionRPC(fn, args){
 }
 function companionsCacheKey(){ return 'awwab-companions-'+(currentUser?.id||''); }
 
+// ── معرّف أوّاب العام + البحث الآمن به ──
+function renderMyPublicId(){
+  const card = document.getElementById('my-id-card');
+  const val = document.getElementById('my-public-id');
+  if(!card || !val) return;
+  const pid = currentUser?.public_numeric_id;
+  if(pid){ val.textContent = String(pid); card.style.display=''; }
+  else { card.style.display='none'; }   // مستخدم قديم قبل تطبيق migration 026
+}
+async function copyMyPublicId(){
+  const pid = currentUser?.public_numeric_id; if(!pid) return;
+  let ok=false;
+  try { if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(String(pid)); ok=true; } } catch(e){}
+  if(!ok){ try{ const ta=document.createElement('textarea'); ta.value=String(pid); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); ok=document.execCommand('copy'); document.body.removeChild(ta);}catch(e){} }
+  showToast(ok?'تم نسخ المعرّف':'تعذّر النسخ، انسخه يدويًا', !ok, 'copy');
+}
+async function searchByPublicId(){
+  const input = document.getElementById('id-search-input');
+  const box = document.getElementById('id-search-result');
+  if(!input || !box) return;
+  const digits = (input.value||'').replace(/[^0-9]/g,'');
+  if(!digits){ box.innerHTML=''; showToast('اكتب معرّف أوّاب الرقمي', true); return; }
+  if(!requireOnline()) return;
+  box.innerHTML = `<div class="empty-day-hint" style="padding:1rem">جاري البحث...</div>`;
+  try {
+    const data = await companionRPC('find_user_by_public_id', { p_public_id: Number(digits) });
+    const u = Array.isArray(data) ? data[0] : data;
+    if(!u){ box.innerHTML = `<div class="id-search-empty">${ICON('circleAlert',15)} لم يتم العثور على مستخدم بهذا المعرّف.</div>`; return; }
+    box.innerHTML = idSearchResultHTML(u);
+    mountIcons(box);
+  } catch(e){
+    const m = (e?.message||'')+'';
+    if(m.includes('محاولات كثيرة')) box.innerHTML = `<div class="id-search-empty">${ICON('circleAlert',15)} محاولات كثيرة، انتظر قليلًا ثم حاول تاني.</div>`;
+    else box.innerHTML = `<div class="id-search-empty">${ICON('circleAlert',15)} تعذّر البحث، حاول تاني.</div>`;
+    mountIcons(box);
+  }
+}
+function idSearchResultHTML(u){
+  const name = u.display_name||'';
+  const av = AVATAR_COLORS[(u.public_numeric_id||0)%AVATAR_COLORS.length];
+  let action;
+  if(u.relation==='companion') action = `<span class="id-rel ok">${ICON('circleCheck',14)} من صحبتك</span>`;
+  else if(u.relation==='pending') action = `<span class="id-rel">بانتظار الرد</span>`;
+  else if(u.relation==='blocked') action = `<span class="id-rel">—</span>`;
+  else action = `<button class="cc-btn primary" onclick="requestFromSearch('${u.user_id}','${esc(name).replace(/'/g,"\\'")}')">طلب صحبة</button>`;
+  return `<div class="companion-card id-result">
+    <div class="rf-avatar" style="background:${av};flex-shrink:0">${(name||'؟')[0]}</div>
+    <div class="cc-body"><div class="cc-name">${esc(name)}</div><div class="cc-msg">معرّف أوّاب: ${esc(String(u.public_numeric_id||''))}</div></div>
+    <div class="cc-actions">${action}</div>
+  </div>`;
+}
+function requestFromSearch(userId, name){ openSendRequestSheet(userId, name); }
+
 // تلميح سياقي يظهر مرة واحدة فقط لكل مفتاح (بند 59: مش خطوات جولة
 // إجبارية، بس Highlight سياقي مرة واحدة)
 function hintOnce(key, text){
@@ -5027,9 +5320,20 @@ function sohbaHTML(companions, requests, offline){
   const incoming = requests.filter(r=>r.direction==='incoming');
   const outgoing = requests.filter(r=>r.direction==='outgoing');
   let html = `<div class="sohba-top">
-    <div class="sohba-count">صحبتي · ${companions.length}/5</div>
+    <div class="sohba-count">صحبتي · ${companions.length}/10</div>
     <button class="sohba-settings-btn" onclick="openCompanionSettings()">${ICON('settings',15)}<span>إعدادات المشاركة</span></button>
   </div>`;
+
+  // موجز صغير (يظهر فقط لو فيه صحبة) — بلا Dashboard ثقيلة
+  if(companions.length){
+    const need = companions.filter(c=>c.needs_checkin || c.status==='inactive' || c.status==='decline').length;
+    const asked = companions.filter(c=>c.needs_checkin).length;
+    const ok = companions.length - need;
+    const parts = [`${ok} بخير`];
+    if(need) parts.push(`${need} بحاجة لتفقّد`);
+    if(asked) parts.push(`${asked} طلب تفقّدًا`);
+    html += `<div class="sohba-summary">${ICON('heartHandshake',14)}<span>صحبتك اليوم: ${parts.join(' · ')}</span></div>`;
+  }
 
   if(offline){
     html += `<div class="sohba-offline-note">${ICON('circleAlert',14)} أنت غير متصل — العرض من آخر نسخة محفوظة، والإجراءات تحتاج اتصالًا.</div>`;
@@ -5087,6 +5391,17 @@ function sohbaHTML(companions, requests, offline){
   return html;
 }
 
+// إشارة لطيفة عن الحالة (انقطاع/تراجع) — بموافقة الصديق فقط (السيرفر
+// بيرجّع status='ok' لو مش سامح). لغة تفقّد، لا حكم على العبادة.
+function companionSignalLine(c){
+  if(c.status==='inactive'){
+    const d = c.days_since_activity;
+    const txt = (typeof d==='number' && d>0) ? `لم يسجّل متابعة منذ ${d} أيام` : 'لم يسجّل متابعة منذ عدة أيام';
+    return `<div class="cc-signal">${ICON('alarmClock',12)} ${txt}</div>`;
+  }
+  if(c.status==='decline') return `<div class="cc-signal">${ICON('alarmClock',12)} نشاطه أقل من المعتاد هذا الأسبوع</div>`;
+  return '';
+}
 function companionCardHTML(c, i){
   const av = AVATAR_COLORS[i%AVATAR_COLORS.length];
   const lines = [];
@@ -5100,7 +5415,7 @@ function companionCardHTML(c, i){
       <div class="cc-name">${esc(c.display_name||'')}</div>
       <div class="cc-msg">${esc(summary)}</div>
       ${enc.length?`<div class="cc-encourage">يحتاج تشجيعًا في: ${esc(enc.join('، '))}</div>`:''}
-      ${c.needs_checkin?`<div class="cc-needs">${ICON('heartHandshake',12)} ${esc(c.needs_checkin_note||'يحتاج بعض التشجيع اليوم')}</div>`:''}
+      ${c.needs_checkin?`<div class="cc-needs">${ICON('heartHandshake',12)} ${esc(c.needs_checkin_note||'يحتاج بعض التشجيع اليوم')}</div>`:companionSignalLine(c)}
     </div>
   </div>`;
   // شريط إجراءات بأزرار عليها كلام واضح (مش أيقونات مبهمة)
@@ -5235,7 +5550,7 @@ async function sendEncouragementById(userId){
 }
 function companionErr(e){
   const m = (e && (e.message||e.hint||'')) + '';
-  if(m.includes('الحد الأقصى')) return 'وصلت الحد الأقصى (5 أشخاص)';
+  if(m.includes('الحد الأقصى')) return 'وصلت الحد الأقصى (10 أشخاص)';
   if(m.includes('بالفعل')) return 'يوجد طلب أو علاقة بالفعل مع هذا الشخص';
   return 'تعذّر تنفيذ الإجراء';
 }
@@ -5310,7 +5625,7 @@ async function setNeedCheckin(on){
 // ── إعدادات المشاركة داخل صحبتي ──
 async function openCompanionSettings(){
   if(!requireOnline()) return;
-  let cs = { share_today_pct:false, share_weekly:false, encourage_worship_ids:[], whatsapp:'' };
+  let cs = { share_today_pct:false, share_weekly:false, encourage_worship_ids:[], whatsapp:'', discoverable_by_id:true, share_decline_signal:false };
   try { const rows = await SB.get(`companion_settings?user_id=eq.${currentUser.id}&select=*`); if(rows[0]) cs = rows[0]; } catch(e){}
   const encSet = new Set(cs.encourage_worship_ids||[]);
   const activeWorships = worships.filter(w=>!w.is_hidden && !w.deleted_at);
@@ -5326,6 +5641,9 @@ async function openCompanionSettings(){
     <div class="sr-desc" style="margin-bottom:.4rem">هذه العبادات فقط تظهر أسماؤها لصحبتي.</div>
     <div id="cs-worships" class="rem-chips">${activeWorships.map(w=>`<button type="button" class="rem-chip ${encSet.has(w.id)?'on':''}" data-wid="${w.id}" onclick="this.classList.toggle('on')">${esc(w.name)}</button>`).join('') || '<span class="sr-desc">لا توجد عبادات</span>'}</div>
     <div class="field" style="margin-top:.8rem"><label>رقم واتساب (اختياري، لا يظهر لأحد نصًا)</label><input id="cs-whatsapp" type="tel" placeholder="مثال: 201001234567" value="${esc(cs.whatsapp||'')}"></div>
+    <div class="section-label" style="margin-top:.9rem">الخصوصية</div>
+    <label class="cs-toggle"><span>السماح بالعثور عليّ عبر معرّف أوّاب<span class="sr-desc" style="display:block">لو أغلقته، لن يجدك أحد بالمعرّف حتى لو كان صحيحًا</span></span><input type="checkbox" id="cs-discoverable" ${cs.discoverable_by_id!==false?'checked':''}></label>
+    <label class="cs-toggle"><span>السماح لصحبتي بمعرفة أني أحتاج تفقدًا عند الانقطاع أو التراجع<span class="sr-desc" style="display:block">إشارة عامة فقط بلا أي تفاصيل — معطّلة افتراضيًا</span></span><input type="checkbox" id="cs-decline" ${cs.share_decline_signal?'checked':''}></label>
     <div class="modal-actions" style="margin-top:.7rem">
       <button class="m-cancel" onclick="document.getElementById('cs-overlay').remove()">إلغاء</button>
       <button class="m-save" onclick="saveCompanionSettings()">حفظ</button>
@@ -5342,6 +5660,8 @@ async function saveCompanionSettings(){
     share_weekly: document.getElementById('cs-weekly').checked,
     encourage_worship_ids: ids,
     whatsapp: (document.getElementById('cs-whatsapp').value||'').trim() || null,
+    discoverable_by_id: document.getElementById('cs-discoverable').checked,
+    share_decline_signal: document.getElementById('cs-decline').checked,
     updated_at: new Date().toISOString(),
   };
   try {
@@ -5398,8 +5718,10 @@ function renderSettings(){
   syncThemeToggleUI();
   renderInstallSettings();
   renderReminderSettings();
+  renderSunnahReminderSettings();
   renderWidgetSettings();
   renderAndroidAppSettings();
+  renderMyPublicId();
   const options = [
     {v:'none', label:'لا أشارك أي بيانات', desc:'الوضع الافتراضي — رفقاؤك لن يروا أي تفاصيل عنك'},
     {v:'percentage', label:'أشارك نسبة الالتزام العامة فقط', desc:'مثال: الالتزام هذا الأسبوع 78%'},
