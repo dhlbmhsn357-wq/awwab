@@ -3485,14 +3485,13 @@ const TOUR_STEPS = [
   // 5) ثوابت اليوم — صفحة اليوم
   { route:'today', title:'ثوابت اليوم', body:'من قائمة (⋮) على أي عبادة يمكنك تثبيتها كـ«ثابت اليوم» لتبقى أمامك في بداية يومك.',
     getTarget:()=>document.querySelector('#pins-slot .pin-row') || document.querySelector('#timeline-slot .wcard') || document.querySelector('.day-hero') },
-  // 6) التذكيرات المتعددة — نيتف فقط
-  { route:'settings', title:'تذكيرات متعددة', body:'أضف أكثر من وقت لتذكيرك بتسجيل عباداتك، مع تحديد الساعة والأيام المناسبة.',
-    getTarget:()=>document.getElementById('reminder-settings-group'),
-    skipIf:()=>!IS_NATIVE },
-  // 7) تذكيرات السنن — نيتف فقط
-  { route:'settings', title:'تذكيرات السنن', body:'فعّل تذكيرات صيام الاثنين والخميس والأيام البيض — إشعارات محلية على جهازك تعمل بدون إنترنت.',
-    getTarget:()=>document.getElementById('sunnah-settings-group'),
-    skipIf:()=>!IS_NATIVE },
+  // 6) التذكيرات المتعددة — تظهر على الويب أيضًا مع توضيح أن الإشعارات
+  //    المحلية الكاملة على أندرويد (fallback لعنصر ظاهر على الويب)
+  { route:'settings', title:'تذكيرات متعددة', body:'أضف أكثر من وقت لتذكيرك بتسجيل عباداتك (الساعة والأيام). الإشعارات المحلية الكاملة تعمل في تطبيق أندرويد.',
+    getTarget:()=>{ const p=document.getElementById('reminder-settings-group'); return (p && p.offsetParent!==null) ? p : document.getElementById('android-app-settings-group'); } },
+  // 7) تذكيرات السنن — نفس الفكرة
+  { route:'settings', title:'تذكيرات السنن', body:'فعّل تذكيرات صيام الاثنين والخميس والأيام البيض — إشعارات محلية على جهازك عبر تطبيق أندرويد.',
+    getTarget:()=>{ const p=document.getElementById('sunnah-settings-group'); return (p && p.offsetParent!==null) ? p : document.getElementById('android-app-settings-group'); } },
   // 8) الدعم — أيقونة الهيدر
   { route:'today', title:'ادعم أوّاب', body:'إن أحببت المساهمة في استمرار أوّاب، ستجد صفحة «ادعم أوّاب» من هذه الأيقونة (وأيضًا في الإعدادات).',
     getTarget:()=>document.getElementById('support-icon-btn') || document.querySelector('.header-user') },
