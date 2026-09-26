@@ -16,7 +16,7 @@
 --  (هيتجاهله السيرفر ويحط now())، والـpull بيصلّح النسخة المحلية.
 -- ════════════════════════════════════════════════════════════
 
-create or replace function set_updated_at()
+create or replace function awwab_set_synced_updated_at()
 returns trigger language plpgsql set search_path = public as $$
 begin
   new.updated_at := now();
@@ -26,17 +26,17 @@ end; $$;
 -- worships
 drop trigger if exists trg_worships_updated_at on worships;
 create trigger trg_worships_updated_at
-  before insert or update on worships for each row execute function set_updated_at();
+  before insert or update on worships for each row execute function awwab_set_synced_updated_at();
 
 -- daily_worship_logs
 drop trigger if exists trg_dwl_updated_at on daily_worship_logs;
 create trigger trg_dwl_updated_at
-  before insert or update on daily_worship_logs for each row execute function set_updated_at();
+  before insert or update on daily_worship_logs for each row execute function awwab_set_synced_updated_at();
 
 -- daily_notes
 drop trigger if exists trg_dn_updated_at on daily_notes;
 create trigger trg_dn_updated_at
-  before insert or update on daily_notes for each row execute function set_updated_at();
+  before insert or update on daily_notes for each row execute function awwab_set_synced_updated_at();
 
 -- worship_pins (لو الجدول موجود — migration 021)
 do $$
@@ -44,7 +44,7 @@ begin
   if exists (select 1 from information_schema.tables where table_schema='public' and table_name='worship_pins') then
     drop trigger if exists trg_wp_updated_at on worship_pins;
     create trigger trg_wp_updated_at
-      before insert or update on worship_pins for each row execute function set_updated_at();
+      before insert or update on worship_pins for each row execute function awwab_set_synced_updated_at();
   end if;
 end $$;
 
@@ -54,11 +54,11 @@ begin
   if exists (select 1 from information_schema.tables where table_schema='public' and table_name='fellowship_settings') then
     drop trigger if exists trg_fs_updated_at on fellowship_settings;
     create trigger trg_fs_updated_at
-      before insert or update on fellowship_settings for each row execute function set_updated_at();
+      before insert or update on fellowship_settings for each row execute function awwab_set_synced_updated_at();
   end if;
   if exists (select 1 from information_schema.tables where table_schema='public' and table_name='companion_settings') then
     drop trigger if exists trg_cs_updated_at on companion_settings;
     create trigger trg_cs_updated_at
-      before insert or update on companion_settings for each row execute function set_updated_at();
+      before insert or update on companion_settings for each row execute function awwab_set_synced_updated_at();
   end if;
 end $$;
