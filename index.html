@@ -5245,18 +5245,45 @@ async function searchByPublicId(){
 function idSearchResultHTML(u){
   const name = u.display_name||'';
   const av = AVATAR_COLORS[(u.public_numeric_id||0)%AVATAR_COLORS.length];
+  // ملاحظة: نتيجة البحث لا تحمل UUID داخلي أبدًا — الطلب يُرسَل بالمعرّف
+  // العام عبر RPC آمنة تحلّه في السيرفر.
   let action;
   if(u.relation==='companion') action = `<span class="id-rel ok">${ICON('circleCheck',14)} من صحبتك</span>`;
   else if(u.relation==='pending') action = `<span class="id-rel">بانتظار الرد</span>`;
-  else if(u.relation==='blocked') action = `<span class="id-rel">—</span>`;
-  else action = `<button class="cc-btn primary" onclick="requestFromSearch('${u.user_id}','${esc(name).replace(/'/g,"\\'")}')">طلب صحبة</button>`;
+  else action = `<button class="cc-btn primary" onclick="requestFromSearch(${Number(u.public_numeric_id)},'${esc(name).replace(/'/g,"\\'")}')">طلب صحبة</button>`;
   return `<div class="companion-card id-result">
     <div class="rf-avatar" style="background:${av};flex-shrink:0">${(name||'؟')[0]}</div>
     <div class="cc-body"><div class="cc-name">${esc(name)}</div><div class="cc-msg">معرّف أوّاب: ${esc(String(u.public_numeric_id||''))}</div></div>
     <div class="cc-actions">${action}</div>
   </div>`;
 }
-function requestFromSearch(userId, name){ openSendRequestSheet(userId, name); }
+function requestFromSearch(publicId, name){
+  if(document.getElementById('send-req-overlay')) return;
+  const el = document.createElement('div'); el.className='modal-overlay'; el.id='send-req-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-width:360px">
+    <div class="sheet-handle"></div>
+    <div class="modal-title">دعوة ${esc(name)} إلى صحبة للتفقد</div>
+    <div class="field" style="margin-top:.6rem">
+      <label>رسالة الدعوة</label>
+      <textarea id="send-req-msg" class="notes-textarea" style="min-height:70px">أحب أن نكون صحبة للتفقد والتشجيع على الثبات في أوّاب.</textarea>
+    </div>
+    <div class="modal-actions" style="margin-top:.6rem">
+      <button class="m-cancel" onclick="document.getElementById('send-req-overlay').remove()">إلغاء</button>
+      <button class="m-save" onclick="doSendRequestByPublicId(${Number(publicId)})">إرسال الطلب</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+async function doSendRequestByPublicId(publicId){
+  if(!requireOnline()) return;
+  const msg = document.getElementById('send-req-msg')?.value || '';
+  try {
+    await companionRPC('send_companion_request_by_public_id', { p_public_id: Number(publicId), p_message: msg });
+    document.getElementById('send-req-overlay')?.remove();
+    showToast('اتبعت الدعوة');
+    const box = document.getElementById('id-search-result'); if(box) box.innerHTML = `<div class="id-search-empty">${ICON('circleCheck',15)} تم إرسال الطلب.</div>`; mountIcons(box);
+  } catch(e){ showToast(companionErr(e),true); }
+}
 
 // تلميح سياقي يظهر مرة واحدة فقط لكل مفتاح (بند 59: مش خطوات جولة
 // إجبارية، بس Highlight سياقي مرة واحدة)

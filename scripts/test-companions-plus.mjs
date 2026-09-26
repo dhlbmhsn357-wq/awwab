@@ -60,6 +60,7 @@ async function rpc(tok, fn, args) {
   const row = Array.isArray(found.body) ? found.body[0] : null;
   ok(!!row && row.display_name === 'باء اختبار' && String(row.public_numeric_id) === String(pB.public_numeric_id), 'search returns the target minimal profile');
   ok(!!row && !('email' in row) && !('whatsapp' in row) && !('phone' in row), 'search leaks no email/phone/whatsapp');
+  ok(!!row && !('user_id' in row) && !('id' in row), 'search returns NO internal UUID');
   ok(!!row && row.relation === 'none', 'relation state = none for strangers');
 
   // 3) نفسك / غير موجود → فاضي

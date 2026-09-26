@@ -76,10 +76,12 @@ create trigger trg_profiles_protect_public_id
 alter table companion_settings add column if not exists discoverable_by_id boolean not null default true;
 
 -- ── (3) البحث الآمن exact-match + rate limit ──
--- بيرجّع صف واحد بحد أقصى. لو المعرّف غير موجود أو صاحبه قافل الاكتشاف
--- أو بتبحث عن نفسك → مفيش نتيجة (بلا كشف أي فرق للمهاجم).
+-- بيرجّع صف واحد بحد أقصى، وبلا أي UUID داخلي (خصوصية): اسم + معرّف
+-- عام + حالة علاقة مبسّطة فقط. لو المعرّف غير موجود أو صاحبه قافل
+-- الاكتشاف أو بتبحث عن نفسك أو العلاقة blocked → مفيش نتيجة (بلا كشف
+-- أي فرق للمهاجم، وبلا كشف أن أحدًا قام بالحظر).
 create or replace function find_user_by_public_id(p_public_id bigint)
-returns table(user_id uuid, display_name text, public_numeric_id bigint, relation text)
+returns table(display_name text, public_numeric_id bigint, relation text)
 language plpgsql security definer set search_path = public as $$
 declare
   v_caller uuid := auth.uid();
@@ -106,26 +108,60 @@ begin
     return;  -- قافل الاكتشاف → كأنه غير موجود
   end if;
 
-  -- حالة العلاقة الحالية (أقل ما يلزم)
+  -- حالة العلاقة الحالية
   select c.status into v_status from companionships c
   where least(c.requester_id,c.recipient_id)=least(v_caller,v_target.id)
     and greatest(c.requester_id,c.recipient_id)=greatest(v_caller,v_target.id)
     and c.status in ('pending','accepted','blocked')
   limit 1;
+  -- الحظر: نتعامل معاه كأن النتيجة غير متاحة (مانكشفش أن أحدًا حظر)
+  if v_status = 'blocked' then return; end if;
   if v_status = 'accepted' then v_rel := 'companion';
   elsif v_status = 'pending' then v_rel := 'pending';
-  elsif v_status = 'blocked' then v_rel := 'blocked';
   else v_rel := 'none'; end if;
 
-  user_id := v_target.id;
   display_name := v_target.display_name;
   public_numeric_id := v_target.public_numeric_id;
   relation := v_rel;
   return next;
 end; $$;
 
+-- إرسال طلب صحبة بالمعرّف العام — الحل الوحيد لإرسال طلب لنتيجة بحث
+-- (العميل مايشوفش UUID أبدًا). بيحل الـUUID داخليًا server-side، مع
+-- rate limit وأخطاء عامة (مايكشفش وجود/عدم وجود المعرّف للمهاجم).
+create or replace function send_companion_request_by_public_id(p_public_id bigint, p_message text)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare v_caller uuid := auth.uid(); v_target uuid; v_status text; v_id uuid;
+begin
+  if v_caller is null then raise exception 'مطلوب تسجيل دخول'; end if;
+  if not check_rate_limit('sendreq:'||v_caller::text, 20, 60) then
+    raise exception 'محاولات كثيرة، انتظر قليلًا' using errcode = '53400';
+  end if;
+  -- حل المعرّف + احترام الاكتشاف؛ أي فشل هنا = رسالة عامة موحّدة
+  select p.id into v_target from profiles p where p.public_numeric_id = p_public_id;
+  if v_target is null
+     or v_target = v_caller
+     or exists (select 1 from companion_settings cs where cs.user_id=v_target and cs.discoverable_by_id=false)
+  then raise exception 'تعذّر إرسال الطلب لهذا المعرّف'; end if;
+  -- علاقة قائمة/محظورة؟ (بلا كشف تفاصيل الحظر)
+  select c.status into v_status from companionships c
+  where status in ('pending','accepted','blocked')
+    and least(c.requester_id,c.recipient_id)=least(v_caller,v_target)
+    and greatest(c.requester_id,c.recipient_id)=greatest(v_caller,v_target)
+  limit 1;
+  if v_status = 'blocked' then raise exception 'تعذّر إرسال الطلب لهذا المعرّف'; end if;
+  if v_status in ('pending','accepted') then raise exception 'يوجد طلب أو علاقة بالفعل مع هذا الشخص'; end if;
+  if _companion_accepted_count(v_caller) >= 10 then raise exception 'وصلت الحد الأقصى (10 أشخاص) في صحبتك'; end if;
+  insert into companionships(requester_id, recipient_id, status, invite_message)
+  values (v_caller, v_target, 'pending', nullif(trim(coalesce(p_message,'')),''))
+  returning id into v_id;
+  return v_id;
+end; $$;
+
 revoke execute on function find_user_by_public_id(bigint) from public, anon;
 grant  execute on function find_user_by_public_id(bigint) to authenticated;
+revoke execute on function send_companion_request_by_public_id(bigint,text) from public, anon;
+grant  execute on function send_companion_request_by_public_id(bigint,text) to authenticated;
 revoke execute on function gen_public_numeric_id() from public, anon, authenticated;
 
 -- ════════════════════════════════════════════════════════════
