@@ -96,7 +96,9 @@ begin
   end if;
   if p_public_id is null then return; end if;
 
-  select * into v_target from profiles where public_numeric_id = p_public_id;
+  -- نأهّل اسم العمود (profiles.public_numeric_id) لتفادي الالتباس مع
+  -- متغيّر الإخراج المسمّى public_numeric_id (خطأ 42702)
+  select * into v_target from profiles where profiles.public_numeric_id = p_public_id;
   if not found then return; end if;
   if v_target.id = v_caller then return; end if;  -- مش بتدوّر على نفسك
 
