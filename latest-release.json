@@ -1,11 +1,11 @@
 {
-  "version": "1.2.7",
-  "versionCode": 11,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.7/Awwab-Android-v1.2.7.apk",
-  "fileSize": 4887891,
-  "sha256": "9b5e42cd674e8dff59d3fd8673f55917a0e24a56ee80154b50bd7a81bb726ac9",
-  "releaseNotes": "تحسين البحث بالمعرّف (رسالة واضحة عند البحث عن معرّفك)، وجولة تعريفية محدّثة تشرح الميزات الجديدة.",
+  "version": "1.2.8",
+  "versionCode": 12,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.8/Awwab-Android-v1.2.8.apk",
+  "fileSize": 4889063,
+  "sha256": "ff82d00d510627f606c53262fc1f975d817e182ef12978f66aa48f1b9a7e78a7",
+  "releaseNotes": "إصلاح جذري للمزامنة بين الويب والأندرويد: التقاط تغييرات الأجهزة الأخرى بشكل موثوق.",
   "mandatory": false,
-  "releasedAt": "2026-09-26T20:11:11Z",
-  "publishedAt": "2026-09-26T20:11:11Z"
+  "releasedAt": "2026-09-26T21:25:17Z",
+  "publishedAt": "2026-09-26T21:25:17Z"
 }
