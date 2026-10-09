@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- شريحة دائرية مدمجة — تُستخدم لنسبة اليوم وزر "فتح أوّاب".
+     RemoteViews-safe: شكل بسيط بخلفية ممتلئة وحواف دائرية فقط. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_chip_bg" />
+    <corners android:radius="100dp" />
+</shape>

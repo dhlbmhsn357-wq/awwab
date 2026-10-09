@@ -6,8 +6,12 @@
     <color name="colorAccent">#017C6E</color>
 
     <!-- ألوان ودجت الشاشة الرئيسية (وضع فاتح) — نفس بطاقة الأيقونة -->
-    <color name="widget_bg">#F2F0F1</color>
+    <color name="widget_bg">#F6F4F3</color>
     <color name="widget_text_primary">#015C51</color>
     <color name="widget_text_secondary">#4B6B67</color>
     <color name="widget_track">#DCE6E4</color>
+    <!-- عناصر إعادة التصميم البصري: شريحة النسبة + حدّ البطاقة + زر CTA -->
+    <color name="widget_chip_bg">#E4EFEC</color>
+    <color name="widget_stroke">#E6EBE9</color>
+    <color name="widget_fill">#017C6E</color>
 </resources>
