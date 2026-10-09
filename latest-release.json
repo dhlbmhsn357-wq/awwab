@@ -1,11 +1,11 @@
 {
-  "version": "1.2.8",
-  "versionCode": 12,
-  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.8/Awwab-Android-v1.2.8.apk",
-  "fileSize": 4889063,
-  "sha256": "ff82d00d510627f606c53262fc1f975d817e182ef12978f66aa48f1b9a7e78a7",
-  "releaseNotes": "إصلاح جذري للمزامنة بين الويب والأندرويد: التقاط تغييرات الأجهزة الأخرى بشكل موثوق.",
+  "version": "1.2.9",
+  "versionCode": 13,
+  "apkUrl": "https://github.com/dhlbmhsn357-wq/awwab/releases/download/v1.2.9/Awwab-Android-v1.2.9.apk",
+  "fileSize": 4890351,
+  "sha256": "79d4680936177a82472044fa9285e3d594d5128b717a6153c3361e15c5793f9b",
+  "releaseNotes": "تحسين بصري لودجت الشاشة الرئيسية: تصميم أوضح وأكثر كثافة (بدون أي تغيير في الوظائف أو المزامنة).",
   "mandatory": false,
-  "releasedAt": "2026-09-26T21:25:17Z",
-  "publishedAt": "2026-09-26T21:25:17Z"
+  "releasedAt": "2026-10-09T11:42:25Z",
+  "publishedAt": "2026-10-09T11:42:25Z"
 }
