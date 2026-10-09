@@ -1,8 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- ألوان ودجت الشاشة الرئيسية (وضع داكن) -->
-    <color name="widget_bg">#12211F</color>
+    <color name="widget_bg">#102421</color>
     <color name="widget_text_primary">#5FD9C4</color>
     <color name="widget_text_secondary">#9BC4BE</color>
     <color name="widget_track">#1F3532</color>
+    <!-- عناصر إعادة التصميم البصري (داكن) -->
+    <color name="widget_chip_bg">#17302C</color>
+    <color name="widget_stroke">#1C322E</color>
+    <color name="widget_fill">#2FB3A0</color>
 </resources>
